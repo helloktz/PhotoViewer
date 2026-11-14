@@ -10,11 +10,6 @@
   <String Id="IgBannerBitmap"          Value="WixUI_Bmp_Banner" />
   <String Id="IgInfoIcon"              Value="WixUI_Ico_Info" />
 
-  <String Id="IgAgreementTitle"        Value="Open-source license" />
-  <String Id="IgAgreementDescription"  Value="Please review the license notice before installing [ProductName]." />
-  <String Id="IgAgreementBody"         Value="Photo Viewer is distributed under GNU GPL version 3. The complete license is in the LICENSE file included with the installed application." />
-  <String Id="IgAgreementAgree"        Value="I have read and agree to the Open-source license" />
-
   <String Id="IgScopeTitle"            Value="Installation type" />
   <String Id="IgScopeDescription"      Value="Choose who to install [ProductName] for, and where." />
   <String Id="IgScopeGroupLabel"       Value="Install for" />

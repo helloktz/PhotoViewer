@@ -134,10 +134,6 @@ Assert-PublishedAppVersion (Join-Path $publishDir 'PhotoViewer.exe') $igVersion
 if (Test-Path $stagingDir) { Remove-Item $stagingDir -Recurse -Force }
 New-Item -ItemType Directory -Path $payloadDir -Force | Out-Null
 Copy-PackagePayload $publishDir $AppExtras $payloadDir
-Copy-Item -LiteralPath (Join-Path $RepoRoot 'LICENSE') -Destination $payloadDir
-
-Get-ChildItem -Path $payloadDir -Recurse -Include '*.pdb' -File -ErrorAction SilentlyContinue |
-    Remove-Item -Force
 
 if (-not $NoPortable) {
     [System.IO.File]::WriteAllBytes((Join-Path $payloadDir $PortableMarker), @())

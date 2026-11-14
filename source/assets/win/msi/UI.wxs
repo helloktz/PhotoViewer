@@ -31,41 +31,6 @@
       <DialogRef Id="MaintenanceTypeDlg" />
       <DialogRef Id="VerifyReadyDlg" />
 
-      <Dialog Id="IgAgreementDlg" Width="370" Height="270" Title="!(loc.IgDlgTitle)">
-        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44"
-                 TabSkip="no" Text="!(loc.IgBannerBitmap)" />
-        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
-        <Control Id="Title" Type="Text" X="15" Y="6" Width="240" Height="15"
-                 Transparent="yes" NoPrefix="yes"
-                 Text="{\WixUI_Font_Title}!(loc.IgAgreementTitle)" />
-        <Control Id="Description" Type="Text" X="25" Y="23" Width="330" Height="15"
-                 Transparent="yes" NoPrefix="yes" Text="!(loc.IgAgreementDescription)" />
-
-        <Control Id="Body" Type="Text" X="20" Y="58" Width="330" Height="48"
-                 Text="!(loc.IgAgreementBody)" />
-
-        <Control Id="AgreeCheckBox" Type="CheckBox" X="20" Y="132" Width="330" Height="18"
-                 Property="IGAGREETOTERMS" CheckBoxValue="1"
-                 Text="!(loc.IgAgreementAgree)" />
-
-        <Control Id="InfoIcon" Type="Icon" X="20" Y="162" Width="24" Height="24"
-                 TabSkip="yes" FixedSize="no" IconSize="48" Text="!(loc.IgInfoIcon)" />
-
-        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
-        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17"
-                 Disabled="yes" Text="!(loc.WixUIBack)" />
-        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes"
-                 Text="!(loc.WixUINext)"
-                 EnableCondition="IGAGREETOTERMS = &quot;1&quot;"
-                 DisableCondition="IGAGREETOTERMS &lt;&gt; &quot;1&quot;">
-          <Publish Event="NewDialog" Value="IgInstallScopeDlg" />
-        </Control>
-        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17"
-                 Cancel="yes" Text="!(loc.WixUICancel)">
-          <Publish Event="SpawnDialog" Value="CancelDlg" />
-        </Control>
-      </Dialog>
-
       <Dialog Id="IgInstallScopeDlg" Width="370" Height="270" Title="!(loc.IgDlgTitle)">
         <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44"
                  TabSkip="no" Text="!(loc.IgBannerBitmap)" />
@@ -140,9 +105,7 @@
 
         <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
         <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17"
-                 Text="!(loc.WixUIBack)">
-          <Publish Event="NewDialog" Value="IgAgreementDlg" />
-        </Control>
+                 Disabled="yes" Text="!(loc.WixUIBack)" />
         <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes"
                  Text="!(loc.WixUINext)">
           <Publish Property="ALLUSERS" Value="{}" Order="1"
@@ -227,7 +190,7 @@
     <UIRef Id="WixUI_Common" />
 
     <InstallUISequence>
-      <Show Dialog="IgAgreementDlg" Before="ProgressDlg" Condition="NOT Installed" />
+      <Show Dialog="IgInstallScopeDlg" Before="ProgressDlg" Condition="NOT Installed" />
       <Show Dialog="IgCompleteDlg" OnExit="success" />
     </InstallUISequence>
 

@@ -69,7 +69,7 @@ public partial class AboutWindow : DialogWindow
         DefaultFocus = DialogFocus.Button1;
         ShowInTaskbar = true;
 
-        PART_LblCopyright.Text = "ImageGlass © 2010–2027 Duong Dieu Phap. GPLv3. No warranty. See LICENSE.";
+        PART_LblCopyright.Text = "ImageGlass © 2010–2027 Duong Dieu Phap. GPLv3. No warranty.";
         PART_LblCreditContent.Text = _creditContent;
 
     }

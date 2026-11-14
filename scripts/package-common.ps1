@@ -10,10 +10,9 @@ function Assert-PublishedAppVersion([string]$ExePath, [string]$ExpectedVersion) 
 }
 
 function Copy-PackagePayload([string]$PublishDir, [string]$AssetsDir, [string]$PayloadDir) {
-    $assets = @(Get-ChildItem -LiteralPath $AssetsDir -Force)
-    $assetNames = $assets | ForEach-Object Name
-    Get-ChildItem -LiteralPath $PublishDir -Force |
-        Where-Object { $_.Name -notin $assetNames } |
-        Copy-Item -Destination $PayloadDir -Recurse -Force
-    $assets | Copy-Item -Destination $PayloadDir -Recurse -Force
+    Get-ChildItem -LiteralPath $PublishDir -File |
+        Where-Object { $_.Extension -in '.exe', '.dll' } |
+        Copy-Item -Destination $PayloadDir
+    Get-ChildItem -LiteralPath $AssetsDir -Force |
+        Copy-Item -Destination $PayloadDir -Recurse
 }

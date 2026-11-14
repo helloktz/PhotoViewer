@@ -356,21 +356,16 @@ else {
     if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed for $rid (exit $LASTEXITCODE)." }
 }
 Assert-PublishedAppVersion (Join-Path $publishDir 'PhotoViewer.exe') $msiVersion
+$portablePath = Join-Path $publishDir $PortableMarker
+if (Test-Path -LiteralPath $portablePath) {
+    throw "Refusing to build: '$portablePath' exists. Publish the application without the portable marker."
+}
 
 if (Test-Path $stagingDir) {
     Invoke-FileOpWithRetry { Remove-Item $stagingDir -Recurse -Force } "Clearing $stagingDir"
 }
 New-Item -ItemType Directory -Path $payloadDir -Force | Out-Null
 Copy-PackagePayload $publishDir $AppExtras $payloadDir
-Copy-Item -LiteralPath (Join-Path $RepoRoot 'LICENSE') -Destination $payloadDir
-
-Get-ChildItem -Path $payloadDir -Recurse -Include '*.pdb' -File -ErrorAction SilentlyContinue |
-    Remove-Item -Force
-
-$portablePath = Join-Path $payloadDir $PortableMarker
-if (Test-Path $portablePath) {
-    throw "Refusing to build: '$portablePath' exists. An installed copy with $PortableMarker cannot start."
-}
 
 if ($Sign) {
     $binaries = @(Get-ChildItem -Path $payloadDir -Recurse -Include '*.exe', '*.dll' -File |

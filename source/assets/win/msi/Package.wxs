@@ -37,7 +37,6 @@
     <Property Id="IGDESKTOPSHORTCUT"   Value="1" Secure="yes" />
     <Property Id="IGSTARTMENUSHORTCUT" Value="1" Secure="yes" />
     <Property Id="IGREMOVEFILEASSOC"   Value="1" Secure="yes" />
-    <Property Id="IGAGREETOTERMS"                Secure="yes" />
 
     <Property Id="IGLAUNCHAFTERINSTALL" Value="1" Secure="yes" />
 

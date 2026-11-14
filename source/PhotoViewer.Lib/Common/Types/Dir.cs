@@ -14,8 +14,6 @@ public static class Dir
 
     public static string Plugins { get; } = "_plugins";
 
-    public static string Credits { get; } = "credits";
-
     public static string Cache { get; } = "_cache";
 
     public static string Cache_Thumbnails { get; } = "_thumbnails";
