@@ -193,7 +193,7 @@ function New-DeterministicGuid([guid]$Namespace, [string]$Name) {
     return [guid]::new($g)
 }
 
-function Assert-MachineInstallSummary([string]$MsiPath) {
+function Assert-PerUserSummary([string]$MsiPath) {
     $installer = New-Object -ComObject WindowsInstaller.Installer
     $summary   = $installer.SummaryInformation($MsiPath, 0)
     $wordCount = [int]$summary.Property(15)
@@ -201,8 +201,8 @@ function Assert-MachineInstallSummary([string]$MsiPath) {
     [void][System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($installer)
     [GC]::Collect()
 
-    if (($wordCount -band 8) -ne 0) {
-        throw "MSI Word Count is $wordCount. Bit 3 must be clear to allow elevation for installation."
+    if (($wordCount -band 8) -eq 0) {
+        throw "MSI Word Count is $wordCount. Bit 3 must be set for installation without elevation."
     }
     return $wordCount
 }
@@ -249,7 +249,7 @@ for ($i = 0; $i -lt 3; $i++) {
 
 $upgradeCode = Get-WxiDefine 'IgUpgradeCode'
 if (-not $upgradeCode) { throw "Could not read IgUpgradeCode from $WxiFile" }
-$productCode = New-DeterministicGuid ([guid]$upgradeCode) "PhotoViewer-msi-per-machine-$Platform-$msiVersion"
+$productCode = New-DeterministicGuid ([guid]$upgradeCode) "PhotoViewer-msi-per-user-$Platform-$msiVersion"
 
 $rid         = "win-$Platform"
 $msbuildPlat = 'x64'
@@ -341,8 +341,8 @@ Write-Host "    built: $stagedMsi"
 New-Item -ItemType Directory -Path $validationDir -Force | Out-Null
 Copy-Item -LiteralPath $stagedMsi -Destination $checkMsi -Force
 
-$wordCount = Assert-MachineInstallSummary $checkMsi
-Write-Host "    summary WordCount: $wordCount (elevation allowed)"
+$wordCount = Assert-PerUserSummary $checkMsi
+Write-Host "    summary WordCount: $wordCount (installation does not require elevation)"
 
 if ($SkipValidation) {
     Write-Host '    skipping ICE validation (-SkipValidation)'

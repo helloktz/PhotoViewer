@@ -13,8 +13,7 @@
     "IsShowTitlebarLogo": true,
     "NavButtonLeft": "ViewPreviousImage.svg",
     "NavButtonRight": "ViewNextImage.svg",
-    "PreviewImage": "preview.webp",
-    "AppLogo": "logo.svg"
+    "PreviewImage": "preview.webp"
   },
   "Colors": {
     "BgColor": "#151b1faa",

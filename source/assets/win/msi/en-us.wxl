@@ -14,9 +14,11 @@
   <String Id="IgFolderDescription"     Value="Choose where to install [ProductName]." />
   <String Id="IgFolderLabel"           Value="Install location:" />
   <String Id="IgBrowse"                Value="Br&amp;owse..." />
+  <String Id="IgBrowseFolderTitle"     Value="Select a folder" />
+  <String Id="IgBrowseFolderDescription" Value="Choose a location for the PhotoViewer folder." />
   <String Id="IgReplaceNote"           Value="An existing Photo Viewer install was found and will be replaced." />
-  <String Id="IgPerMachineOnly"        Value="Photo Viewer can only be installed for all users of this computer." />
-  <String Id="IgPreviousUserInstall"   Value="Uninstall the existing per-user installation of Photo Viewer before running this setup." />
+  <String Id="IgPerUserOnly"           Value="Photo Viewer can only be installed for the current user." />
+  <String Id="IgPreviousMachineInstall" Value="Uninstall the existing all-users installation of Photo Viewer before running this setup." />
 
   <String Id="IgDialogBitmap"          Value="WixUI_Bmp_Dialog" />
   <String Id="IgCompleteTitle"         Value="Completed the [ProductName] Setup Wizard" />

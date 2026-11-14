@@ -9,7 +9,7 @@
       UpgradeCode="$(var.IgUpgradeCode)"
       ProductCode="$(var.ProductCode)"
       Language="1033"
-      Scope="perMachine"
+      Scope="perUser"
       InstallerVersion="500"
       Compressed="yes">
 
@@ -32,7 +32,8 @@
         AllowSameVersionUpgrades="yes"
         DowngradeErrorMessage="!(loc.IgNewerVersionInstalled)" />
 
-    <Launch Condition="ALLUSERS = 1" Message="!(loc.IgPerMachineOnly)" />
+    <Property Id="ALLUSERS" Secure="yes" />
+    <Launch Condition="NOT ALLUSERS" Message="!(loc.IgPerUserOnly)" />
     <Property Id="INSTALLFOLDER" Secure="yes" />
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 
@@ -46,16 +47,15 @@
       <RegistrySearch Id="PrevUserDir" Root="HKCU" Key="$(var.IgSetupRegKey)"
                       Name="InstallLocation" Type="raw" />
     </Property>
-    <Launch Condition="Installed OR NOT IGPREVUSERDIR" Message="!(loc.IgPreviousUserInstall)" />
-
     <Property Id="IGPREVMACHINEDIR">
       <RegistrySearch Id="PrevMachineDir" Root="HKLM" Key="$(var.IgSetupRegKey)"
                       Name="InstallLocation" Type="raw" Bitness="always64" />
     </Property>
-    <SetProperty Id="INSTALLFOLDER" Action="RestoreMachineInstallFolder" Value="[IGPREVMACHINEDIR]"
+    <Launch Condition="Installed OR NOT IGPREVMACHINEDIR" Message="!(loc.IgPreviousMachineInstall)" />
+    <SetProperty Id="INSTALLFOLDER" Action="RestoreUserInstallFolder" Value="[IGPREVUSERDIR]"
                  Before="SetDefaultInstallFolder" Sequence="both"
-                 Condition="(Installed OR WIX_UPGRADE_DETECTED) AND NOT INSTALLFOLDER AND IGPREVMACHINEDIR" />
-    <SetProperty Id="INSTALLFOLDER" Action="SetDefaultInstallFolder" Value="C:\Program Files\$(var.IgFolderName)\"
+                 Condition="(Installed OR WIX_UPGRADE_DETECTED) AND NOT INSTALLFOLDER AND IGPREVUSERDIR" />
+    <SetProperty Id="INSTALLFOLDER" Action="SetDefaultInstallFolder" Value="[LocalAppDataFolder]Programs\$(var.IgFolderName)\"
                  Before="CostInitialize" Sequence="both" Condition="NOT Installed AND NOT INSTALLFOLDER" />
 
     <Icon Id="ImageGlassIcon"
@@ -73,6 +73,7 @@
 
     <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="INSTALLFOLDER" Name="$(var.IgFolderName)" />
+      <Directory Id="IGBROWSEFOLDER" Name="." />
     </StandardDirectory>
 
     <Feature Id="MainFeature" Title="!(loc.IgFeatureMainTitle)" Level="1" AllowAbsent="no">
@@ -85,7 +86,7 @@
                   FileRef="FileImageGlassExe"
                   ExeCommand="--ig-remove-default-viewer"
                   Execute="deferred"
-                  Impersonate="no"
+                  Impersonate="yes"
                   Return="ignore" />
 
     <InstallExecuteSequence>
@@ -105,7 +106,7 @@
       </Component>
 
       <Component Id="CmpInstallInfo" Guid="DB85ED25-70C2-494B-91F7-9F137447CD58">
-        <RegistryValue Root="HKLM" Key="$(var.IgSetupRegKey)" Name="InstallLocation"
+        <RegistryValue Root="HKCU" Key="$(var.IgSetupRegKey)" Name="InstallLocation"
                        Type="string" Value="[INSTALLFOLDER]" KeyPath="yes" />
       </Component>
 
@@ -126,7 +127,7 @@
                   Description="!(loc.IgShortcutDescription)"
                   Target="[INSTALLFOLDER]PhotoViewer.exe" WorkingDirectory="INSTALLFOLDER"
                   Advertise="no" />
-        <RegistryValue Root="HKMU" Key="$(var.IgSetupRegKey)" Name="StartMenuShortcut"
+        <RegistryValue Root="HKCU" Key="$(var.IgSetupRegKey)" Name="StartMenuShortcut"
                        Type="integer" Value="1" KeyPath="yes" />
       </Component>
     </StandardDirectory>
@@ -138,7 +139,7 @@
                   Description="!(loc.IgShortcutDescription)"
                   Target="[INSTALLFOLDER]PhotoViewer.exe" WorkingDirectory="INSTALLFOLDER"
                   Advertise="no" />
-        <RegistryValue Root="HKMU" Key="$(var.IgSetupRegKey)" Name="DesktopShortcut"
+        <RegistryValue Root="HKCU" Key="$(var.IgSetupRegKey)" Name="DesktopShortcut"
                        Type="integer" Value="1" KeyPath="yes" />
       </Component>
     </StandardDirectory>

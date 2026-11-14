@@ -32,6 +32,7 @@
     <AvaloniaResource Include="Assets\Error.png" />
     <AvaloniaResource Include="Assets\Find.png" />
     <AvaloniaResource Include="Assets\icon256.ico" />
+    <AvaloniaResource Include="..\assets\photo-viewer-logo.png" Link="Assets\photo-viewer-logo.png" />
     <AvaloniaResource Include="Assets\Info.png" />
     <AvaloniaResource Include="Assets\Lock.png" />
     <AvaloniaResource Include="Assets\RecycleBin.png" />

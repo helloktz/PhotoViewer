@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Platform;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Svg.Skia;
@@ -6,6 +7,7 @@ using PhotoViewer.Common.Photoing;
 using PhotoViewer.Common;
 using PhotoViewer.Common.AppThemes;
 using PhotoViewer.Common.Types;
+using System;
 
 namespace PhotoViewer.UI;
 
@@ -65,10 +67,8 @@ public partial class PhLogo : PhControl
         }
         catch { }
 
-        using var stream = Resx.GetDefaultWindowIconAsStream();
-        if (stream is null) return null;
-
-        return Bitmap.DecodeToHeight(stream, 256);
+        using var stream = AssetLoader.Open(new Uri("avares://PhotoViewer.Lib/Assets/photo-viewer-logo.png"));
+        return new Bitmap(stream);
     }
 
 }
