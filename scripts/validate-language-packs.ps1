@@ -53,7 +53,7 @@ foreach ($group in $localizedEnums) {
 
 $formats = @{}
 foreach ($code in @('en-US', 'zh-CN')) {
-    $path = Join-Path $sourceRoot "assets/app/languages/$code.iglang.json"
+    $path = Join-Path $sourceRoot "assets/app/locales/$code.json"
     $pack = $null
     try {
         $pack = [System.Text.Json.JsonDocument]::Parse([string](Get-Content -LiteralPath $path -Raw))

@@ -10,7 +10,7 @@ public static class Dir
 
     public static string ExtIcons { get; } = "_ext_icons";
 
-    public static string Language { get; } = "languages";
+    public static string Locales { get; } = "locales";
 
     public static string Plugins { get; } = "_plugins";
 

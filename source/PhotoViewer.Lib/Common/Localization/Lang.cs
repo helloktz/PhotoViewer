@@ -17,8 +17,9 @@ public class Lang
 {
 
     public const string DefaultLanguageCode = "en-US";
+    internal const string FileExtension = ".json";
     private const string MissingTranslation = "undefined";
-    private const string FileSuffix = ".iglang.json";
+    private const string LegacyFileSuffix = ".iglang.json";
     private const float SpecVersion = 10;
     private static readonly string[] _languageCodes = [DefaultLanguageCode, "zh-CN"];
 
@@ -71,9 +72,11 @@ public class Lang
     {
         if (string.IsNullOrEmpty(language)) return string.Empty;
 
-        var code = language.EndsWith(FileSuffix, StringComparison.OrdinalIgnoreCase)
-            ? language[..^FileSuffix.Length]
-            : language;
+        var code = language;
+        if (code.EndsWith(LegacyFileSuffix, StringComparison.OrdinalIgnoreCase))
+            code = code[..^LegacyFileSuffix.Length];
+        else if (code.EndsWith(FileExtension, StringComparison.OrdinalIgnoreCase))
+            code = code[..^FileExtension.Length];
 
         if (code.Equals("English", StringComparison.OrdinalIgnoreCase)) return DefaultLanguageCode;
         if (code.Equals("Chinese Simplified", StringComparison.OrdinalIgnoreCase)) return "zh-CN";
@@ -86,7 +89,7 @@ public class Lang
         var code = NormalizeLanguageCode(language);
         if (!_languageCodes.Contains(code, StringComparer.Ordinal)) return new();
 
-        var path = BHelper.BaseDir(Dir.Language, code + FileSuffix);
+        var path = BHelper.BaseDir(Dir.Locales, code + FileExtension);
         if (!File.Exists(path)) return new();
 
         var context = new LangJsonContext(BHelper.CreateJsonOptions());

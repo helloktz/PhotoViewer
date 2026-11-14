@@ -16,7 +16,7 @@ public partial class LanguageSettingsView : SettingsPageView
 
     private static FilePickerFileType LangPackFileType => new(Core.Lang[LangId._LanguagePackFileType])
     {
-        Patterns = ["*.iglang.json"],
+        Patterns = [$"*{Lang.FileExtension}"],
     };
 
     public LanguageSettingsView()
@@ -86,6 +86,7 @@ public partial class LanguageSettingsView : SettingsPageView
         {
             SuggestedFileName = selected.FileName,
             FileTypeChoices = [LangPackFileType],
+            DefaultExtension = Lang.FileExtension.TrimStart('.'),
         });
 
         var path = file?.TryGetLocalPath();

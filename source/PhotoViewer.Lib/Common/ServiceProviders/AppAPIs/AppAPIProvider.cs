@@ -123,7 +123,7 @@ public partial class AppAPIProvider
         if (string.IsNullOrWhiteSpace(jsonStr))
         {
             throw new ArgumentException($$"""
-                A JSON object of settings is required, e.g. { "Language": "Vietnamese.iglang.json" }.
+                A JSON object of settings is required, e.g. { "Language": "zh-CN" }.
 
                 ----------
                 👉🏼 Method: {{nameof(IG_ApplySettingsAsync)}}
