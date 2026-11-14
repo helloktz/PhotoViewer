@@ -134,7 +134,21 @@ public partial class ImageSettingsView : SettingsPageView
             var name = names[i];
             var item = new ComboBoxItem { Tag = name };
 
-            BindComboItemText(item, Lang.GetKey($"{nameof(ColorProfileOption)}_{name}"));
+            var displayName = name switch
+            {
+                nameof(ColorProfileOption.AdobeRGB1998) => Const.COLOR_PROFILE_ADOBE_RGB_1998,
+                nameof(ColorProfileOption.AppleRGB) => Const.COLOR_PROFILE_APPLE_RGB,
+                nameof(ColorProfileOption.CoatedFOGRA39) => Const.COLOR_PROFILE_COATED_FOGRA39,
+                nameof(ColorProfileOption.ColorMatchRGB) => Const.COLOR_PROFILE_COLOR_MATCH_RGB,
+                nameof(ColorProfileOption.sRGB) => Const.COLOR_PROFILE_SRGB,
+                nameof(ColorProfileOption.USWebCoatedSWOP) => Const.COLOR_PROFILE_US_WEB_COATED_SWOP,
+                _ => null,
+            };
+
+            if (displayName is null)
+                BindComboItemText(item, Lang.GetKey($"{nameof(ColorProfileOption)}_{name}"));
+            else
+                item.Content = displayName;
             PART_ColorProfile.Items.Add(item);
 
             var match = isCustomPath

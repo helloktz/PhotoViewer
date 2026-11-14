@@ -5,13 +5,13 @@ $library = Join-Path $sourceRoot 'PhotoViewer.Lib'
 $enumPath = Join-Path $library 'Common/Localization/LangId.cs'
 $enumText = Get-Content -LiteralPath $enumPath -Raw
 $members = [regex]::Match($enumText, '\benum\s+LangId\s*\{(?<members>[^}]+)\}').Groups['members'].Value
-if ($members -cnotmatch '\A(?:\s*[A-Za-z_]\w*\s*,)+\s*\z') {
+if ($members -cnotmatch '\A(?:\s*[A-Za-z_]\w*(?:\s*=\s*\d+)?\s*,)+\s*\z') {
     throw "Could not read the LangId enum members in $enumPath."
 }
 
 $keys = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-foreach ($member in [regex]::Matches($members, '\w+')) {
-    [void]$keys.Add($member.Value)
+foreach ($member in [regex]::Matches($members, '(?<name>[A-Za-z_]\w*)(?:\s*=\s*\d+)?\s*,')) {
+    [void]$keys.Add($member.Groups['name'].Value)
 }
 
 $errors = [System.Collections.Generic.List[string]]::new()
@@ -19,7 +19,11 @@ $localizedEnums = @(
     @{ Path = 'Common/Types/Enums.cs'; Names = 'BackdropStyle', 'ImageOrderBy', 'ImageOrderType', 'ImageInfoOverlayMode', 'LayoutPosition' }
     @{ Path = 'Common/Types/EditingApp.cs'; Names = 'AfterEditAppAction' }
     @{ Path = 'Common/Types/MouseEvents.cs'; Names = 'MouseClickEvent', 'MouseWheelAction', 'MouseWheelEvent' }
-    @{ Path = 'Common/Photoing/Photoing_Enums.cs'; Names = 'ColorProfileOption' }
+    @{
+        Path = 'Common/Photoing/Photoing_Enums.cs'
+        Names = 'ColorProfileOption'
+        InvariantMembers = 'AdobeRGB1998', 'AppleRGB', 'CoatedFOGRA39', 'ColorMatchRGB', 'sRGB', 'USWebCoatedSWOP'
+    }
     @{ Path = 'UI/Viewer/ViewerControl_Enums.cs'; Names = 'CheckerboardType', 'ImageInterpolation', 'ScrollbarMode' }
     @{ Path = 'Common/Printing/PrintModels.cs'; Names = 'PrintColorMode', 'PrintDuplex', 'PrintFitMode', 'PrintMarginPreset', 'PrintOrientation', 'PrintPageScope', 'PrintRegion', 'PrinterState' }
 )
@@ -39,7 +43,9 @@ foreach ($group in $localizedEnums) {
             if ($member -cnotmatch '^([A-Za-z_]\w*)(?:\s*=\s*.+)?$') {
                 throw "Could not read enum member '$member' in $path."
             }
-            $key = "$($prefix)_$($Matches[1])"
+            $memberName = $Matches[1]
+            if ($group['InvariantMembers'] -ccontains $memberName) { continue }
+            $key = "$($prefix)_$memberName"
             if (!$keys.Contains($key)) { $errors.Add("$($path): Missing LangId '$key'.") }
         }
     }

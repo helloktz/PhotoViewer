@@ -64,7 +64,7 @@
                     <StackPanel Orientation="Vertical" Spacing="14">
 
                         <StackPanel x:Name="PART_IdRow" Spacing="5">
-                            <ui:PhTextBlock LangKey="_ID" />
+                            <TextBlock Text="ID" />
                             <Border Classes="valueBox">
                                 <SelectableTextBlock x:Name="PART_Id" />
                             </Border>

@@ -303,52 +303,52 @@
                                         <ui:PhMenuItem
                                             Click="MainMenu_ViewChannelItem_Click"
                                             CommandParameter="R"
-                                            LangKey="_ColorR"
+                                            Header="R"
                                             IsChecked="{CompiledBinding IsColorChannelR}"
                                             ToggleType="CheckBox" />
                                         <ui:PhMenuItem
                                             Click="MainMenu_ViewChannelItem_Click"
                                             CommandParameter="G"
-                                            LangKey="_ColorG"
+                                            Header="G"
                                             IsChecked="{CompiledBinding IsColorChannelG}"
                                             ToggleType="CheckBox" />
                                         <ui:PhMenuItem
                                             Click="MainMenu_ViewChannelItem_Click"
                                             CommandParameter="B"
-                                            LangKey="_ColorB"
+                                            Header="B"
                                             IsChecked="{CompiledBinding IsColorChannelB}"
                                             ToggleType="CheckBox" />
                                         <ui:PhMenuItem
                                             Click="MainMenu_ViewChannelItem_Click"
                                             CommandParameter="A"
-                                            LangKey="_ColorA"
+                                            Header="A"
                                             IsChecked="{CompiledBinding IsColorChannelA}"
                                             ToggleType="CheckBox" />
                                         <ui:PhMenuItem Header="-" />
                                         <ui:PhMenuItem
                                             Click="MainMenu_ViewChannelItem_Click"
                                             CommandParameter="RGBA"
-                                            LangKey="_ColorRGBA" />
+                                            Header="RGBA" />
                                         <ui:PhMenuItem
                                             Click="MainMenu_ViewChannelItem_Click"
                                             CommandParameter="RGB"
-                                            LangKey="_ColorRGB" />
+                                            Header="RGB" />
                                         <ui:PhMenuItem
                                             Click="MainMenu_ViewChannelItem_Click"
                                             CommandParameter="RA"
-                                            LangKey="_ColorRA" />
+                                            Header="R + A" />
                                         <ui:PhMenuItem
                                             Click="MainMenu_ViewChannelItem_Click"
                                             CommandParameter="GA"
-                                            LangKey="_ColorGA" />
+                                            Header="G + A" />
                                         <ui:PhMenuItem
                                             Click="MainMenu_ViewChannelItem_Click"
                                             CommandParameter="BA"
-                                            LangKey="_ColorBA" />
+                                            Header="B + A" />
                                         <ui:PhMenuItem
                                             Click="MainMenu_ViewChannelItem_Click"
                                             CommandParameter="A"
-                                            LangKey="_ColorA" />
+                                            Header="A" />
                                     </ui:PhMenuItem>
                                     <ui:PhMenuItem Header="-" />
                                     <ui:PhMenuItem

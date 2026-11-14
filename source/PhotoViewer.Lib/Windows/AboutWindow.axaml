@@ -25,13 +25,13 @@
                         HorizontalAlignment="Center"
                         LogoSize="96" />
 
-                    <ui:PhTextBlock
+                    <TextBlock
                         Margin="0,12,0,0"
                         HorizontalAlignment="Center"
                         FontSize="26"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource IG_TextAccentColor}"
-                        LangKey="_AppName" />
+                        Text="Photo Viewer" />
 
                     <TextBlock
                         x:Name="PART_LblSlogan"
@@ -54,10 +54,10 @@
                 Background="{DynamicResource IG_BorderNeutralBrush}" />
 
             <SelectableTextBlock
-                x:Name="PART_LblCopyright"
                 Margin="0,2,0,0"
                 HorizontalAlignment="Center"
                 FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
+                Text="Photo Viewer"
                 TextAlignment="Center" />
 
             <Border

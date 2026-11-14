@@ -32,7 +32,7 @@
 
                 <StackPanel Orientation="Horizontal" Spacing="14">
                     <StackPanel Spacing="5">
-                        <ui:PhTextBlock LangKey="_ID" />
+                        <TextBlock Text="ID" />
                         <ui:PhTextBox
                             x:Name="PART_Id"
                             Width="200"

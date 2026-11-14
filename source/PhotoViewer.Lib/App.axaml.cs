@@ -178,7 +178,6 @@ public partial class App : Application
 
     private void LocalizeApplication()
     {
-        Name = BHelper.AppDisplayName;
         LangId[] scrollbarLabels =
         [
             LangId._ScrollLineUp, LangId._ScrollLineDown, LangId._ScrollColumnLeft, LangId._ScrollColumnRight,

@@ -1,6 +1,5 @@
 ﻿using Avalonia;
 using PhotoViewer.Common.Types;
-using PhotoViewer.Common.Localization;
 using ImageMagick;
 using System;
 using System.Collections.Generic;
@@ -14,7 +13,7 @@ public partial class BHelper
 
     public static string AppName { get; } = "PhotoViewer";
 
-    public static string AppDisplayName => Core.Lang[LangId._AppName];
+    public const string AppDisplayName = "Photo Viewer";
 
     public static string AppExePath => Environment.ProcessPath ?? "";
 

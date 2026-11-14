@@ -548,7 +548,7 @@ public partial class PrintWindowView : PhControl
 
         foreach (var dpi in _caps.ResolutionsDpi)
         {
-            PART_Quality.Items.Add(new ComboBoxItem { Content = Core.Lang[LangId.Print_Dpi, dpi], Tag = dpi });
+            PART_Quality.Items.Add(new ComboBoxItem { Content = string.Format(Const.DPI_FORMAT, dpi), Tag = dpi });
         }
 
         var lastDpi = _printer is not null && _config.DpiByPrinter.TryGetValue(_printer.Id, out var d) ? d : 0;
