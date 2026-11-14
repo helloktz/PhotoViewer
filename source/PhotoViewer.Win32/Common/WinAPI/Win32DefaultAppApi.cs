@@ -326,6 +326,10 @@ public static class Win32DefaultAppApi
 
     private static void UnregisterAppAndExtensions(RegistryKey root, string[] extensions)
     {
+        var registeredExtensions = GetRegisteredExtensions(root).Union(extensions, StringComparer.OrdinalIgnoreCase);
+        using var classesKey = root.OpenSubKey(@"Software\Classes", writable: true);
+        UnregisterExtensions(classesKey, registeredExtensions);
+
         using (var key = root.OpenSubKey(@"Software\RegisteredApplications", writable: true))
         {
             key?.DeleteValue(BHelper.AppName, throwOnMissingValue: false);
@@ -335,9 +339,6 @@ public static class Win32DefaultAppApi
         {
             key?.DeleteSubKeyTree(BHelper.AppName, throwOnMissingSubKey: false);
         }
-
-        using var classesKey = root.OpenSubKey(@"Software\Classes", writable: true);
-        UnregisterExtensions(classesKey, extensions);
     }
 
     private static void UnregisterExtensions(RegistryKey? classesKey, IEnumerable<string> extensions)

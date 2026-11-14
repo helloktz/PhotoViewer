@@ -63,4 +63,11 @@
   <ItemGroup>
     <ProjectReference Include="..\PhotoViewer.Lib\PhotoViewer.Lib.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\assets\app\**\*"
+             Link="%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

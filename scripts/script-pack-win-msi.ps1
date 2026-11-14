@@ -25,6 +25,8 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+. (Join-Path $PSScriptRoot 'package-common.ps1')
+
 $RepoRoot     = Split-Path $PSScriptRoot -Parent
 $ProjectFile  = Join-Path $RepoRoot 'source\PhotoViewer.Win32\PhotoViewer.Win32.csproj'
 $BuildProps   = Join-Path $RepoRoot 'source\Directory.Build.props'
@@ -194,18 +196,26 @@ function New-DeterministicGuid([guid]$Namespace, [string]$Name) {
 function Get-MsiRows([object]$Database, [string]$Sql, [int]$FieldCount) {
     $rows = @()
     try { $view = $Database.OpenView($Sql) } catch { return , $rows }
-    $view.Execute() | Out-Null
-    while ($true) {
-        $record = $view.Fetch()
-        if ($null -eq $record) { break }
-        $row = @()
-        for ($i = 1; $i -le $FieldCount; $i++) {
-            $row += [string]$record.GetType().InvokeMember(
-                'StringData', 'GetProperty', $null, $record, @($i))
+    try {
+        $view.Execute() | Out-Null
+        while ($null -ne ($record = $view.Fetch())) {
+            try {
+                $row = @()
+                for ($i = 1; $i -le $FieldCount; $i++) {
+                    $row += [string]$record.GetType().InvokeMember(
+                        'StringData', 'GetProperty', $null, $record, @($i))
+                }
+                $rows += , $row
+            }
+            finally {
+                [void][System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($record)
+            }
         }
-        $rows += , $row
+        $view.Close() | Out-Null
     }
-    $view.Close() | Out-Null
+    finally {
+        [void][System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($view)
+    }
     return , $rows
 }
 
@@ -313,30 +323,28 @@ $objDir      = Join-Path $stagingDir 'obj'
 $wixPdb      = Join-Path $stagingDir 'PhotoViewer.wixpdb'
 $stagedMsi   = Join-Path $stagingDir "PhotoViewer_${msiVersion}_${rid}.msi"
 $validationDir = Join-Path $ArtifactsDir 'staging\msi-validation'
-$checkMsi = Join-Path $validationDir "PhotoViewer-check-$PID.msi"
+$checkMsi = Join-Path $validationDir "PhotoViewer-check-$([guid]::NewGuid().ToString('N')).msi"
 $outMsi      = Join-Path $DistDir "PhotoViewer_${msiVersion}_${rid}.msi"
 
-$script:doSign = [bool]$Sign
-if ($script:doSign -and -not (Test-SigningCert)) {
-    Write-Warning "No signing certificate found: building an UNSIGNED installer."
-    $script:doSign = $false
+if ($Sign -and -not (Test-SigningCert)) {
+    throw 'No signing certificate found. MSI packaging stopped.'
 }
-$signtool = if ($script:doSign) { Find-SdkTool 'signtool.exe' } else { '' }
+$signtool = if ($Sign) { Find-SdkTool 'signtool.exe' } else { '' }
 
 $wix = Find-WixTool
 $wixFound = Assert-WixVersion $wix
 Assert-WixUiExtension $wix
 
-Write-Host "==> Packing Photo Viewer $igVersion as MSI ($Platform)"
+Write-Host "==> Packing Photo Viewer $msiVersion as MSI ($Platform)"
 Write-Host "    Version     : $msiVersion (ProductVersion)"
 Write-Host "    ProductCode : {$($productCode.ToString().ToUpperInvariant())}"
 Write-Host "    UpgradeCode : {$upgradeCode}"
-Write-Host "    Signed      : $(if ($script:doSign) { 'yes (payload binaries + the .msi)' } else { 'no' })"
+Write-Host "    Signed      : $(if ($Sign) { 'yes (payload binaries + the .msi)' } else { 'no' })"
 Write-Host "    Compression : $CompressionLevel"
 Write-Host "    Validation  : $(if ($SkipValidation) { 'skipped' } else { "on (suppressing $($SuppressIce -join ', '))" })"
 Write-Host "    Output      : $outMsi"
 Write-Host "    wix         : $wix ($wixFound)"
-if ($script:doSign) { Write-Host "    signtool    : $signtool" }
+if ($Sign) { Write-Host "    signtool    : $signtool" }
 
 if ($SkipPublish -and (Test-Path (Join-Path $publishDir 'PhotoViewer.exe'))) {
     Write-Host "    reusing publish output: $publishDir"
@@ -344,19 +352,16 @@ if ($SkipPublish -and (Test-Path (Join-Path $publishDir 'PhotoViewer.exe'))) {
 else {
     Write-Host "    publishing $rid (Release, AOT, self-contained)"
     if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
-    & dotnet publish $ProjectFile -c Release -r $rid -p:Platform=$msbuildPlat -o $publishDir
+    & dotnet publish $ProjectFile -c Release -r $rid -p:Platform=$msbuildPlat -p:IgVersion=$msiVersion -o $publishDir
     if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed for $rid (exit $LASTEXITCODE)." }
-    Copy-Item -Path (Join-Path $AppExtras '*') -Destination $publishDir -Recurse -Force
 }
-if (-not (Test-Path (Join-Path $publishDir 'PhotoViewer.exe'))) {
-    throw "Publish did not produce PhotoViewer.exe in $publishDir"
-}
+Assert-PublishedAppVersion (Join-Path $publishDir 'PhotoViewer.exe') $msiVersion
 
 if (Test-Path $stagingDir) {
     Invoke-FileOpWithRetry { Remove-Item $stagingDir -Recurse -Force } "Clearing $stagingDir"
 }
 New-Item -ItemType Directory -Path $payloadDir -Force | Out-Null
-Copy-Item -Path (Join-Path $publishDir '*') -Destination $payloadDir -Recurse -Force
+Copy-PackagePayload $publishDir $AppExtras $payloadDir
 Copy-Item -LiteralPath (Join-Path $RepoRoot 'LICENSE') -Destination $payloadDir
 
 Get-ChildItem -Path $payloadDir -Recurse -Include '*.pdb' -File -ErrorAction SilentlyContinue |
@@ -367,13 +372,12 @@ if (Test-Path $portablePath) {
     throw "Refusing to build: '$portablePath' exists. An installed copy with $PortableMarker cannot start."
 }
 
-if ($script:doSign) {
-    $binaries = Get-ChildItem -Path $payloadDir -Recurse -Include '*.exe', '*.dll' -File |
-        Select-Object -ExpandProperty FullName
+if ($Sign) {
+    $binaries = @(Get-ChildItem -Path $payloadDir -Recurse -Include '*.exe', '*.dll' -File |
+        Select-Object -ExpandProperty FullName)
     Write-Host "    signing $($binaries.Count) payload binary file(s)"
     if (-not (Invoke-SignTool -SignTool $signtool -Files $binaries)) {
-        Write-Warning "Could not sign payload binaries: the installer will be left UNSIGNED."
-        $script:doSign = $false
+        throw 'Could not sign all payload binaries. MSI packaging stopped.'
     }
 }
 
@@ -423,19 +427,16 @@ else {
 }
 Remove-Item $checkMsi -Force -ErrorAction SilentlyContinue
 
-Invoke-FileOpWithRetry { Copy-Item -LiteralPath $stagedMsi -Destination $outMsi -Force } "Writing $outMsi"
-
-if ($script:doSign) {
+if ($Sign) {
     Write-Host '    signing the .msi'
-    if (-not (Invoke-SignTool -SignTool $signtool -Files @($outMsi))) {
-        Write-Warning 'Could not sign the installer: it will be left UNSIGNED.'
-        $script:doSign = $false
+    if (-not (Invoke-SignTool -SignTool $signtool -Files @($stagedMsi))) {
+        throw 'Could not sign the installer. MSI packaging stopped.'
     }
-    else {
-        & $signtool verify /pa $outMsi | Out-Host
-        if ($LASTEXITCODE -ne 0) { throw "signtool verify failed (exit $LASTEXITCODE)." }
-    }
+    & $signtool verify /pa $stagedMsi | Out-Host
+    if ($LASTEXITCODE -ne 0) { throw "signtool verify failed (exit $LASTEXITCODE)." }
 }
+
+Invoke-FileOpWithRetry { [System.IO.File]::Move($stagedMsi, $outMsi, $true) } "Writing $outMsi"
 
 $msiSizeMb = [math]::Round((Get-Item $outMsi).Length / 1MB, 1)
 
@@ -446,11 +447,7 @@ Write-Host ''
 Write-Host 'Done.'
 Write-Host "  Package : $outMsi ($msiSizeMb MB)"
 Write-Host "  Version : $msiVersion  (ProductCode {$($productCode.ToString().ToUpperInvariant())})"
-if ($Sign -and -not $script:doSign) {
-    Write-Host '  Signed  : no (no signing certificate was found)'
-    Write-Host '  Next    : sign the installer and repack before publishing the release.'
-}
-elseif ($script:doSign) {
+if ($Sign) {
     Write-Host '  Signed  : yes (payload binaries + the .msi)'
     Write-Host '  Next    : upload to the GitHub release for this version.'
 }

@@ -20,6 +20,8 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+. (Join-Path $PSScriptRoot 'package-common.ps1')
+
 $RepoRoot     = Split-Path $PSScriptRoot -Parent
 $ProjectFile  = Join-Path $RepoRoot 'source\PhotoViewer.Win32\PhotoViewer.Win32.csproj'
 $BuildProps   = Join-Path $RepoRoot 'source\Directory.Build.props'
@@ -107,18 +109,16 @@ $archiveName = "PhotoViewer_${igVersion}_${rid}"
 $payloadDir  = Join-Path $stagingDir $archiveName
 $outZip      = Join-Path $DistDir "$archiveName.zip"
 
-$script:doSign = [bool]$Sign
-if ($script:doSign -and -not (Test-SigningCert)) {
-    Write-Warning "No signing certificate found: building an UNSIGNED archive."
-    $script:doSign = $false
+if ($Sign -and -not (Test-SigningCert)) {
+    throw 'No signing certificate found. ZIP packaging stopped.'
 }
-$signtool = if ($script:doSign) { Find-SdkTool 'signtool.exe' } else { '' }
+$signtool = if ($Sign) { Find-SdkTool 'signtool.exe' } else { '' }
 
 Write-Host "==> Packing Photo Viewer $igVersion as ZIP ($Platform)"
 Write-Host "    Portable    : $(if ($NoPortable) { 'no (no marker file)' } else { "yes ($PortableMarker)" })"
-Write-Host "    Signed      : $(if ($script:doSign) { 'yes (payload binaries)' } else { 'no' })"
+Write-Host "    Signed      : $(if ($Sign) { 'yes (payload binaries)' } else { 'no' })"
 Write-Host "    Output      : $outZip"
-if ($script:doSign) { Write-Host "    signtool    : $signtool" }
+if ($Sign) { Write-Host "    signtool    : $signtool" }
 
 if ($SkipPublish -and (Test-Path (Join-Path $publishDir 'PhotoViewer.exe'))) {
     Write-Host "    reusing publish output: $publishDir"
@@ -128,15 +128,12 @@ else {
     if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
     & dotnet publish $ProjectFile -c Release -r $rid -p:Platform=$msbuildPlat -o $publishDir
     if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed for $rid (exit $LASTEXITCODE)." }
-    Copy-Item -Path (Join-Path $AppExtras '*') -Destination $publishDir -Recurse -Force
 }
-if (-not (Test-Path (Join-Path $publishDir 'PhotoViewer.exe'))) {
-    throw "Publish did not produce PhotoViewer.exe in $publishDir"
-}
+Assert-PublishedAppVersion (Join-Path $publishDir 'PhotoViewer.exe') $igVersion
 
 if (Test-Path $stagingDir) { Remove-Item $stagingDir -Recurse -Force }
 New-Item -ItemType Directory -Path $payloadDir -Force | Out-Null
-Copy-Item -Path (Join-Path $publishDir '*') -Destination $payloadDir -Recurse -Force
+Copy-PackagePayload $publishDir $AppExtras $payloadDir
 Copy-Item -LiteralPath (Join-Path $RepoRoot 'LICENSE') -Destination $payloadDir
 
 Get-ChildItem -Path $payloadDir -Recurse -Include '*.pdb' -File -ErrorAction SilentlyContinue |
@@ -147,9 +144,9 @@ if (-not $NoPortable) {
     Write-Host "    wrote portable marker: $PortableMarker"
 }
 
-if ($script:doSign) {
-    $binaries = Get-ChildItem -Path $payloadDir -Recurse -Include '*.exe', '*.dll' -File |
-        Select-Object -ExpandProperty FullName
+if ($Sign) {
+    $binaries = @(Get-ChildItem -Path $payloadDir -Recurse -Include '*.exe', '*.dll' -File |
+        Select-Object -ExpandProperty FullName)
     Write-Host "    signing $($binaries.Count) payload binary file(s)"
     if (-not (Invoke-SignTool -SignTool $signtool -Files $binaries)) {
         throw 'Could not sign all payload binaries. ZIP packaging stopped.'
@@ -172,11 +169,7 @@ Write-Host ''
 Write-Host 'Done.'
 Write-Host "  Archive : $outZip ($zipSizeMb MB)"
 Write-Host "  Portable: $(if ($NoPortable) { 'no' } else { "yes (extract to a writable folder)" })"
-if ($Sign -and -not $script:doSign) {
-    Write-Host '  Signed  : no (no signing certificate was found)'
-    Write-Host '  Next    : sign the binaries and repack before publishing the release.'
-}
-elseif ($script:doSign) {
+if ($Sign) {
     Write-Host '  Signed  : yes (payload binaries)'
     Write-Host '  Next    : upload to the GitHub release for this version.'
 }
