@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Photo Viewer · 使用指南 / User Guide</title>
+  <style>
+    :root {
+      font-family: "Segoe UI", "Microsoft YaHei UI", system-ui, sans-serif;
+      line-height: 1.65;
+      color: #1a2432;
+      background: #f7f9fc;
+      --accent: #2455a4;
+      --rule: #cdd7e5;
+      --key: #edf2f9;
+    }
+    body {
+      max-width: 46rem;
+      margin: 0 auto;
+      padding: 2.5rem clamp(1rem, 5vw, 3rem) 4rem;
+    }
+    header {
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 1.25rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { margin: 0 0 .45rem; font-size: clamp(2rem, 6vw, 3.25rem); }
+    h2 { margin: 0 0 .75rem; font-size: 1.65rem; }
+    h3 { margin: 1.5rem 0 .4rem; font-size: 1.15rem; }
+    p { margin: .45rem 0; }
+    nav { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; }
+    a { color: var(--accent); text-underline-offset: .16em; }
+    article { margin-top: 2rem; scroll-margin-top: 1rem; }
+    article + article {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--rule);
+    }
+    ul { margin: .45rem 0; padding-inline-start: 1.4rem; }
+    li + li { margin-top: .35rem; }
+    kbd {
+      display: inline-block;
+      padding: 0 .32em;
+      border: 1px solid var(--rule);
+      border-radius: .25rem;
+      background: var(--key);
+      font-size: .86em;
+      white-space: nowrap;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color: #ecf1f8;
+        background: #141d29;
+        --accent: #a3c8ff;
+        --rule: #42536a;
+        --key: #253448;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Photo Viewer</h1>
+    <nav aria-label="文档语言 / Guide language">
+      <a href="#zh-cn">简体中文</a>
+      <a href="#en-us" lang="en-US">English</a>
+    </nav>
+  </header>
+  <main>
+    <article id="zh-cn" aria-labelledby="zh-title">
+      <h2 id="zh-title">使用指南</h2>
+      <p>Photo Viewer 是适用于 Windows 11 的本地图片查看器。你可以浏览同一文件夹中的图片、播放幻灯片、做简单编辑，也可以打印或导出 PDF。</p>
+
+      <h3>打开与浏览</h3>
+      <p>按 <kbd>Ctrl+O</kbd> 打开一张图片，按 <kbd>←</kbd> 或 <kbd>→</kbd> 切换上一张或下一张。打开「布局 → 相册面板」即可通过缩略图挑选图片。</p>
+      <p>用「缩放」菜单切换实际大小或适应窗口。按 <kbd>F11</kbd> 切换全屏，或从主菜单启动「幻灯片」。</p>
+
+      <h3>裁剪、调整大小和取色</h3>
+      <ul>
+        <li>在「工具」菜单选择「裁剪图像」，框选要保留的区域。用「另存为」保留原图。</li>
+        <li>选择「调整图像大小」修改像素尺寸。只想放大查看细节时，可以用「缩放」。</li>
+        <li>选择「取色工具」查看和复制像素的颜色值，或使用「HDR 色调映射」调整 HDR 图像的显示效果。</li>
+      </ul>
+
+      <h3>打印与导出</h3>
+      <p>按 <kbd>Ctrl+P</kbd> 打开打印窗口。可以预览并调整布局，选择打印机或点击「另存为 PDF」。</p>
+
+      <h3>语言与快捷键</h3>
+      <p>在「设置 → 语言」切换界面语言，在「设置 → 热键」查看或修改快捷键。</p>
+    </article>
+    <article id="en-us" lang="en-US" aria-labelledby="en-title">
+      <h2 id="en-title">User Guide</h2>
+      <p>Photo Viewer is a local image viewer for Windows 11. Browse images in a folder, play a slideshow, make simple edits, and print or export to PDF.</p>
+
+      <h3>Open and browse images</h3>
+      <p>Press <kbd>Ctrl+O</kbd> to open an image. Use <kbd>←</kbd> and <kbd>→</kbd> to move between images in the same folder. Open Layout → Gallery panel to browse thumbnails.</p>
+      <p>Use the Zoom menu to view an image at actual size or fit it to the window. Press <kbd>F11</kbd> for full screen, or choose Slideshow from the main menu.</p>
+
+      <h3>Crop, resize, and pick colors</h3>
+      <ul>
+        <li>Choose Tools → Crop image and select the area you want to keep. Use Save as to keep the original file.</li>
+        <li>Choose Tools → Resize image to change the pixel dimensions. Use Zoom if you just want a closer look.</li>
+        <li>Use Color picker to inspect and copy pixel color values, or use HDR tone mapper to adjust how an HDR image appears.</li>
+      </ul>
+
+      <h3>Print and export</h3>
+      <p>Press <kbd>Ctrl+P</kbd> to open the print window. Preview and adjust the layout, then choose a printer or select Save as PDF.</p>
+
+      <h3>Language and keyboard shortcuts</h3>
+      <p>Use Settings → Language to change the display language. Open Settings → Keyboard to view or change shortcuts.</p>
+    </article>
+  </main>
+</body>
+</html>
