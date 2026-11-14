@@ -13,11 +13,7 @@
     <StackPanel Orientation="Vertical" Spacing="10">
 
         <StackPanel Orientation="Horizontal" Spacing="8">
-            <ui:PhButton
-                x:Name="PART_AddTool"
-                MinWidth="100"
-                HorizontalContentAlignment="Center"
-                Variant="Outline" />
+            <ui:PhButton x:Name="PART_AddTool" MinWidth="100" HorizontalContentAlignment="Center" Variant="Outline" />
         </StackPanel>
 
         <ui:PhTableControl x:Name="PART_Table" HorizontalAlignment="Stretch" />

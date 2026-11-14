@@ -24,18 +24,12 @@
 
             <StackPanel Margin="0,10,0,0" Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_ViewerScrollbarMode" />
-                <ComboBox
-                    x:Name="PART_ScrollbarMode"
-                    Width="200"
-                    HorizontalAlignment="Left" />
+                <ComboBox x:Name="PART_ScrollbarMode" Width="200" HorizontalAlignment="Left" />
             </StackPanel>
 
             <StackPanel Margin="0,10,0,0" Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_CheckerboardMode" />
-                <ComboBox
-                    x:Name="PART_CheckerboardMode"
-                    Width="200"
-                    HorizontalAlignment="Left" />
+                <ComboBox x:Name="PART_CheckerboardMode" Width="200" HorizontalAlignment="Left" />
             </StackPanel>
         </StackPanel>
 
@@ -51,23 +45,12 @@
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <ui:PhTextBlock LangKey="Settings_PanMargin" />
                 </StackPanel>
-                <ui:PhTextBox
-                    x:Name="PART_PanMargin"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    AcceptValue="UnsignedFloatValueOnly" />
+                <ui:PhTextBox x:Name="PART_PanMargin" Width="200" HorizontalAlignment="Left" AcceptValue="UnsignedFloatValueOnly" />
             </StackPanel>
 
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock x:Name="PART_PanSpeedLabel" LangKey="Settings_PanSpeed" />
-                <Slider
-                    x:Name="PART_PanSpeed"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    IsSnapToTickEnabled="True"
-                    Maximum="100"
-                    Minimum="0"
-                    TickFrequency="1" />
+                <Slider x:Name="PART_PanSpeed" Width="200" HorizontalAlignment="Left" IsSnapToTickEnabled="True" Maximum="100" Minimum="0" TickFrequency="1" />
             </StackPanel>
         </StackPanel>
 
@@ -78,30 +61,17 @@
             <StackPanel Margin="{DynamicResource SettingsGroupIndent}" Spacing="10">
                 <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                     <ui:PhTextBlock LangKey="Settings_ImageInterpolation_ScaleDown" />
-                    <ComboBox
-                        x:Name="PART_InterpolationScaleDown"
-                        MinWidth="200"
-                        HorizontalAlignment="Left" />
+                    <ComboBox x:Name="PART_InterpolationScaleDown" MinWidth="200" HorizontalAlignment="Left" />
                 </StackPanel>
                 <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                     <ui:PhTextBlock LangKey="Settings_ImageInterpolation_ScaleUp" />
-                    <ComboBox
-                        x:Name="PART_InterpolationScaleUp"
-                        MinWidth="200"
-                        HorizontalAlignment="Left" />
+                    <ComboBox x:Name="PART_InterpolationScaleUp" MinWidth="200" HorizontalAlignment="Left" />
                 </StackPanel>
             </StackPanel>
 
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock x:Name="PART_ZoomSpeedLabel" LangKey="Settings_ZoomSpeed" />
-                <Slider
-                    x:Name="PART_ZoomSpeed"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    IsSnapToTickEnabled="True"
-                    Maximum="500"
-                    Minimum="-500"
-                    TickFrequency="1" />
+                <Slider x:Name="PART_ZoomSpeed" Width="200" HorizontalAlignment="Left" IsSnapToTickEnabled="True" Maximum="500" Minimum="-500" TickFrequency="1" />
             </StackPanel>
 
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
@@ -109,18 +79,8 @@
                 <CheckBox x:Name="PART_UseSmoothZooming">
                     <ui:PhTextBlock LangKey="Settings_UseSmoothZooming" TextWrapping="Wrap" />
                 </CheckBox>
-                <ui:PhTextBox
-                    x:Name="PART_ZoomLevels"
-                    Width="460"
-                    MinHeight="70"
-                    HorizontalAlignment="Left"
-                    AcceptsReturn="True"
-                    FontFamily="{x:Static types:Const.FONT_CODE}"
-                    TextWrapping="Wrap" />
-                <ui:PhButton
-                    x:Name="PART_LoadDefaultZoomLevels"
-                    HorizontalAlignment="Left"
-                    Variant="Link" />
+                <ui:PhTextBox x:Name="PART_ZoomLevels" Width="460" MinHeight="70" HorizontalAlignment="Left" AcceptsReturn="True" FontFamily="{x:Static types:Const.FONT_CODE}" TextWrapping="Wrap" />
+                <ui:PhButton x:Name="PART_LoadDefaultZoomLevels" HorizontalAlignment="Left" Variant="Link" />
             </StackPanel>
 
         </StackPanel>

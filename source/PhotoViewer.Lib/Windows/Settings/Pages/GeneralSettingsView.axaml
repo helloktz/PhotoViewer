@@ -12,37 +12,16 @@
 
     <StackPanel Orientation="Vertical">
 
-        <Grid
-            ColumnDefinitions="Auto,Auto"
-            Margin="{DynamicResource SettingsGroupIndent}"
-            ColumnSpacing="64">
+        <Grid ColumnDefinitions="Auto,Auto" Margin="{DynamicResource SettingsGroupIndent}" ColumnSpacing="64">
 
-            <StackPanel
-                Grid.Column="0"
-                HorizontalAlignment="Left"
-                Spacing="8">
-                <ui:PhButton
-                    x:Name="PART_StartupDir"
-                    HorizontalAlignment="Left"
-                    Variant="Link" />
-                <ui:PhButton
-                    x:Name="PART_ConfigDir"
-                    HorizontalAlignment="Left"
-                    Variant="Link" />
-                <ui:PhButton
-                    x:Name="PART_UserConfig"
-                    HorizontalAlignment="Left"
-                    Variant="Link" />
+            <StackPanel Grid.Column="0" HorizontalAlignment="Left" Spacing="8">
+                <ui:PhButton x:Name="PART_StartupDir" HorizontalAlignment="Left" Variant="Link" />
+                <ui:PhButton x:Name="PART_ConfigDir" HorizontalAlignment="Left" Variant="Link" />
+                <ui:PhButton x:Name="PART_UserConfig" HorizontalAlignment="Left" Variant="Link" />
             </StackPanel>
 
-            <StackPanel
-                Grid.Column="1"
-                HorizontalAlignment="Left"
-                Spacing="8">
-                <ui:PhButton
-                    x:Name="PART_ResetSettings"
-                    HorizontalAlignment="Left"
-                    Variant="Link" />
+            <StackPanel Grid.Column="1" HorizontalAlignment="Left" Spacing="8">
+                <ui:PhButton x:Name="PART_ResetSettings" HorizontalAlignment="Left" Variant="Link" />
             </StackPanel>
         </Grid>
 
@@ -63,11 +42,7 @@
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_InAppMessageDuration" TextWrapping="Wrap" />
-                <ui:PhTextBox
-                    x:Name="PART_MsgDuration"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    AcceptValue="UnsignedIntValueOnly" />
+                <ui:PhTextBox x:Name="PART_MsgDuration" Width="200" HorizontalAlignment="Left" AcceptValue="UnsignedIntValueOnly" />
             </StackPanel>
         </StackPanel>
 

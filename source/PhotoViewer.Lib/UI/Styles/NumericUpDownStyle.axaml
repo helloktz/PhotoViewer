@@ -8,35 +8,8 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <DataValidationErrors>
-                    <ButtonSpinner
-                        Name="PART_Spinner"
-                        MinWidth="0"
-                        Padding="0"
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch"
-                        AllowSpin="{TemplateBinding AllowSpin}"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}"
-                        IsTabStop="False"
-                        ShowButtonSpinner="{TemplateBinding ShowButtonSpinner}">
-                        <TextBox
-                            Name="PART_TextBox"
-                            MinWidth="0"
-                            Padding="{TemplateBinding Padding}"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            AcceptsReturn="False"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            Foreground="{TemplateBinding Foreground}"
-                            InnerLeftContent="{CompiledBinding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}"
-                            InnerRightContent="{CompiledBinding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}"
-                            IsReadOnly="{TemplateBinding IsReadOnly}"
-                            PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
-                            PlaceholderText="{TemplateBinding PlaceholderText}"
-                            Text="{TemplateBinding Text}"
-                            TextAlignment="{TemplateBinding TextAlignment}"
-                            TextWrapping="NoWrap" />
+                    <ButtonSpinner Name="PART_Spinner" MinWidth="0" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" AllowSpin="{TemplateBinding AllowSpin}" Background="Transparent" BorderThickness="0" ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}" IsTabStop="False" ShowButtonSpinner="{TemplateBinding ShowButtonSpinner}">
+                        <TextBox Name="PART_TextBox" MinWidth="0" Padding="{TemplateBinding Padding}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" AcceptsReturn="False" CornerRadius="{TemplateBinding CornerRadius}" Foreground="{TemplateBinding Foreground}" InnerLeftContent="{CompiledBinding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}" InnerRightContent="{CompiledBinding InnerRightContent, RelativeSource={RelativeSource TemplatedParent}}" IsReadOnly="{TemplateBinding IsReadOnly}" PlaceholderForeground="{TemplateBinding PlaceholderForeground}" PlaceholderText="{TemplateBinding PlaceholderText}" Text="{TemplateBinding Text}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="NoWrap" />
                     </ButtonSpinner>
                 </DataValidationErrors>
             </ControlTemplate>

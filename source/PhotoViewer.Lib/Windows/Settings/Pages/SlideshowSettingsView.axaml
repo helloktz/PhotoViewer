@@ -37,53 +37,29 @@
                 <ui:PhTextBlock LangKey="Settings_EnableSlideshowRandomInterval" TextWrapping="Wrap" />
             </CheckBox>
 
-            <TextBlock
-                x:Name="PART_IntervalHeading"
-                Classes="subgroup"
-                TextWrapping="Wrap" />
+            <TextBlock x:Name="PART_IntervalHeading" Classes="subgroup" TextWrapping="Wrap" />
             <StackPanel Orientation="Horizontal" Spacing="14">
                 <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                     <ui:PhTextBlock x:Name="PART_IntervalFromLabel" LangKey="Settings_SlideshowInterval_From" />
-                    <ui:PhTextBox
-                        x:Name="PART_SlideshowInterval"
-                        Width="150"
-                        AcceptValue="UnsignedFloatValueOnly" />
+                    <ui:PhTextBox x:Name="PART_SlideshowInterval" Width="150" AcceptValue="UnsignedFloatValueOnly" />
                 </StackPanel>
                 <StackPanel x:Name="PART_IntervalToSection" Spacing="{DynamicResource SettingsLabelInputGap}">
                     <ui:PhTextBlock LangKey="Settings_SlideshowInterval_To" />
-                    <ui:PhTextBox
-                        x:Name="PART_SlideshowIntervalTo"
-                        Width="150"
-                        AcceptValue="UnsignedFloatValueOnly" />
+                    <ui:PhTextBox x:Name="PART_SlideshowIntervalTo" Width="150" AcceptValue="UnsignedFloatValueOnly" />
                 </StackPanel>
             </StackPanel>
 
             <StackPanel Margin="0,14,0,0" Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_SlideshowImagesToNotifySound" TextWrapping="Wrap" />
-                <ui:PhTextBox
-                    x:Name="PART_NotifySound"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    AcceptValue="UnsignedIntValueOnly" />
+                <ui:PhTextBox x:Name="PART_NotifySound" Width="200" HorizontalAlignment="Left" AcceptValue="UnsignedIntValueOnly" />
             </StackPanel>
 
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
-                <Grid
-                    HorizontalAlignment="Left"
-                    ColumnDefinitions="Auto,Auto"
-                    RowDefinitions="Auto,Auto">
+                <Grid HorizontalAlignment="Left" ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto">
                     <ui:PhTextBlock Classes="subgroup" LangKey="Settings_TransitionEffect" />
-                    <ui:PhTextBlock
-                        Grid.Column="1"
-                        Margin="14,10,0,4"
-                        Classes="subgroup"
-                        FontWeight="Normal"
-                        LangKey="Settings_TransitionDuration" />
+                    <ui:PhTextBlock Grid.Column="1" Margin="14,10,0,4" Classes="subgroup" FontWeight="Normal" LangKey="Settings_TransitionDuration" />
 
-                    <ComboBox
-                        x:Name="PART_Transition"
-                        Grid.Row="1"
-                        MinWidth="200">
+                    <ComboBox x:Name="PART_Transition" Grid.Row="1" MinWidth="200">
                         <ComboBox.Styles>
                             <Style x:DataType="windows:TransitionEffectOption" Selector="ComboBoxItem">
                                 <Setter Property="IsEnabled" Value="{CompiledBinding !IsDivider}" />
@@ -98,18 +74,10 @@
                             <DataTemplate x:DataType="windows:TransitionEffectOption">
                                 <Panel>
                                     <Separator Margin="0" IsVisible="{CompiledBinding IsDivider}" />
-                                    <StackPanel
-                                        MaxWidth="200"
-                                        IsVisible="{CompiledBinding !IsDivider}"
-                                        Spacing="2">
+                                    <StackPanel MaxWidth="200" IsVisible="{CompiledBinding !IsDivider}" Spacing="2">
                                         <TextBlock Text="{CompiledBinding Name}" TextTrimming="CharacterEllipsis" />
 
-                                        <TextBlock
-                                            FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
-                                            IsVisible="{CompiledBinding HasFilePath}"
-                                            Opacity="0.6"
-                                            Text="{CompiledBinding DisplayFilePath}"
-                                            TextTrimming="PathSegmentEllipsis" />
+                                        <TextBlock FontSize="{x:Static types:Const.FONT_SIZE_SMALL}" IsVisible="{CompiledBinding HasFilePath}" Opacity="0.6" Text="{CompiledBinding DisplayFilePath}" TextTrimming="PathSegmentEllipsis" />
                                     </StackPanel>
                                 </Panel>
                             </DataTemplate>
@@ -120,24 +88,11 @@
                             </DataTemplate>
                         </ComboBox.SelectionBoxItemTemplate>
                     </ComboBox>
-                    <ui:PhTextBox
-                        x:Name="PART_TransitionDuration"
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Width="200"
-                        Margin="14,0,0,0"
-                        AcceptValue="UnsignedIntValueOnly" />
+                    <ui:PhTextBox x:Name="PART_TransitionDuration" Grid.Row="1" Grid.Column="1" Width="200" Margin="14,0,0,0" AcceptValue="UnsignedIntValueOnly" />
                 </Grid>
 
-                <ui:PhTextBlock
-                    x:Name="PART_TransitionError"
-                    Foreground="{DynamicResource IG_TextDangerBrush}"
-                    IsVisible="False"
-                    TextWrapping="Wrap" />
-                <StackPanel
-                    Margin="0,8,0,8"
-                    HorizontalAlignment="Left"
-                    Spacing="8">
+                <ui:PhTextBlock x:Name="PART_TransitionError" Foreground="{DynamicResource IG_TextDangerBrush}" IsVisible="False" TextWrapping="Wrap" />
+                <StackPanel Margin="0,8,0,8" HorizontalAlignment="Left" Spacing="8">
                     <ui:PhButton x:Name="PART_OpenTransitionsFolder" Variant="Link" />
                 </StackPanel>
             </StackPanel>

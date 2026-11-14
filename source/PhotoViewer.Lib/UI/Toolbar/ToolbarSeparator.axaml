@@ -14,16 +14,6 @@
     IsHitTestVisible="False"
     IsVisible="{CompiledBinding IsNotOverflow}"
     Orientation="Horizontal">
-    <Line
-        Stroke="#3111"
-        StrokeLineCap="Round"
-        StrokeThickness="1"
-        StartPoint="0,0"
-        EndPoint="{CompiledBinding SeparatorEndPoint}" />
-    <Line
-        Stroke="#3eee"
-        StrokeLineCap="Round"
-        StrokeThickness="1"
-        StartPoint="0,0"
-        EndPoint="{CompiledBinding SeparatorEndPoint}" />
+    <Line Stroke="#3111" StrokeLineCap="Round" StrokeThickness="1" StartPoint="0,0" EndPoint="{CompiledBinding SeparatorEndPoint}" />
+    <Line Stroke="#3eee" StrokeLineCap="Round" StrokeThickness="1" StartPoint="0,0" EndPoint="{CompiledBinding SeparatorEndPoint}" />
 </StackPanel>

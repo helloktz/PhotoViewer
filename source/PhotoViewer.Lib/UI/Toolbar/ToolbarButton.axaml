@@ -14,28 +14,14 @@
     IsChecked="{CompiledBinding IsChecked}"
     IsVisible="{CompiledBinding IsNotOverflow}"
     ToolTip.Tip="{CompiledBinding Tooltip}">
-    <StackPanel
-        IsHitTestVisible="False"
-        Orientation="Horizontal"
-        Spacing="{CompiledBinding InnerSpacing}">
+    <StackPanel IsHitTestVisible="False" Orientation="Horizontal" Spacing="{CompiledBinding InnerSpacing}">
 
-        <Panel
-            Width="{CompiledBinding Config.ToolbarIconHeight}"
-            Height="{CompiledBinding Config.ToolbarIconHeight}">
+        <Panel Width="{CompiledBinding Config.ToolbarIconHeight}" Height="{CompiledBinding Config.ToolbarIconHeight}">
             <Svg Path="{CompiledBinding ImagePath}" />
 
-            <Path
-                Data="{StaticResource IconPlaceholder}"
-                Fill="{DynamicResource TextControlForeground}"
-                IsVisible="{CompiledBinding IsPlaceholderIconVisible}"
-                Opacity="0.6"
-                Stretch="Uniform" />
+            <Path Data="{StaticResource IconPlaceholder}" Fill="{DynamicResource TextControlForeground}" IsVisible="{CompiledBinding IsPlaceholderIconVisible}" Opacity="0.6" Stretch="Uniform" />
         </Panel>
 
-        <TextBlock
-            x:Name="PART_ButtonText"
-            VerticalAlignment="Center"
-            IsVisible="{CompiledBinding IsTextVisible}"
-            Text="{CompiledBinding DisplayText}" />
+        <TextBlock x:Name="PART_ButtonText" VerticalAlignment="Center" IsVisible="{CompiledBinding IsTextVisible}" Text="{CompiledBinding DisplayText}" />
     </StackPanel>
 </ui:PhToolButton>

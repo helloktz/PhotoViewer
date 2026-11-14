@@ -13,21 +13,11 @@
     <StackPanel Orientation="Vertical" Spacing="10">
 
         <StackPanel Orientation="Horizontal" Spacing="8">
-            <ui:PhButton
-                x:Name="PART_AddPlugin"
-                MinWidth="100"
-                HorizontalContentAlignment="Center"
-                Variant="Outline" />
+            <ui:PhButton x:Name="PART_AddPlugin" MinWidth="100" HorizontalContentAlignment="Center" Variant="Outline" />
             <ui:PhButton x:Name="PART_OpenFolder" />
         </StackPanel>
 
-        <Border
-            x:Name="PART_HintContainer"
-            Padding="12,8"
-            Background="{DynamicResource IG_BackgroundInfoBrush}"
-            CornerRadius="{DynamicResource ControlCornerRadius}"
-            DockPanel.Dock="Top"
-            IsVisible="False">
+        <Border x:Name="PART_HintContainer" Padding="12,8" Background="{DynamicResource IG_BackgroundInfoBrush}" CornerRadius="{DynamicResource ControlCornerRadius}" DockPanel.Dock="Top" IsVisible="False">
             <ui:PhTextBlock x:Name="PART_InstallHint" TextWrapping="Wrap" />
         </Border>
 

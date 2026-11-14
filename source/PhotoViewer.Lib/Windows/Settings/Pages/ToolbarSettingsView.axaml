@@ -20,14 +20,7 @@
 
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock x:Name="PART_IconHeightLabel" LangKey="Settings_Toolbar_ToolbarIconHeight" />
-                <Slider
-                    x:Name="PART_ToolbarIconHeight"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    IsSnapToTickEnabled="True"
-                    Maximum="100"
-                    Minimum="10"
-                    TickFrequency="1" />
+                <Slider x:Name="PART_ToolbarIconHeight" Width="200" HorizontalAlignment="Left" IsSnapToTickEnabled="True" Maximum="100" Minimum="10" TickFrequency="1" />
             </StackPanel>
         </StackPanel>
 

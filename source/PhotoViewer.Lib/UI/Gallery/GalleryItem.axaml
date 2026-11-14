@@ -13,17 +13,9 @@
     x:DataType="photo:Photo"
     Padding="3"
     BorderThickness="1">
-    <Grid
-        RowDefinitions="*, Auto"
-        VerticalAlignment="Stretch"
-        IsHitTestVisible="False">
+    <Grid RowDefinitions="*, Auto" VerticalAlignment="Stretch" IsHitTestVisible="False">
 
-        <Border
-            Grid.Row="0"
-            Margin="2"
-            Background="{DynamicResource IG_BorderNeutralBrush}"
-            CornerRadius="{DynamicResource ControlCornerRadius}"
-            IsVisible="{CompiledBinding GalleryThumbnail, Converter={x:Static ObjectConverters.IsNull}}">
+        <Border Grid.Row="0" Margin="2" Background="{DynamicResource IG_BorderNeutralBrush}" CornerRadius="{DynamicResource ControlCornerRadius}" IsVisible="{CompiledBinding GalleryThumbnail, Converter={x:Static ObjectConverters.IsNull}}">
             <Border.Styles>
                 <Style Selector="Border[IsVisible=True]">
                     <Style.Animations>
@@ -43,28 +35,12 @@
             </Border.Styles>
         </Border>
 
-        <Image
-            Grid.Row="0"
-            RenderOptions.BitmapInterpolationMode="LowQuality"
-            Source="{CompiledBinding GalleryThumbnail}"
-            Stretch="Uniform" />
+        <Image Grid.Row="0" RenderOptions.BitmapInterpolationMode="LowQuality" Source="{CompiledBinding GalleryThumbnail}" Stretch="Uniform" />
 
-        <Grid
-            Grid.Row="1"
-            ColumnDefinitions="*, Auto"
-            HorizontalAlignment="Center"
-            IsVisible="{CompiledBinding ShowGalleryFileName, Source={x:Static cm:Core.Config}}">
-            <TextBlock
-                Grid.Column="0"
-                Padding="2,0,0,0"
-                Text="{CompiledBinding GalleryFileTitle}"
-                TextTrimming="CharacterEllipsis" />
+        <Grid Grid.Row="1" ColumnDefinitions="*, Auto" HorizontalAlignment="Center" IsVisible="{CompiledBinding ShowGalleryFileName, Source={x:Static cm:Core.Config}}">
+            <TextBlock Grid.Column="0" Padding="2,0,0,0" Text="{CompiledBinding GalleryFileTitle}" TextTrimming="CharacterEllipsis" />
 
-            <TextBlock
-                Grid.Column="1"
-                Padding="0,0,2,0"
-                HorizontalAlignment="Right"
-                Text="{CompiledBinding GalleryFileExtension}" />
+            <TextBlock Grid.Column="1" Padding="0,0,2,0" HorizontalAlignment="Right" Text="{CompiledBinding GalleryFileExtension}" />
         </Grid>
     </Grid>
 </ui:PhToolButton>

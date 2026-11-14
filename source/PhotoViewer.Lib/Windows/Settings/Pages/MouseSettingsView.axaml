@@ -16,20 +16,14 @@
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}" Spacing="14">
             <StackPanel x:Name="PART_WheelTable" Spacing="14" />
 
-            <ui:PhButton
-                x:Name="PART_ResetWheel"
-                HorizontalAlignment="Left"
-                Variant="Link" />
+            <ui:PhButton x:Name="PART_ResetWheel" HorizontalAlignment="Left" Variant="Link" />
         </StackPanel>
 
         <ui:PhTextBlock Classes="group" LangKey="Settings_MouseClickAction" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}" Spacing="14">
             <StackPanel x:Name="PART_ClickTable" Spacing="14" />
 
-            <ui:PhButton
-                x:Name="PART_ResetClick"
-                HorizontalAlignment="Left"
-                Variant="Link" />
+            <ui:PhButton x:Name="PART_ResetClick" HorizontalAlignment="Left" Variant="Link" />
         </StackPanel>
 
     </StackPanel>

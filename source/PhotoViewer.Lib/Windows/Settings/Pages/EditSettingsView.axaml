@@ -29,14 +29,7 @@
 
             <StackPanel Margin="0,10,0,0" Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock x:Name="PART_ImageEditQualityLabel" LangKey="Settings_ImageEditQuality" />
-                <Slider
-                    x:Name="PART_ImageEditQuality"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    IsSnapToTickEnabled="True"
-                    Maximum="100"
-                    Minimum="0"
-                    TickFrequency="1" />
+                <Slider x:Name="PART_ImageEditQuality" Width="200" HorizontalAlignment="Left" IsSnapToTickEnabled="True" Maximum="100" Minimum="0" TickFrequency="1" />
             </StackPanel>
         </StackPanel>
 
@@ -58,18 +51,9 @@
                 <ComboBox x:Name="PART_AfterEditingAction" MinWidth="200" />
             </StackPanel>
 
-            <ui:PhButton
-                x:Name="PART_AddApp"
-                MinWidth="100"
-                Margin="0,14,0,0"
-                HorizontalAlignment="Left"
-                HorizontalContentAlignment="Center"
-                Variant="Outline" />
+            <ui:PhButton x:Name="PART_AddApp" MinWidth="100" Margin="0,14,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Center" Variant="Outline" />
 
-            <ui:PhTableControl
-                x:Name="PART_AppsTable"
-                Margin="0,10,0,0"
-                HorizontalAlignment="Stretch" />
+            <ui:PhTableControl x:Name="PART_AppsTable" Margin="0,10,0,0" HorizontalAlignment="Stretch" />
         </StackPanel>
 
     </StackPanel>

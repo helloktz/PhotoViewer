@@ -19,50 +19,6 @@ public static class Const
     public const string COLOR_PROFILE_SRGB = "sRGB";
     public const string COLOR_PROFILE_US_WEB_COATED_SWOP = "U.S. Web Coated (SWOP)";
 
-    public const string THIRD_PARTY_NOTICES = """
-        ◍ Avalonia                                         MIT licence
-          https://github.com/AvaloniaUI/Avalonia
-          Copyright (c) AvaloniaUI OÜ All Rights Reserved
-
-        ◍ Magick.NET                                Apache-2.0 license
-          https://github.com/dlemstra/Magick.NET
-          Copyright (c) 2013-2026 Dirk Lemstra
-
-        ◍ SkiaSharp                                        MIT licence
-          https://github.com/mono/SkiaSharp
-          Copyright (c) 2015-2016 Xamarin, Inc
-          Copyright (c) 2017-2018 Microsoft Corporation
-
-        ◍ Svg.Skia                                         MIT licence
-          https://github.com/wieslawsoltes/Svg.Skia
-          Copyright (c) 2020 Wiesław Šoltés
-
-        ◍ NativeMemoryArray                                MIT licence
-          https://github.com/Cysharp/NativeMemoryArray
-          Copyright (c) 2021 Cysharp, Inc.
-
-        ◍ NetCoreAudio                                     MIT licence
-          https://github.com/mobiletechtracker/NetCoreAudio
-          Copyright (c) 2020-2024 Fiodar Sazanavets
-                                  (Scientific Programmer Ltd)
-
-        ◍ CsWin32                                          MIT licence
-          https://github.com/microsoft/CsWin32
-          Copyright (c) Microsoft Corporation
-
-        ◍ Fluent Emoji                                     MIT licence
-          https://github.com/microsoft/fluentui-emoji
-          Copyright (c) Microsoft Corporation
-
-        ◍ D2Phap.EggShell                           Apache-2.0 license
-          Copyright (c) 2024-2027 Dương Diệu Pháp
-
-        ◍ D2Phap.FileWatcherEx                             MIT licence
-          https://github.com/d2phap/FileWatcherEx
-          Copyright (c) 2018-2027 Dương Diệu Pháp
-
-        """;
-
     public const string PORTABLE_MARKER_FILE = ".igportable";
 
     public static readonly string SIGN_POSITIVE = NumberFormatInfo.CurrentInfo.PositiveSign;

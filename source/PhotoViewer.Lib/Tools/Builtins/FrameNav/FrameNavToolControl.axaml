@@ -14,132 +14,42 @@
     Padding="6,8">
 
     <Grid ColumnDefinitions="1*,Auto,1*" ColumnSpacing="8">
-        <TextBlock
-            x:Name="PART_FrameCount"
-            Grid.Column="0"
-            Margin="0,0,4,0"
-            VerticalAlignment="Center"
-            Text="{CompiledBinding #Root.FrameTextInfo}"
-            TextAlignment="Right" />
+        <TextBlock x:Name="PART_FrameCount" Grid.Column="0" Margin="0,0,4,0" VerticalAlignment="Center" Text="{CompiledBinding #Root.FrameTextInfo}" TextAlignment="Right" />
 
-        <Border
-            x:Name="PART_PlaybackControlBorder"
-            Grid.Column="1"
-            Padding="4"
-            CornerRadius="10">
-            <StackPanel
-                VerticalAlignment="Center"
-                Orientation="Horizontal"
-                Spacing="4">
-                <ui:PhToolButton
-                    x:Name="PART_BtnViewFirstFrame"
-                    Padding="8"
-                    BorderThickness="1"
-                    Focusable="False"
-                    IsEnabled="{CompiledBinding #Root.HasMultiFrames}"
-                    ToolTip.Placement="Top"
-                    ToolTip.VerticalOffset="0">
-                    <PathIcon
-                        Width="22"
-                        Height="22"
-                        Data="{StaticResource IconArrowPrevious}"
-                        IsHitTestVisible="False" />
+        <Border x:Name="PART_PlaybackControlBorder" Grid.Column="1" Padding="4" CornerRadius="10">
+            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="4">
+                <ui:PhToolButton x:Name="PART_BtnViewFirstFrame" Padding="8" BorderThickness="1" Focusable="False" IsEnabled="{CompiledBinding #Root.HasMultiFrames}" ToolTip.Placement="Top" ToolTip.VerticalOffset="0">
+                    <PathIcon Width="22" Height="22" Data="{StaticResource IconArrowPrevious}" IsHitTestVisible="False" />
                 </ui:PhToolButton>
 
-                <ui:PhToolButton
-                    x:Name="PART_BtnViewPreviousFrame"
-                    Padding="8"
-                    BorderThickness="1"
-                    Focusable="False"
-                    IsEnabled="{CompiledBinding #Root.HasMultiFrames}"
-                    ToolTip.Placement="Top"
-                    ToolTip.VerticalOffset="0">
-                    <PathIcon
-                        Width="22"
-                        Height="22"
-                        Data="{StaticResource IconArrowLeft}"
-                        IsHitTestVisible="False" />
+                <ui:PhToolButton x:Name="PART_BtnViewPreviousFrame" Padding="8" BorderThickness="1" Focusable="False" IsEnabled="{CompiledBinding #Root.HasMultiFrames}" ToolTip.Placement="Top" ToolTip.VerticalOffset="0">
+                    <PathIcon Width="22" Height="22" Data="{StaticResource IconArrowLeft}" IsHitTestVisible="False" />
                 </ui:PhToolButton>
 
-                <ui:PhToolButton
-                    x:Name="PART_BtnToggleAnimation"
-                    Padding="8"
-                    BorderThickness="1"
-                    Focusable="False"
-                    IsEnabled="{CompiledBinding #Root.CanPlay}"
-                    ToolTip.Placement="Top"
-                    ToolTip.VerticalOffset="0">
+                <ui:PhToolButton x:Name="PART_BtnToggleAnimation" Padding="8" BorderThickness="1" Focusable="False" IsEnabled="{CompiledBinding #Root.CanPlay}" ToolTip.Placement="Top" ToolTip.VerticalOffset="0">
                     <Panel IsHitTestVisible="False">
-                        <PathIcon
-                            Width="22"
-                            Height="22"
-                            Data="{StaticResource IconLivePhoto}"
-                            IsVisible="{CompiledBinding #Root.IsLivePhoto}" />
+                        <PathIcon Width="22" Height="22" Data="{StaticResource IconLivePhoto}" IsVisible="{CompiledBinding #Root.IsLivePhoto}" />
 
                         <StackPanel IsVisible="{CompiledBinding !#Root.IsLivePhoto}">
-                            <PathIcon
-                                Width="22"
-                                Height="22"
-                                Data="{StaticResource IconPlay}"
-                                IsVisible="{CompiledBinding !#Root.IsPlaying}" />
-                            <PathIcon
-                                Width="22"
-                                Height="22"
-                                Data="{StaticResource IconPause}"
-                                IsVisible="{CompiledBinding #Root.IsPlaying}" />
+                            <PathIcon Width="22" Height="22" Data="{StaticResource IconPlay}" IsVisible="{CompiledBinding !#Root.IsPlaying}" />
+                            <PathIcon Width="22" Height="22" Data="{StaticResource IconPause}" IsVisible="{CompiledBinding #Root.IsPlaying}" />
                         </StackPanel>
                     </Panel>
                 </ui:PhToolButton>
 
-                <ui:PhToolButton
-                    x:Name="PART_BtnViewNextFrame"
-                    Padding="8"
-                    BorderThickness="1"
-                    Focusable="False"
-                    IsEnabled="{CompiledBinding #Root.HasMultiFrames}"
-                    ToolTip.Placement="Top"
-                    ToolTip.VerticalOffset="0">
-                    <PathIcon
-                        Width="22"
-                        Height="22"
-                        Data="{StaticResource IconArrowRight}"
-                        IsHitTestVisible="False" />
+                <ui:PhToolButton x:Name="PART_BtnViewNextFrame" Padding="8" BorderThickness="1" Focusable="False" IsEnabled="{CompiledBinding #Root.HasMultiFrames}" ToolTip.Placement="Top" ToolTip.VerticalOffset="0">
+                    <PathIcon Width="22" Height="22" Data="{StaticResource IconArrowRight}" IsHitTestVisible="False" />
                 </ui:PhToolButton>
 
-                <ui:PhToolButton
-                    x:Name="PART_BtnViewLastFrame"
-                    Padding="8"
-                    BorderThickness="1"
-                    Focusable="False"
-                    IsEnabled="{CompiledBinding #Root.HasMultiFrames}"
-                    ToolTip.Placement="Top"
-                    ToolTip.VerticalOffset="0">
-                    <PathIcon
-                        Width="22"
-                        Height="22"
-                        Data="{StaticResource IconArrowNext}"
-                        IsHitTestVisible="False" />
+                <ui:PhToolButton x:Name="PART_BtnViewLastFrame" Padding="8" BorderThickness="1" Focusable="False" IsEnabled="{CompiledBinding #Root.HasMultiFrames}" ToolTip.Placement="Top" ToolTip.VerticalOffset="0">
+                    <PathIcon Width="22" Height="22" Data="{StaticResource IconArrowNext}" IsHitTestVisible="False" />
                 </ui:PhToolButton>
             </StackPanel>
         </Border>
 
-        <StackPanel
-            Grid.Column="2"
-            VerticalAlignment="Center"
-            Orientation="Horizontal">
-            <ui:PhToolButton
-                x:Name="PART_BtnExportFrame"
-                Padding="8"
-                BorderThickness="1"
-                Focusable="False"
-                IsEnabled="{CompiledBinding #Root.HasMultiFrames}"
-                ToolTip.Placement="Top"
-                ToolTip.VerticalOffset="0">
-                <PathIcon
-                    Width="22"
-                    Height="22"
-                    Data="{StaticResource IconImageForward}"
-                    IsHitTestVisible="False" />
+        <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
+            <ui:PhToolButton x:Name="PART_BtnExportFrame" Padding="8" BorderThickness="1" Focusable="False" IsEnabled="{CompiledBinding #Root.HasMultiFrames}" ToolTip.Placement="Top" ToolTip.VerticalOffset="0">
+                <PathIcon Width="22" Height="22" Data="{StaticResource IconImageForward}" IsHitTestVisible="False" />
             </ui:PhToolButton>
         </StackPanel>
 

@@ -1,4 +1,6 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Styles.Resources>
         <ResourceDictionary>
@@ -31,39 +33,14 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
-                    <ContentPresenter
-                        Name="PART_ContentPresenter"
-                        Padding="{TemplateBinding Padding}"
-                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        Content="{TemplateBinding Content}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        CornerRadius="{TemplateBinding CornerRadius}" />
+                    <ContentPresenter Name="PART_ContentPresenter" Padding="{TemplateBinding Padding}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" CornerRadius="{TemplateBinding CornerRadius}" />
 
-                    <Rectangle
-                        Name="SelectionIndicator"
-                        Width="3.5"
-                        Height="16"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Fill="{DynamicResource PhAccentFill}"
-                        IsHitTestVisible="False"
-                        Opacity="0"
-                        RadiusX="2"
-                        RadiusY="2"
-                        RenderTransform="scaleY(0.3)"
-                        RenderTransformOrigin="50%,50%">
+                    <Rectangle Name="SelectionIndicator" Width="3.5" Height="16" HorizontalAlignment="Left" VerticalAlignment="Center" Fill="{DynamicResource PhAccentFill}" IsHitTestVisible="False" Opacity="0" RadiusX="2" RadiusY="2" RenderTransform="scaleY(0.3)" RenderTransformOrigin="50%,50%">
                         <Rectangle.Transitions>
                             <Transitions>
                                 <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
                                 <BrushTransition Property="Fill" Duration="0:0:0.04" />
-                                <TransformOperationsTransition
-                                    Property="RenderTransform"
-                                    Easing="CubicEaseOut"
-                                    Duration="0:0:0.15" />
+                                <TransformOperationsTransition Property="RenderTransform" Easing="CubicEaseOut" Duration="0:0:0.15" />
                             </Transitions>
                         </Rectangle.Transitions>
                     </Rectangle>

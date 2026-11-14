@@ -25,39 +25,18 @@
 
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
-                <ui:PhVirtualizingUniformPanel
-                    HorizontalAlignment="Center"
-                    ItemMargin="{x:Static ui:GalleryControl.GalleryItemMargin}"
-                    ItemSize="{CompiledBinding ThumbnailSize, Source={x:Static cm:Core.Config}}"
-                    ViewMode="{CompiledBinding ViewMode, RelativeSource={RelativeSource AncestorType=ui:GalleryControl}}" />
+                <ui:PhVirtualizingUniformPanel HorizontalAlignment="Center" ItemMargin="{x:Static ui:GalleryControl.GalleryItemMargin}" ItemSize="{CompiledBinding ThumbnailSize, Source={x:Static cm:Core.Config}}" ViewMode="{CompiledBinding ViewMode, RelativeSource={RelativeSource AncestorType=ui:GalleryControl}}" />
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
 
         <ItemsControl.ItemTemplate>
             <DataTemplate>
-                <ui:GalleryItem
-                    Width="{CompiledBinding ThumbnailSize, Source={x:Static cm:Core.Config}}"
-                    Height="{CompiledBinding ThumbnailSize, Source={x:Static cm:Core.Config}}"
-                    Margin="{x:Static ui:GalleryControl.GalleryItemMargin}"
-                    Click="GalleryItem_Click"
-                    Focusable="False"
-                    IsChecked="{CompiledBinding IsCurrent}"
-                    IsTabStop="False"
-                    ToolTip.Placement="{CompiledBinding ItemTooltipPlacement, RelativeSource={RelativeSource AncestorType=ui:GalleryControl}}"
-                    ToolTip.VerticalOffset="10">
+                <ui:GalleryItem Width="{CompiledBinding ThumbnailSize, Source={x:Static cm:Core.Config}}" Height="{CompiledBinding ThumbnailSize, Source={x:Static cm:Core.Config}}" Margin="{x:Static ui:GalleryControl.GalleryItemMargin}" Click="GalleryItem_Click" Focusable="False" IsChecked="{CompiledBinding IsCurrent}" IsTabStop="False" ToolTip.Placement="{CompiledBinding ItemTooltipPlacement, RelativeSource={RelativeSource AncestorType=ui:GalleryControl}}" ToolTip.VerticalOffset="10">
 
                     <ToolTip.Tip>
                         <StackPanel>
-                            <Grid
-                                Margin="0,0,0,4"
-                                ColumnDefinitions="*, Auto"
-                                ColumnSpacing="4"
-                                TextElement.FontWeight="Bold">
-                                <TextBlock
-                                    Grid.Column="0"
-                                    Foreground="{DynamicResource IG_TextAccentColor}"
-                                    Text="{CompiledBinding Metadata.FileName}"
-                                    TextWrapping="Wrap" />
+                            <Grid Margin="0,0,0,4" ColumnDefinitions="*, Auto" ColumnSpacing="4" TextElement.FontWeight="Bold">
+                                <TextBlock Grid.Column="0" Foreground="{DynamicResource IG_TextAccentColor}" Text="{CompiledBinding Metadata.FileName}" TextWrapping="Wrap" />
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                                     <TextBlock Text="(" />
@@ -68,16 +47,9 @@
                                 </StackPanel>
                             </Grid>
 
-                            <TextBlock
-                                Margin="0,0,0,4"
-                                Text="{CompiledBinding DirPath}"
-                                TextWrapping="Wrap" />
+                            <TextBlock Margin="0,0,0,4" Text="{CompiledBinding DirPath}" TextWrapping="Wrap" />
 
-                            <Border
-                                Margin="0,4,0,0"
-                                Padding="0,4,0,0"
-                                BorderBrush="{DynamicResource IG_BorderNeutralBrush}"
-                                BorderThickness="0,1,0,0">
+                            <Border Margin="0,4,0,0" Padding="0,4,0,0" BorderBrush="{DynamicResource IG_BorderNeutralBrush}" BorderThickness="0,1,0,0">
                                 <StackPanel Orientation="Vertical">
                                     <StackPanel IsVisible="{CompiledBinding Metadata.FrameCountFormatted, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter=''}" Orientation="Horizontal">
                                         <ui:PhTextBlock LangKey="_Metadata_FrameCount" />

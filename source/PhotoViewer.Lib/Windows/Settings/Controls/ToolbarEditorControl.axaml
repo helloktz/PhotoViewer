@@ -73,12 +73,7 @@
                 <ui:PhButton x:Name="PART_ResetBtn" Variant="Link" />
             </StackPanel>
 
-            <ui:PhTextBlock
-                MaxWidth="{StaticResource TextContentMaxWidth}"
-                HorizontalAlignment="Left"
-                LangKey="Settings_Toolbar_ArrangeHint"
-                Opacity="0.7"
-                TextWrapping="Wrap" />
+            <ui:PhTextBlock MaxWidth="{StaticResource TextContentMaxWidth}" HorizontalAlignment="Left" LangKey="Settings_Toolbar_ArrangeHint" Opacity="0.7" TextWrapping="Wrap" />
 
             <StackPanel Spacing="6">
                 <ui:PhTextBlock FontWeight="SemiBold" LangKey="Settings_Toolbar_CurrentButtons" />
@@ -86,10 +81,7 @@
                 <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="3.5*" />
-                        <ColumnDefinition
-                            Width="1.5*"
-                            MinWidth="100"
-                            MaxWidth="300" />
+                        <ColumnDefinition Width="1.5*" MinWidth="100" MaxWidth="300" />
                     </Grid.ColumnDefinitions>
 
                     <Grid Grid.Column="0">

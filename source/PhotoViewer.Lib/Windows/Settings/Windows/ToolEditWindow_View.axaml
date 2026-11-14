@@ -12,10 +12,7 @@
 
         <StackPanel Spacing="5">
             <TextBlock Text="ID" />
-            <ui:PhTextBox
-                x:Name="PART_Id"
-                IsRequired="True"
-                PlaceholderText="Tool_MyTool" />
+            <ui:PhTextBox x:Name="PART_Id" IsRequired="True" PlaceholderText="Tool_MyTool" />
         </StackPanel>
 
         <StackPanel Spacing="5">
@@ -27,19 +24,10 @@
             <CheckBox x:Name="PART_Integrated">
                 <ui:PhTextBlock x:Name="PART_IntegratedBefore" TextWrapping="Wrap" />
             </CheckBox>
-            <ui:PhTextBlock
-                x:Name="PART_IntegratedAfter"
-                VerticalAlignment="Center"
-                IsVisible="False" />
+            <ui:PhTextBlock x:Name="PART_IntegratedAfter" VerticalAlignment="Center" IsVisible="False" />
         </StackPanel>
 
-        <ui:PhActionEditorControl
-            x:Name="PART_Action"
-            ArgumentPlaceholder="&lt;file&gt;"
-            ExecutablePlaceholder="{OnPlatform '/path/to/tool',
-                                               Windows='C:\\path\\to\\tool.exe',
-                                               macOS='/Applications/MyTool.app',
-                                               x:TypeArguments=x:String}" />
+        <ui:PhActionEditorControl x:Name="PART_Action" ArgumentPlaceholder="&lt;file&gt;" ExecutablePlaceholder="{OnPlatform '/path/to/tool',                                                Windows='C:\\path\\to\\tool.exe',                                                macOS='/Applications/MyTool.app',                                                x:TypeArguments=x:String}" />
 
     </StackPanel>
 </ui:PhControl>

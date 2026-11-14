@@ -30,37 +30,17 @@
 
     <DockPanel>
 
-        <Border
-            x:Name="PART_ConsentRow"
-            Padding="24,14,24,20"
-            Background="{DynamicResource IG_BackgroundWarningBrush}"
-            DockPanel.Dock="Top"
-            IsVisible="False">
+        <Border x:Name="PART_ConsentRow" Padding="24,14,24,20" Background="{DynamicResource IG_BackgroundWarningBrush}" DockPanel.Dock="Top" IsVisible="False">
             <StackPanel Spacing="8">
-                <TextBlock
-                    x:Name="PART_ConsentTitle"
-                    FontSize="{x:Static types:Const.FONT_SIZE_TITLE}"
-                    Foreground="{DynamicResource IG_TextWarningColor}"
-                    TextWrapping="Wrap" />
-                <TextBlock
-                    x:Name="PART_ConsentMessage"
-                    Foreground="{DynamicResource IG_TextWarningColor}"
-                    TextWrapping="Wrap" />
+                <TextBlock x:Name="PART_ConsentTitle" FontSize="{x:Static types:Const.FONT_SIZE_TITLE}" Foreground="{DynamicResource IG_TextWarningColor}" TextWrapping="Wrap" />
+                <TextBlock x:Name="PART_ConsentMessage" Foreground="{DynamicResource IG_TextWarningColor}" TextWrapping="Wrap" />
             </StackPanel>
         </Border>
 
-        <TabControl
-            x:Name="PART_Tabs"
-            MinHeight="380"
-            Padding="0">
+        <TabControl x:Name="PART_Tabs" MinHeight="380" Padding="0">
 
             <TabItem x:Name="PART_TabInfo" Padding="24,0,0,0">
-                <ScrollViewer
-                    MaxHeight="440"
-                    Padding="24,12,24,20"
-                    HorizontalContentAlignment="Stretch"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
+                <ScrollViewer MaxHeight="440" Padding="24,12,24,20" HorizontalContentAlignment="Stretch" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                     <StackPanel Orientation="Vertical" Spacing="14">
 
                         <StackPanel x:Name="PART_IdRow" Spacing="5">
@@ -111,10 +91,7 @@
                             <Border Classes="valueBox">
                                 <SelectableTextBlock x:Name="PART_Folder" TextTrimming="CharacterEllipsis" />
                             </Border>
-                            <ui:PhButton
-                                x:Name="PART_OpenFolder"
-                                HorizontalAlignment="Left"
-                                Variant="Link" />
+                            <ui:PhButton x:Name="PART_OpenFolder" HorizontalAlignment="Left" Variant="Link" />
                         </StackPanel>
 
                     </StackPanel>
@@ -124,11 +101,7 @@
             <TabItem x:Name="PART_TabFormats" Padding="0,0,24,0">
                 <Border MaxHeight="440" Padding="24,12,24,20">
                     <DockPanel x:Name="PART_ExtensionsRow">
-                        <ui:PhTextBlock
-                            x:Name="PART_ExtensionsHint"
-                            Margin="0,0,0,8"
-                            DockPanel.Dock="Top"
-                            TextWrapping="Wrap" />
+                        <ui:PhTextBlock x:Name="PART_ExtensionsHint" Margin="0,0,0,8" DockPanel.Dock="Top" TextWrapping="Wrap" />
                         <ui:PhTableControl x:Name="PART_ExtensionsTable" HorizontalAlignment="Stretch" />
                     </DockPanel>
                 </Border>

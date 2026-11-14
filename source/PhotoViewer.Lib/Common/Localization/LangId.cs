@@ -738,7 +738,8 @@ public enum LangId
     QuickSetup_ConfirmCloseProcess,
     QuickSetup_ConfirmCloseProcess_Description,
 
-    _LanguagePackFileType = 631,
+    _AboutThirdPartyNotices = 630,
+    _LanguagePackFileType,
     _Pixels,
     _PixelDimensions,
     _ScrollLineUp = 648,

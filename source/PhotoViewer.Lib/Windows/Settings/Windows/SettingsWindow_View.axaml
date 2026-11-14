@@ -44,11 +44,7 @@
             <ColumnDefinition Width="*" MinWidth="400" />
         </Grid.ColumnDefinitions>
 
-        <ListBox
-            x:Name="PART_Sidebar"
-            Grid.Column="0"
-            Padding="14"
-            Background="Transparent">
+        <ListBox x:Name="PART_Sidebar" Grid.Column="0" Padding="14" Background="Transparent">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
@@ -60,87 +56,34 @@
             </ListBox.Styles>
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="windows:SettingsNavItem">
-                    <StackPanel
-                        Margin="{CompiledBinding Indent}"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="10">
-                        <PathIcon
-                            Width="{x:Static types:Const.FONT_SIZE_BODY}"
-                            Height="{x:Static types:Const.FONT_SIZE_BODY}"
-                            VerticalAlignment="Center"
-                            Data="{CompiledBinding Icon}" />
+                    <StackPanel Margin="{CompiledBinding Indent}" VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
+                        <PathIcon Width="{x:Static types:Const.FONT_SIZE_BODY}" Height="{x:Static types:Const.FONT_SIZE_BODY}" VerticalAlignment="Center" Data="{CompiledBinding Icon}" />
                         <TextBlock VerticalAlignment="Center" Text="{CompiledBinding LabelText}" />
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <Grid
-            Grid.Column="1"
-            RowDefinitions="Auto, Auto, *"
-            Margin="28,0,0,0">
+        <Grid Grid.Column="1" RowDefinitions="Auto, Auto, *" Margin="28,0,0,0">
 
-            <Border
-                x:Name="PART_LockWarning"
-                Grid.Row="0"
-                Margin="0,14,14,0"
-                Padding="12,10"
-                Background="{DynamicResource IG_BackgroundWarningBrush}"
-                CornerRadius="{DynamicResource ControlCornerRadius}"
-                IsVisible="False">
-                <ui:PhTextBlock
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource IG_TextWarningBrush}"
-                    LangKey="Settings_AdminLockWarning"
-                    TextWrapping="Wrap" />
+            <Border x:Name="PART_LockWarning" Grid.Row="0" Margin="0,14,14,0" Padding="12,10" Background="{DynamicResource IG_BackgroundWarningBrush}" CornerRadius="{DynamicResource ControlCornerRadius}" IsVisible="False">
+                <ui:PhTextBlock VerticalAlignment="Center" Foreground="{DynamicResource IG_TextWarningBrush}" LangKey="Settings_AdminLockWarning" TextWrapping="Wrap" />
             </Border>
 
-            <Grid
-                Grid.Row="1"
-                ColumnDefinitions="*, Auto, Auto"
-                Margin="0,14,14,14"
-                ColumnSpacing="12">
-                <TextBlock
-                    x:Name="PART_Title"
-                    Grid.Column="0"
-                    VerticalAlignment="Center"
-                    FontSize="{x:Static types:Const.FONT_SIZE_TITLE}"
-                    FontWeight="SemiBold"
-                    TextTrimming="CharacterEllipsis" />
+            <Grid Grid.Row="1" ColumnDefinitions="*, Auto, Auto" Margin="0,14,14,14" ColumnSpacing="12">
+                <TextBlock x:Name="PART_Title" Grid.Column="0" VerticalAlignment="Center" FontSize="{x:Static types:Const.FONT_SIZE_TITLE}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
 
                 <Panel Grid.Column="2">
                     <ui:PhSearchBoxControl x:Name="PART_Search" Width="200" />
 
-                    <Popup
-                        x:Name="PART_SearchPopup"
-                        IsLightDismissEnabled="True"
-                        Placement="BottomEdgeAlignedRight"
-                        PlacementTarget="{CompiledBinding #PART_Search}">
-                        <Border
-                            Background="{DynamicResource MenuFlyoutPresenterBackground}"
-                            BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="{DynamicResource OverlayCornerRadius}">
-                            <ListBox
-                                x:Name="PART_SearchResults"
-                                Width="400"
-                                MaxHeight="350"
-                                Padding="0,4"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                ClipToBounds="True"
-                                CornerRadius="{DynamicResource OverlayCornerRadius}">
+                    <Popup x:Name="PART_SearchPopup" IsLightDismissEnabled="True" Placement="BottomEdgeAlignedRight" PlacementTarget="{CompiledBinding #PART_Search}">
+                        <Border Background="{DynamicResource MenuFlyoutPresenterBackground}" BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource OverlayCornerRadius}">
+                            <ListBox x:Name="PART_SearchResults" Width="400" MaxHeight="350" Padding="0,4" Background="Transparent" BorderThickness="0" ClipToBounds="True" CornerRadius="{DynamicResource OverlayCornerRadius}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="windows:SettingItem">
                                         <StackPanel Spacing="1">
                                             <TextBlock Text="{CompiledBinding LabelText}" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock
-                                                FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
-                                                IsVisible="{CompiledBinding SectionText, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}"
-                                                Opacity="0.6"
-                                                Text="{CompiledBinding SectionText}"
-                                                TextTrimming="CharacterEllipsis" />
+                                            <TextBlock FontSize="{x:Static types:Const.FONT_SIZE_SMALL}" IsVisible="{CompiledBinding SectionText, Converter={x:Static conv:StringConverters.IsNotNullOrEmpty}}" Opacity="0.6" Text="{CompiledBinding SectionText}" TextTrimming="CharacterEllipsis" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
@@ -150,10 +93,7 @@
                 </Panel>
             </Grid>
 
-            <ScrollViewer
-                Grid.Row="2"
-                HorizontalScrollBarVisibility="Disabled"
-                VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                 <ContentControl x:Name="PART_ContentHost" Padding="0,0,14,32" />
             </ScrollViewer>
 

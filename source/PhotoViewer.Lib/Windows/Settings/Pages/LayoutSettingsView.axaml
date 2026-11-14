@@ -87,24 +87,9 @@
                 </StackPanel>
             </StackPanel>
 
-            <ui:PhTextBlock
-                MaxWidth="{StaticResource TextContentMaxWidth}"
-                Margin="0,14,0,8"
-                HorizontalAlignment="Left"
-                LangKey="Settings_Layout_ArrangeHint"
-                Opacity="0.7"
-                TextWrapping="Wrap" />
+            <ui:PhTextBlock MaxWidth="{StaticResource TextContentMaxWidth}" Margin="0,14,0,8" HorizontalAlignment="Left" LangKey="Settings_Layout_ArrangeHint" Opacity="0.7" TextWrapping="Wrap" />
 
-            <Border
-                x:Name="PART_Preview"
-                Width="{StaticResource LayoutSectionWidth}"
-                Height="330"
-                Padding="12"
-                HorizontalAlignment="Left"
-                Background="{DynamicResource IG_ThemeBackgroundBrush}"
-                BorderBrush="{DynamicResource TextControlBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="{DynamicResource ControlCornerRadius}">
+            <Border x:Name="PART_Preview" Width="{StaticResource LayoutSectionWidth}" Height="330" Padding="12" HorizontalAlignment="Left" Background="{DynamicResource IG_ThemeBackgroundBrush}" BorderBrush="{DynamicResource TextControlBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource ControlCornerRadius}">
                 <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="8">
 
                     <Grid Grid.Row="0">
@@ -121,10 +106,7 @@
                         <Rectangle Classes="zoneDash" />
                     </Grid>
 
-                    <Grid
-                        Grid.Row="2"
-                        ColumnDefinitions="Auto,*,Auto"
-                        ColumnSpacing="8">
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                         <Grid Grid.Column="0">
                             <Border Classes="zone side">
                                 <Grid x:Name="PART_ZoneGalleryLeft" />
@@ -132,11 +114,7 @@
                             <Rectangle Classes="zoneDash" />
                         </Grid>
                         <Border Grid.Column="1" Classes="viewer">
-                            <ui:PhTextBlock
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                LangKey="Settings_Layout_Viewer"
-                                Opacity="0.5" />
+                            <ui:PhTextBlock HorizontalAlignment="Center" VerticalAlignment="Center" LangKey="Settings_Layout_Viewer" Opacity="0.5" />
                         </Border>
                         <Grid Grid.Column="2">
                             <Border Classes="zone side">
@@ -160,11 +138,7 @@
                         <Rectangle Classes="zoneDash" />
                     </Grid>
 
-                    <Canvas
-                        x:Name="PART_DragLayer"
-                        Grid.Row="0"
-                        Grid.RowSpan="5"
-                        IsHitTestVisible="False" />
+                    <Canvas x:Name="PART_DragLayer" Grid.Row="0" Grid.RowSpan="5" IsHitTestVisible="False" />
                 </Grid>
             </Border>
 
@@ -185,36 +159,16 @@
 
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_ImageInfoOverlay" />
-                <ComboBox
-                    x:Name="PART_ImageInfoOverlayMode"
-                    MinWidth="200"
-                    HorizontalAlignment="Left" />
+                <ComboBox x:Name="PART_ImageInfoOverlayMode" MinWidth="200" HorizontalAlignment="Left" />
             </StackPanel>
 
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_ImageInfoTags" />
-                <ui:PhTextBox
-                    x:Name="PART_ImageInfoTags"
-                    Width="{StaticResource LayoutSectionWidth}"
-                    MinHeight="70"
-                    HorizontalAlignment="Left"
-                    AcceptsReturn="True"
-                    FontFamily="{x:Static types:Const.FONT_CODE}"
-                    TextWrapping="Wrap" />
-                <ui:PhButton
-                    x:Name="PART_ResetImageInfoTags"
-                    HorizontalAlignment="Left"
-                    Variant="Link" />
+                <ui:PhTextBox x:Name="PART_ImageInfoTags" Width="{StaticResource LayoutSectionWidth}" MinHeight="70" HorizontalAlignment="Left" AcceptsReturn="True" FontFamily="{x:Static types:Const.FONT_CODE}" TextWrapping="Wrap" />
+                <ui:PhButton x:Name="PART_ResetImageInfoTags" HorizontalAlignment="Left" Variant="Link" />
 
                 <ui:PhTextBlock Margin="0,8,0,0" LangKey="Settings_AvailableImageInfoTags" />
-                <SelectableTextBlock
-                    x:Name="PART_AvailableTags"
-                    MaxWidth="{StaticResource LayoutSectionWidth}"
-                    HorizontalAlignment="Left"
-                    FontFamily="{x:Static types:Const.FONT_CODE}"
-                    FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
-                    Opacity="0.7"
-                    TextWrapping="Wrap" />
+                <SelectableTextBlock x:Name="PART_AvailableTags" MaxWidth="{StaticResource LayoutSectionWidth}" HorizontalAlignment="Left" FontFamily="{x:Static types:Const.FONT_CODE}" FontSize="{x:Static types:Const.FONT_SIZE_SMALL}" Opacity="0.7" TextWrapping="Wrap" />
             </StackPanel>
 
         </StackPanel>

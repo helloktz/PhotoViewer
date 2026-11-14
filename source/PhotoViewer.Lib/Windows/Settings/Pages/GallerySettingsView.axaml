@@ -29,40 +29,19 @@
 
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock x:Name="PART_GalleryColumnsLabel" LangKey="Settings_GalleryColumns" />
-                <Slider
-                    x:Name="PART_GalleryColumns"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    IsSnapToTickEnabled="True"
-                    Maximum="100"
-                    Minimum="1"
-                    TickFrequency="1" />
+                <Slider x:Name="PART_GalleryColumns" Width="200" HorizontalAlignment="Left" IsSnapToTickEnabled="True" Maximum="100" Minimum="1" TickFrequency="1" />
             </StackPanel>
 
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock x:Name="PART_ThumbnailSizeLabel" LangKey="Settings_ThumbnailSize" />
-                <Slider
-                    x:Name="PART_ThumbnailSize"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    IsSnapToTickEnabled="True"
-                    Maximum="1000"
-                    Minimum="10"
-                    TickFrequency="1" />
+                <Slider x:Name="PART_ThumbnailSize" Width="200" HorizontalAlignment="Left" IsSnapToTickEnabled="True" Maximum="1000" Minimum="10" TickFrequency="1" />
             </StackPanel>
 
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_GalleryCacheSizeInMb" TextWrapping="Wrap" />
-                <ui:PhTextBox
-                    x:Name="PART_GalleryCacheSize"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    AcceptValue="UnsignedIntValueOnly" />
+                <ui:PhTextBox x:Name="PART_GalleryCacheSize" Width="200" HorizontalAlignment="Left" AcceptValue="UnsignedIntValueOnly" />
 
-                <ui:PhButton
-                    x:Name="PART_ClearCache"
-                    HorizontalAlignment="Left"
-                    Variant="Link" />
+                <ui:PhButton x:Name="PART_ClearCache" HorizontalAlignment="Left" Variant="Link" />
             </StackPanel>
         </StackPanel>
 

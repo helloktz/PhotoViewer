@@ -1,4 +1,6 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
@@ -35,15 +37,9 @@
     <x:Double x:Key="ToolTipContentMaxWidth">500</x:Double>
 
     <x:Double x:Key="TextContentMaxWidth">600</x:Double>
-    <SolidColorBrush
-        x:Key="TextControlSelectionHighlightColor"
-        Opacity="0.4"
-        Color="{DynamicResource SystemAccentColor}" />
+    <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Opacity="0.4" Color="{DynamicResource SystemAccentColor}" />
 
-    <SolidColorBrush
-        x:Key="ZoneGrayStroke"
-        Opacity="0.5"
-        Color="#808080" />
+    <SolidColorBrush x:Key="ZoneGrayStroke" Opacity="0.5" Color="#808080" />
     <SolidColorBrush x:Key="ZoneAccentBorder" Color="{DynamicResource SystemAccentColor}" />
 
 </ResourceDictionary>

@@ -11,80 +11,32 @@
     d:DesignWidth="500">
 
     <uiw:DialogWindow.DialogContent>
-        <StackPanel
-            VerticalAlignment="Top"
-            Orientation="Vertical"
-            Spacing="4">
+        <StackPanel VerticalAlignment="Top" Orientation="Vertical" Spacing="4">
 
             <Panel x:Name="PART_Hero" Background="Transparent">
 
                 <StackPanel Orientation="Vertical" Spacing="4">
-                    <ui:PhLogo
-                        x:Name="PART_Logo"
-                        Margin="0,16,0,0"
-                        HorizontalAlignment="Center"
-                        LogoSize="96" />
+                    <ui:PhLogo x:Name="PART_Logo" Margin="0,16,0,0" HorizontalAlignment="Center" LogoSize="96" />
 
-                    <TextBlock
-                        Margin="0,12,0,0"
-                        HorizontalAlignment="Center"
-                        FontSize="26"
-                        FontWeight="SemiBold"
-                        Foreground="{DynamicResource IG_TextAccentColor}"
-                        Text="Photo Viewer" />
+                    <TextBlock Margin="0,12,0,0" HorizontalAlignment="Center" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource IG_TextAccentColor}" Text="Photo Viewer" />
 
-                    <TextBlock
-                        x:Name="PART_LblSlogan"
-                        HorizontalAlignment="Center"
-                        FontSize="{x:Static types:Const.FONT_SIZE_SUBTITLE}"
-                        TextAlignment="Center" />
+                    <TextBlock x:Name="PART_LblSlogan" HorizontalAlignment="Center" FontSize="{x:Static types:Const.FONT_SIZE_SUBTITLE}" TextAlignment="Center" />
                 </StackPanel>
             </Panel>
 
-            <SelectableTextBlock
-                x:Name="PART_LblVersion"
-                Margin="0,16,0,0"
-                HorizontalAlignment="Center"
-                FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
-                TextAlignment="Center" />
+            <SelectableTextBlock x:Name="PART_LblVersion" Margin="0,16,0,0" HorizontalAlignment="Center" FontSize="{x:Static types:Const.FONT_SIZE_SMALL}" TextAlignment="Center" />
 
-            <Border
-                Height="1"
-                Margin="0,16,0,12"
-                Background="{DynamicResource IG_BorderNeutralBrush}" />
+            <Border Height="1" Margin="0,16,0,12" Background="{DynamicResource IG_BorderNeutralBrush}" />
 
-            <SelectableTextBlock
-                Margin="0,2,0,0"
-                HorizontalAlignment="Center"
-                FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
-                Text="Photo Viewer"
-                TextAlignment="Center" />
+            <SelectableTextBlock Margin="0,2,0,0" HorizontalAlignment="Center" FontSize="{x:Static types:Const.FONT_SIZE_SMALL}" Text="Photo Viewer" TextAlignment="Center" />
 
-            <Border
-                Height="1"
-                Margin="0,16"
-                Background="{DynamicResource IG_BorderNeutralBrush}" />
+            <Border Height="1" Margin="0,16" Background="{DynamicResource IG_BorderNeutralBrush}" />
 
-            <TextBlock
-                x:Name="PART_LblCredits"
-                Margin="0,0,0,4"
-                HorizontalAlignment="Center"
-                FontWeight="SemiBold"
-                TextAlignment="Center" />
+            <TextBlock x:Name="PART_LblCredits" Margin="0,0,0,4" HorizontalAlignment="Center" FontWeight="SemiBold" TextAlignment="Center" />
 
             <Border ClipToBounds="True" CornerRadius="{DynamicResource ControlCornerRadius}">
-                <ScrollViewer
-                    MaxHeight="100"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
-                    <SelectableTextBlock
-                        x:Name="PART_LblCreditContent"
-                        Padding="6"
-                        Background="{DynamicResource IG_BackgroundNeutralBrush}"
-                        FontFamily="{x:Static types:Const.FONT_CODE}"
-                        FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
-                        FontWeight="SemiLight"
-                        TextWrapping="Wrap" />
+                <ScrollViewer MaxHeight="100" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <SelectableTextBlock x:Name="PART_LblCreditContent" Padding="6" Background="{DynamicResource IG_BackgroundNeutralBrush}" FontFamily="{x:Static types:Const.FONT_CODE}" FontSize="{x:Static types:Const.FONT_SIZE_SMALL}" FontWeight="SemiLight" TextWrapping="Wrap" />
                 </ScrollViewer>
             </Border>
         </StackPanel>

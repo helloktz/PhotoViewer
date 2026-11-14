@@ -12,30 +12,15 @@
 
         <StackPanel Spacing="5">
             <ui:PhTextBlock LangKey="_FileExtension" />
-            <ui:PhTextBox
-                x:Name="PART_Extension"
-                IsRequired="True"
-                PlaceholderText=".jpg;.png;.svg" />
+            <ui:PhTextBox x:Name="PART_Extension" IsRequired="True" PlaceholderText=".jpg;.png;.svg" />
         </StackPanel>
 
         <StackPanel Spacing="5">
             <ui:PhTextBlock LangKey="Settings_EditApps_AppName" />
-            <ui:PhTextBox
-                x:Name="PART_AppName"
-                IsRequired="True"
-                PlaceholderText="{OnPlatform 'My Editor',
-                                             Windows='MS Paint',
-                                             x:TypeArguments=x:String}" />
+            <ui:PhTextBox x:Name="PART_AppName" IsRequired="True" PlaceholderText="{OnPlatform 'My Editor',                                              Windows='MS Paint',                                              x:TypeArguments=x:String}" />
         </StackPanel>
 
-        <ui:PhActionEditorControl
-            x:Name="PART_Action"
-            ArgumentPlaceholder="&lt;file&gt;"
-            ExecutablePlaceholder="{OnPlatform '/path/to/editor',
-                                               Windows='mspaint.exe',
-                                               macOS='/Applications/MyEditor.app',
-                                               x:TypeArguments=x:String}"
-            ShowHotkeys="False" />
+        <ui:PhActionEditorControl x:Name="PART_Action" ArgumentPlaceholder="&lt;file&gt;" ExecutablePlaceholder="{OnPlatform '/path/to/editor',                                                Windows='mspaint.exe',                                                macOS='/Applications/MyEditor.app',                                                x:TypeArguments=x:String}" ShowHotkeys="False" />
 
     </StackPanel>
 </ui:PhControl>

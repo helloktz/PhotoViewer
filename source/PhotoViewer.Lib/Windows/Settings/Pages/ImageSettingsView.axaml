@@ -16,10 +16,7 @@
         <ui:PhTextBlock Classes="group" LangKey="Settings_Browsing" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
 
-            <StackPanel
-                Margin="0,0,0,6"
-                Orientation="Horizontal"
-                Spacing="10">
+            <StackPanel Margin="0,0,0,6" Orientation="Horizontal" Spacing="10">
                 <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                     <ui:PhTextBlock LangKey="Settings_ImageLoadingOrder" />
                     <ComboBox x:Name="PART_OrderBy" MinWidth="200" />
@@ -53,16 +50,9 @@
                 <ComboBox x:Name="PART_BrowsingMode" MinWidth="200">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="windows:BrowsingModeOption">
-                            <StackPanel
-                                MaxWidth="200"
-                                Margin="0,3"
-                                Spacing="1">
+                            <StackPanel MaxWidth="200" Margin="0,3" Spacing="1">
                                 <ui:PhTextBlock Text="{CompiledBinding Name}" />
-                                <ui:PhTextBlock
-                                    FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
-                                    Opacity="0.6"
-                                    Text="{CompiledBinding Description}"
-                                    TextWrapping="Wrap" />
+                                <ui:PhTextBlock FontSize="{x:Static types:Const.FONT_SIZE_SMALL}" Opacity="0.6" Text="{CompiledBinding Description}" TextWrapping="Wrap" />
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
@@ -75,22 +65,11 @@
             </StackPanel>
 
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
-                <Grid
-                    HorizontalAlignment="Left"
-                    ColumnDefinitions="Auto,Auto"
-                    RowDefinitions="Auto,Auto">
+                <Grid HorizontalAlignment="Left" ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto">
                     <ui:PhTextBlock Classes="subgroup" LangKey="Settings_TransitionEffect" />
-                    <ui:PhTextBlock
-                        Grid.Column="1"
-                        Margin="14,10,0,4"
-                        Classes="subgroup"
-                        FontWeight="Normal"
-                        LangKey="Settings_TransitionDuration" />
+                    <ui:PhTextBlock Grid.Column="1" Margin="14,10,0,4" Classes="subgroup" FontWeight="Normal" LangKey="Settings_TransitionDuration" />
 
-                    <ComboBox
-                        x:Name="PART_Transition"
-                        Grid.Row="1"
-                        MinWidth="200">
+                    <ComboBox x:Name="PART_Transition" Grid.Row="1" MinWidth="200">
                         <ComboBox.Styles>
                             <Style x:DataType="windows:TransitionEffectOption" Selector="ComboBoxItem">
                                 <Setter Property="IsEnabled" Value="{CompiledBinding !IsDivider}" />
@@ -105,18 +84,10 @@
                             <DataTemplate x:DataType="windows:TransitionEffectOption">
                                 <Panel>
                                     <Separator Margin="0" IsVisible="{CompiledBinding IsDivider}" />
-                                    <StackPanel
-                                        MaxWidth="200"
-                                        IsVisible="{CompiledBinding !IsDivider}"
-                                        Spacing="2">
+                                    <StackPanel MaxWidth="200" IsVisible="{CompiledBinding !IsDivider}" Spacing="2">
                                         <TextBlock Text="{CompiledBinding Name}" TextTrimming="CharacterEllipsis" />
 
-                                        <TextBlock
-                                            FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
-                                            IsVisible="{CompiledBinding HasFilePath}"
-                                            Opacity="0.6"
-                                            Text="{CompiledBinding DisplayFilePath}"
-                                            TextTrimming="PathSegmentEllipsis" />
+                                        <TextBlock FontSize="{x:Static types:Const.FONT_SIZE_SMALL}" IsVisible="{CompiledBinding HasFilePath}" Opacity="0.6" Text="{CompiledBinding DisplayFilePath}" TextTrimming="PathSegmentEllipsis" />
                                     </StackPanel>
                                 </Panel>
                             </DataTemplate>
@@ -127,24 +98,11 @@
                             </DataTemplate>
                         </ComboBox.SelectionBoxItemTemplate>
                     </ComboBox>
-                    <ui:PhTextBox
-                        x:Name="PART_TransitionDuration"
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Width="200"
-                        Margin="14,0,0,0"
-                        AcceptValue="UnsignedIntValueOnly" />
+                    <ui:PhTextBox x:Name="PART_TransitionDuration" Grid.Row="1" Grid.Column="1" Width="200" Margin="14,0,0,0" AcceptValue="UnsignedIntValueOnly" />
                 </Grid>
 
-                <ui:PhTextBlock
-                    x:Name="PART_TransitionError"
-                    Foreground="{DynamicResource IG_TextDangerBrush}"
-                    IsVisible="False"
-                    TextWrapping="Wrap" />
-                <StackPanel
-                    Margin="0,8,0,8"
-                    HorizontalAlignment="Left"
-                    Spacing="8">
+                <ui:PhTextBlock x:Name="PART_TransitionError" Foreground="{DynamicResource IG_TextDangerBrush}" IsVisible="False" TextWrapping="Wrap" />
+                <StackPanel Margin="0,8,0,8" HorizontalAlignment="Left" Spacing="8">
                     <ui:PhButton x:Name="PART_OpenTransitionsFolder" Variant="Link" />
                 </StackPanel>
             </StackPanel>
@@ -162,27 +120,15 @@
                 </CheckBox>
 
                 <StackPanel x:Name="PART_PreviewSizeSection">
-                    <ui:PhTextBlock
-                        Margin="0,8,0,8"
-                        LangKey="Settings_MinEmbeddedThumbnailSize"
-                        TextWrapping="Wrap" />
-                    <StackPanel
-                        Margin="{DynamicResource SettingsGroupIndent}"
-                        Orientation="Horizontal"
-                        Spacing="14">
+                    <ui:PhTextBlock Margin="0,8,0,8" LangKey="Settings_MinEmbeddedThumbnailSize" TextWrapping="Wrap" />
+                    <StackPanel Margin="{DynamicResource SettingsGroupIndent}" Orientation="Horizontal" Spacing="14">
                         <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                             <ui:PhTextBlock LangKey="Settings_MinEmbeddedThumbnailSize_Width" />
-                            <ui:PhTextBox
-                                x:Name="PART_PreviewMinWidth"
-                                Width="150"
-                                AcceptValue="UnsignedIntValueOnly" />
+                            <ui:PhTextBox x:Name="PART_PreviewMinWidth" Width="150" AcceptValue="UnsignedIntValueOnly" />
                         </StackPanel>
                         <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                             <ui:PhTextBlock LangKey="Settings_MinEmbeddedThumbnailSize_Height" />
-                            <ui:PhTextBox
-                                x:Name="PART_PreviewMinHeight"
-                                Width="150"
-                                AcceptValue="UnsignedIntValueOnly" />
+                            <ui:PhTextBox x:Name="PART_PreviewMinHeight" Width="150" AcceptValue="UnsignedIntValueOnly" />
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
@@ -190,15 +136,8 @@
 
         </StackPanel>
 
-        <StackPanel
-            Margin="0,20,0,8"
-            Orientation="Horizontal"
-            Spacing="8">
-            <ui:PhTextBlock
-                Margin="0"
-                VerticalAlignment="Center"
-                Classes="group"
-                LangKey="Settings_FileWatcher" />
+        <StackPanel Margin="0,20,0,8" Orientation="Horizontal" Spacing="8">
+            <ui:PhTextBlock Margin="0" VerticalAlignment="Center" Classes="group" LangKey="Settings_FileWatcher" />
         </StackPanel>
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
             <CheckBox x:Name="PART_FileWatcher">
@@ -225,61 +164,29 @@
                     <ui:PhButton x:Name="PART_BrowseColorProfile" VerticalAlignment="Stretch" />
                 </StackPanel>
 
-                <ui:PhButton
-                    x:Name="PART_CustomColorProfile"
-                    Margin="0,2,0,0"
-                    HorizontalAlignment="Left"
-                    Variant="Link" />
+                <ui:PhButton x:Name="PART_CustomColorProfile" Margin="0,2,0,0" HorizontalAlignment="Left" Variant="Link" />
 
-                <ui:PhTextBlock
-                    x:Name="PART_MonitorProfileNote"
-                    FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
-                    FontStyle="Italic"
-                    LangKey="Settings_CurrentMonitorProfile_Description"
-                    Opacity="0.6"
-                    TextWrapping="Wrap" />
+                <ui:PhTextBlock x:Name="PART_MonitorProfileNote" FontSize="{x:Static types:Const.FONT_SIZE_SMALL}" FontStyle="Italic" LangKey="Settings_CurrentMonitorProfile_Description" Opacity="0.6" TextWrapping="Wrap" />
             </StackPanel>
         </StackPanel>
 
         <ui:PhTextBlock Classes="group" LangKey="Settings_Caching" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}" Spacing="10">
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
-                <ui:PhTextBlock
-                    x:Name="PART_CacheMaxFilesLabel"
-                    LangKey="Settings_ImageBoosterCacheMaxFiles"
-                    TextWrapping="Wrap" />
-                <Slider
-                    x:Name="PART_CacheMaxFiles"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    IsSnapToTickEnabled="True"
-                    Maximum="30"
-                    Minimum="0"
-                    TickFrequency="1" />
+                <ui:PhTextBlock x:Name="PART_CacheMaxFilesLabel" LangKey="Settings_ImageBoosterCacheMaxFiles" TextWrapping="Wrap" />
+                <Slider x:Name="PART_CacheMaxFiles" Width="200" HorizontalAlignment="Left" IsSnapToTickEnabled="True" Maximum="30" Minimum="0" TickFrequency="1" />
             </StackPanel>
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_ImageBoosterCacheMaxMemoryInMb" TextWrapping="Wrap" />
-                <ui:PhTextBox
-                    x:Name="PART_CacheMaxMemory"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    AcceptValue="UnsignedIntValueOnly" />
+                <ui:PhTextBox x:Name="PART_CacheMaxMemory" Width="200" HorizontalAlignment="Left" AcceptValue="UnsignedIntValueOnly" />
             </StackPanel>
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_ImageBoosterCacheMaxDimension" TextWrapping="Wrap" />
-                <ui:PhTextBox
-                    x:Name="PART_CacheMaxDimension"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    AcceptValue="UnsignedIntValueOnly" />
+                <ui:PhTextBox x:Name="PART_CacheMaxDimension" Width="200" HorizontalAlignment="Left" AcceptValue="UnsignedIntValueOnly" />
             </StackPanel>
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_ImageBoosterCacheMaxFileSizeInMb" TextWrapping="Wrap" />
-                <ui:PhTextBox
-                    x:Name="PART_CacheMaxFileSize"
-                    Width="200"
-                    HorizontalAlignment="Left"
-                    AcceptValue="UnsignedFloatValueOnly" />
+                <ui:PhTextBox x:Name="PART_CacheMaxFileSize" Width="200" HorizontalAlignment="Left" AcceptValue="UnsignedFloatValueOnly" />
             </StackPanel>
         </StackPanel>
 

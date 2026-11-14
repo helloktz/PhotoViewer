@@ -1,5 +1,4 @@
 using PhotoViewer.Common.Localization;
-using PhotoViewer.Common.Types;
 using PhotoViewer.UI.Windowing;
 using ImageMagick;
 using System.Runtime.InteropServices;
@@ -20,7 +19,6 @@ public partial class AboutWindow : DialogWindow
         DefaultButton = DialogButton.Button1;
         DefaultFocus = DialogFocus.Button1;
         ShowInTaskbar = true;
-        PART_LblCreditContent.Text = Const.THIRD_PARTY_NOTICES;
     }
 
     protected override void OnIgLanguageChanged()
@@ -30,6 +28,7 @@ public partial class AboutWindow : DialogWindow
         Title = Core.Lang[LangId.Menu_MnuAbout];
         Button1Text = Core.Lang[LangId._Close];
 
+        PART_LblCreditContent.Text = Core.Lang[LangId._AboutThirdPartyNotices];
         PART_LblSlogan.Text = Core.Lang[LangId._Slogan];
         PART_LblCredits.Text = Core.Lang[LangId._Credits];
         UpdateVersionText();
