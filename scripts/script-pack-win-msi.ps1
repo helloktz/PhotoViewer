@@ -43,7 +43,7 @@ $PortableMarker = '.igportable'
 $WixVersion = '5.0.2'
 $WixUiExt   = 'WixToolset.UI.wixext'
 
-$SuppressIce = @('ICE57', 'ICE61', 'ICE105')
+$SuppressIce = @('ICE57', 'ICE61')
 
 function Get-BuildProp([string]$Tag) {
     $m = Select-String -Path $BuildProps -Pattern "<$Tag>(.*?)</$Tag>" | Select-Object -First 1
@@ -193,33 +193,7 @@ function New-DeterministicGuid([guid]$Namespace, [string]$Name) {
     return [guid]::new($g)
 }
 
-function Get-MsiRows([object]$Database, [string]$Sql, [int]$FieldCount) {
-    $rows = @()
-    try { $view = $Database.OpenView($Sql) } catch { return , $rows }
-    try {
-        $view.Execute() | Out-Null
-        while ($null -ne ($record = $view.Fetch())) {
-            try {
-                $row = @()
-                for ($i = 1; $i -le $FieldCount; $i++) {
-                    $row += [string]$record.GetType().InvokeMember(
-                        'StringData', 'GetProperty', $null, $record, @($i))
-                }
-                $rows += , $row
-            }
-            finally {
-                [void][System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($record)
-            }
-        }
-        $view.Close() | Out-Null
-    }
-    finally {
-        [void][System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($view)
-    }
-    return , $rows
-}
-
-function Assert-DualScopeSummary([string]$MsiPath) {
+function Assert-MachineInstallSummary([string]$MsiPath) {
     $installer = New-Object -ComObject WindowsInstaller.Installer
     $summary   = $installer.SummaryInformation($MsiPath, 0)
     $wordCount = [int]$summary.Property(15)
@@ -228,8 +202,7 @@ function Assert-DualScopeSummary([string]$MsiPath) {
     [GC]::Collect()
 
     if (($wordCount -band 8) -ne 0) {
-        throw ("Word Count is ${wordCount}: bit 3 marks this a per-user-only package, which " +
-               "silently disables the per-machine install option.")
+        throw "MSI Word Count is $wordCount. Bit 3 must be clear to allow elevation for installation."
     }
     return $wordCount
 }
@@ -248,42 +221,6 @@ function Invoke-FileOpWithRetry([scriptblock]$Action, [string]$What) {
             if ($attempt -eq 1) { Write-Host "    waiting for a file lock to clear ($What)" }
             Start-Sleep -Seconds 2
         }
-    }
-}
-
-function Test-Ice105Invariants([string]$MsiPath) {
-    $bannedDirs = @(
-        'AdminToolsFolder', 'CommonAppDataFolder', 'FontsFolder', 'System16Folder',
-        'System64Folder', 'SystemFolder', 'TempFolder', 'WindowsFolder', 'WindowsVolume')
-
-    $installer = New-Object -ComObject WindowsInstaller.Installer
-    $database  = $installer.OpenDatabase($MsiPath, 0)
-    try {
-        $problems = @()
-
-        $registryRows = Get-MsiRows $database 'SELECT `Registry`, `Root`, `Key` FROM `Registry`' 3
-        foreach ($row in $registryRows) {
-            if ($row[1] -eq '2') { $problems += "HKLM registry row '$($row[0])' ($($row[2]))" }
-        }
-
-        foreach ($table in @('ServiceInstall', 'ServiceControl', 'ODBCDataSource', 'MsiAssembly')) {
-            $rows = Get-MsiRows $database "SELECT * FROM ``$table``" 1
-            if ($rows.Count -gt 0) { $problems += "$table has $($rows.Count) row(s)" }
-        }
-
-        $directoryRows = Get-MsiRows $database 'SELECT `Directory` FROM `Directory`' 1
-        foreach ($row in $directoryRows) {
-            if ($bannedDirs -contains $row[0]) { $problems += "system directory '$($row[0])'" }
-        }
-
-        if ($problems.Count -gt 0) {
-            throw ("ICE105 invariants broken, so the package is no longer a valid dual-scope " +
-                   "installer: " + ($problems -join '; '))
-        }
-    }
-    finally {
-        [void][System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($database)
-        [void][System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($installer)
     }
 }
 
@@ -312,7 +249,7 @@ for ($i = 0; $i -lt 3; $i++) {
 
 $upgradeCode = Get-WxiDefine 'IgUpgradeCode'
 if (-not $upgradeCode) { throw "Could not read IgUpgradeCode from $WxiFile" }
-$productCode = New-DeterministicGuid ([guid]$upgradeCode) "PhotoViewer-msi-$Platform-$msiVersion"
+$productCode = New-DeterministicGuid ([guid]$upgradeCode) "PhotoViewer-msi-per-machine-$Platform-$msiVersion"
 
 $rid         = "win-$Platform"
 $msbuildPlat = 'x64'
@@ -404,11 +341,8 @@ Write-Host "    built: $stagedMsi"
 New-Item -ItemType Directory -Path $validationDir -Force | Out-Null
 Copy-Item -LiteralPath $stagedMsi -Destination $checkMsi -Force
 
-$wordCount = Assert-DualScopeSummary $checkMsi
-Write-Host "    summary WordCount: $wordCount (bit 3 clear, so both install scopes stay available)"
-
-Test-Ice105Invariants $checkMsi
-Write-Host '    ICE105 invariants re-asserted by hand (no HKLM rows, services or system dirs)'
+$wordCount = Assert-MachineInstallSummary $checkMsi
+Write-Host "    summary WordCount: $wordCount (elevation allowed)"
 
 if ($SkipValidation) {
     Write-Host '    skipping ICE validation (-SkipValidation)'

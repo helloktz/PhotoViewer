@@ -8,7 +8,7 @@
   <?define IgMagickNativeFile = "Magick.Native-Q16-HDRI-OpenMP-x64.dll" ?>
 
   <?define IgProductName  = "Photo Viewer $(var.ProductVersion)" ?>
-  <?define IgFolderName   = "Photo Viewer" ?>
+  <?define IgFolderName   = "PhotoViewer" ?>
   <?define IgManufacturer = "helloktz" ?>
 
   <?define IgSetupRegKey = "Software\helloktz\PhotoViewer" ?>

@@ -10,20 +10,13 @@
   <String Id="IgBannerBitmap"          Value="WixUI_Bmp_Banner" />
   <String Id="IgInfoIcon"              Value="WixUI_Ico_Info" />
 
-  <String Id="IgScopeTitle"            Value="Installation type" />
-  <String Id="IgScopeDescription"      Value="Choose who to install [ProductName] for, and where." />
-  <String Id="IgScopeGroupLabel"       Value="Install for" />
-  <String Id="IgScopePerUser"          Value="Only me (recommended)" />
-  <String Id="IgScopePerUserNote"      Value="Installs to your user folder. No administrator rights needed." />
-  <String Id="IgScopePerMachine"       Value="All users of this computer" />
-  <String Id="IgScopePerMachineNote"   Value="Installs to Program Files, for everyone who uses this PC." />
+  <String Id="IgFolderTitle"           Value="Installation folder" />
+  <String Id="IgFolderDescription"     Value="Choose where to install [ProductName]." />
   <String Id="IgFolderLabel"           Value="Install location:" />
   <String Id="IgBrowse"                Value="Br&amp;owse..." />
-  <String Id="IgElevationNote"         Value="Windows will ask for administrator approval when the install starts." />
   <String Id="IgReplaceNote"           Value="An existing Photo Viewer install was found and will be replaced." />
-  <String Id="IgReplaceNoteLocked"     Value="Photo Viewer is already installed. Setup will replace it, so the install type is fixed to match it." />
-  <String Id="IgScopeMismatchMachine"  Value="Photo Viewer is already installed for all users of this computer. Windows Installer cannot move it to a per-user install, so run setup again with ALLUSERS=1 to update it, or uninstall it first." />
-  <String Id="IgScopeMismatchUser"     Value="Photo Viewer is already installed for the current user only. Windows Installer cannot move it to a per-machine install, so run setup again with ALLUSERS=2 MSIINSTALLPERUSER=1 to update it, or uninstall it first." />
+  <String Id="IgPerMachineOnly"        Value="Photo Viewer can only be installed for all users of this computer." />
+  <String Id="IgPreviousUserInstall"   Value="Uninstall the existing per-user installation of Photo Viewer before running this setup." />
 
   <String Id="IgDialogBitmap"          Value="WixUI_Bmp_Dialog" />
   <String Id="IgCompleteTitle"         Value="Completed the [ProductName] Setup Wizard" />
