@@ -89,7 +89,7 @@ function Find-WixTool {
 
     if ($BootstrapWix) {
         Write-Host "    installing the wix dotnet tool $WixVersion"
-        & dotnet tool install --global wix --version $WixVersion
+        & dotnet tool install --global wix --version $WixVersion | Out-Host
         if ($LASTEXITCODE -ne 0) { throw "dotnet tool install wix failed (exit $LASTEXITCODE)." }
         if (Test-Path $globalTool) { return $globalTool }
     }
