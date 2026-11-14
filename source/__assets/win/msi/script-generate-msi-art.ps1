@@ -6,7 +6,7 @@
 .DESCRIPTION
     The MSI wizard shows two images, referenced by UI.wxs as WixUIBannerBmp / WixUIDialogBmp.
     They are generated rather than checked in as opaque binaries, so they stay in sync with
-    __assets/logo_c_512.png the same way the MSIX asset set does.
+    __assets/photo-viewer-logo.png the same way the MSIX asset set does.
 
         banner.png   493 x 58  logical   top strip of every wizard page
         dialog.png   493 x 312 logical   left panel of the Complete page
@@ -21,12 +21,12 @@
 
     Layouts are dictated by where WixUI paints its own text, which is drawn over these images:
       * the banner's left ~340 logical px carries the page title, so the logo goes hard right;
-      * the Complete page puts its text and its "Launch ImageGlass" checkbox on the right, and
+      * the Complete page puts its text and its "Launch Photo Viewer" checkbox on the right, and
         that checkbox is not transparent, so everything right of the logo panel is painted in
         the dialog face colour. Anything else (white, say) shows up as a grey band behind it.
 
 .PARAMETER Source
-    Source logo (square, high-res). Default: __assets/logo_c_512.png.
+    Source logo (square, high-res). Default: __assets/photo-viewer-logo.png.
 
 .PARAMETER OutDir
     Output folder. Default: the assets folder next to this script.
@@ -36,11 +36,11 @@
 
 .EXAMPLE
     pwsh __assets/win/msi/script-generate-msi-art.ps1
-    # Regenerate banner.png and dialog.png at 3x from __assets/logo_c_512.png.
+    # Regenerate banner.png and dialog.png at 3x from __assets/photo-viewer-logo.png.
 
 .EXAMPLE
-    pwsh __assets/win/msi/script-generate-msi-art.ps1 -Source __assets/logo_p_512.png -Scale 4
-    # Render from the Pro logo at 4x.
+    pwsh __assets/win/msi/script-generate-msi-art.ps1 -Source __assets/photo-viewer-logo.png -Scale 4
+    # Render from the Photo Viewer logo at 4x.
 #>
 
 [CmdletBinding()]
@@ -57,7 +57,7 @@ Set-StrictMode -Version Latest
 
 # --- Paths ---------------------------------------------------------------------
 $WorkspaceDir = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
-if (-not $Source) { $Source = Join-Path $WorkspaceDir '__assets\logo_c_512.png' }
+if (-not $Source) { $Source = Join-Path $WorkspaceDir '__assets\photo-viewer-logo.png' }
 if (-not $OutDir) { $OutDir = Join-Path $PSScriptRoot 'assets' }
 
 if (-not (Test-Path $Source)) { throw "Source image not found: $Source" }

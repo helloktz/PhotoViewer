@@ -1,0 +1,17 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="PhotoViewer.Lib/PhotoViewer.Lib.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="PhotoViewer.Win32/PhotoViewer.Win32.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+</Solution>

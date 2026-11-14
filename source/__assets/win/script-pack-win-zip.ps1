@@ -1,7 +1,7 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-    Build (and optionally sign) the portable ZIP of ImageGlass.Win32, one .zip per architecture.
+    Build (and optionally sign) the portable ZIP of PhotoViewer.Win32, one .zip per architecture.
 
 .DESCRIPTION
     Produces the archive published on GitHub Releases for users who do not want an installer:
@@ -9,8 +9,8 @@
     under a single top-level folder named after the archive so extracting cannot scatter files.
 
     The archive is PORTABLE by default: an empty ".igportable" marker file is written next to
-    ImageGlass.exe, which makes the app keep its settings (igconfig.json, _cache, _logs, _plugins,
-    ...) in its own folder instead of %LocalAppData%\ImageGlass. The whole folder can then be moved
+    PhotoViewer.exe, which makes the app keep its settings (igconfig.json, _cache, _logs, _plugins,
+    ...) in its own folder instead of %LocalAppData%\PhotoViewer. The whole folder can then be moved
     or carried on a removable drive without losing the settings. Pass -NoPortable to omit the
     marker, so the archive behaves like the MSIX/installer build and stores settings per-user.
 
@@ -22,7 +22,7 @@
     Output: __artifacts/bundle/ImageGlass_<label>_win-<arch>.zip
 
 .PARAMETER Platform
-    Target architecture: x64 (default) or arm64.
+    Target architecture: x64.
 
 .PARAMETER Sign
     Authenticode-sign every payload .exe / .dll before packing (a ZIP itself cannot be signed).
@@ -42,7 +42,7 @@
     RFC-3161 timestamp server. Default: http://timestamp.sectigo.com
 
 .PARAMETER NoPortable
-    Omit the .igportable marker; the archive then stores settings in %LocalAppData%\ImageGlass.
+    Omit the .igportable marker; the archive then stores settings in %LocalAppData%\PhotoViewer.
 
 .PARAMETER SkipPublish
     Reuse the existing __artifacts/publish/win-<arch> output instead of re-publishing
@@ -53,18 +53,18 @@
     # Signed portable x64 ZIP for GitHub Releases.
 
 .EXAMPLE
-    pwsh __assets/win/script-pack-win-zip.ps1 -Platform arm64 -NoPortable
-    # arm64 ZIP that keeps settings in %LocalAppData% (no portable marker).
+    pwsh __assets/win/script-pack-win-zip.ps1 -NoPortable
+    # ZIP that keeps settings in %LocalAppData% (no portable marker).
 #>
 
 [CmdletBinding()]
 param(
-    [ValidateSet('x64', 'arm64')]
+    [ValidateSet('x64')]
     [string]$Platform = 'x64',
 
     [switch]$Sign,
 
-    [string]$CertSubject = 'Duong Dieu Phap',
+    [string]$CertSubject = 'Photo Viewer',
     [string]$CertFile = '',
     [string]$CertPassword = '',
     [string]$TimestampUrl = 'http://timestamp.sectigo.com',
@@ -79,7 +79,7 @@ Set-StrictMode -Version Latest
 
 # --- Paths ---------------------------------------------------------------------
 $WorkspaceDir = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$ProjectFile  = Join-Path $WorkspaceDir 'ImageGlass.Win32\ImageGlass.Win32.csproj'
+$ProjectFile  = Join-Path $WorkspaceDir 'PhotoViewer.Win32\PhotoViewer.Win32.csproj'
 $BuildProps   = Join-Path $WorkspaceDir 'Directory.Build.props'
 $AppExtras    = Join-Path $WorkspaceDir '__assets\__app'
 $DistDir      = Join-Path $WorkspaceDir '__artifacts\bundle'
@@ -169,10 +169,10 @@ $relLabel = if ($igReleaseType) { "$igVersion-$igReleaseType" } else { $igVersio
 
 # --- Plan ----------------------------------------------------------------------
 $rid         = "win-$Platform"
-$msbuildPlat = if ($Platform -eq 'x64') { 'x64' } else { 'ARM64' }
+$msbuildPlat = 'x64'
 $publishDir  = Join-Path $WorkspaceDir "__artifacts\publish\$rid"
 $stagingDir  = Join-Path $DistDir "$rid-zip"
-$archiveName = "ImageGlass_${relLabel}_${rid}"
+$archiveName = "PhotoViewer_${relLabel}_${rid}"
 # The staged folder name becomes the single top-level folder inside the archive, named after the
 # archive itself (matches the previous releases).
 $payloadDir  = Join-Path $stagingDir $archiveName
@@ -185,14 +185,14 @@ if ($script:doSign -and -not (Test-SigningCert)) {
 }
 $signtool = if ($script:doSign) { Find-SdkTool 'signtool.exe' } else { '' }
 
-Write-Host "==> Packing ImageGlass $igVersion as ZIP ($Platform)"
+Write-Host "==> Packing Photo Viewer $igVersion as ZIP ($Platform)"
 Write-Host "    Portable    : $(if ($NoPortable) { 'no (no marker file)' } else { "yes ($PortableMarker)" })"
 Write-Host "    Signed      : $(if ($script:doSign) { 'yes (payload binaries)' } else { 'no' })"
 Write-Host "    Output      : $outZip"
 if ($script:doSign) { Write-Host "    signtool    : $signtool" }
 
 # --- 1. Publish a fresh self-contained AOT build -------------------------------
-if ($SkipPublish -and (Test-Path (Join-Path $publishDir 'ImageGlass.exe'))) {
+if ($SkipPublish -and (Test-Path (Join-Path $publishDir 'PhotoViewer.exe'))) {
     Write-Host "    reusing publish output: $publishDir"
 }
 else {
@@ -203,26 +203,19 @@ else {
     # Bundle the shared app assets (themes, credits, etc.), mirroring the publish-win tasks.
     Copy-Item -Path (Join-Path $AppExtras '*') -Destination $publishDir -Recurse -Force
 }
-if (-not (Test-Path (Join-Path $publishDir 'ImageGlass.exe'))) {
-    throw "Publish did not produce ImageGlass.exe in $publishDir"
+if (-not (Test-Path (Join-Path $publishDir 'PhotoViewer.exe'))) {
+    throw "Publish did not produce PhotoViewer.exe in $publishDir"
 }
 
 # --- 2. Stage the payload ------------------------------------------------------
 if (Test-Path $stagingDir) { Remove-Item $stagingDir -Recurse -Force }
 New-Item -ItemType Directory -Path $payloadDir -Force | Out-Null
 Copy-Item -Path (Join-Path $publishDir '*') -Destination $payloadDir -Recurse -Force
+Copy-Item -LiteralPath (Join-Path (Split-Path $WorkspaceDir -Parent) 'LICENSE'), (Join-Path (Split-Path $WorkspaceDir -Parent) 'README.md') -Destination $payloadDir
 
 # Drop debug symbols: they bloat the archive and are not part of the product.
 Get-ChildItem -Path $payloadDir -Recurse -Include '*.pdb' -File -ErrorAction SilentlyContinue |
     Remove-Item -Force
-
-# The exportable Store license belongs to the msstore MSIX only; a stale -SkipPublish reuse must
-# never leak it into a public archive.
-$storeLicenseDir = Join-Path $payloadDir '_store'
-if (Test-Path $storeLicenseDir) {
-    Write-Warning "Removing '$storeLicenseDir' from the archive: the store license ships in the msstore package only."
-    Remove-Item $storeLicenseDir -Recurse -Force
-}
 
 # --- 3. Portable marker --------------------------------------------------------
 if (-not $NoPortable) {

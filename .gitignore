@@ -435,3 +435,6 @@ FodyWeavers.xsd
 *.msm
 *.msp
 .DS_Store
+
+.openidea/
+.codegraph/

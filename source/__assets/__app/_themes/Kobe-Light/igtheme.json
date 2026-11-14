@@ -1,6 +1,6 @@
 {
   "_Metadata": {
-    "Description": "ImageGlass theme configuration file",
+    "Description": "Photo Viewer theme configuration file",
     "Version": 10
   },
   "Info": {
@@ -8,7 +8,7 @@
     "Author": "Dương Diệu Pháp",
     "Email": "phap@imageglass.org",
     "Website": "https://imageglass.org",
-    "Description": "Kobe theme for ImageGlass 10",
+    "Description": "Kobe theme adapted for Photo Viewer",
     "Version": 10
   },
   "Settings": {

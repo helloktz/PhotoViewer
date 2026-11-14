@@ -1,7 +1,7 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-    Build (and optionally sign) the Windows MSI installer of ImageGlass.Win32 (x64).
+    Build (and optionally sign) the Windows MSI installer of PhotoViewer.Win32 (x64).
 
 .DESCRIPTION
     Produces the setup program published on GitHub Releases for users who do not want the
@@ -9,14 +9,14 @@
     into a Windows Installer package by WiX 5.
 
     The package is DUAL SCOPE. The wizard asks whether to install for the current user
-    (%LocalAppData%\Programs\ImageGlass, no elevation) or for every user
-    (%ProgramFiles%\ImageGlass, elevated), and both work unattended through msiexec:
+    (%LocalAppData%\Programs\Photo Viewer, no elevation) or for every user
+    (%ProgramFiles%\Photo Viewer, elevated), and both work unattended through msiexec:
 
         msiexec /i <package>.msi /qn ALLUSERS=2 MSIINSTALLPERUSER=1        # per-user
         msiexec /i <package>.msi /qn ALLUSERS=2 MSIINSTALLPERUSER=""       # per-machine
 
-    Installing removes ImageGlass 9 if it is present. Uninstalling runs
-    "ImageGlass.exe --ig-remove-default-viewer" so the classic file-type registration does
+    Uninstalling runs
+    "PhotoViewer.exe --ig-remove-default-viewer" so the classic file-type registration does
     not outlive the app.
 
     An upgrade must run in the scope of the install it replaces, because Windows Installer
@@ -86,7 +86,7 @@ param(
 
     [switch]$Sign,
 
-    [string]$CertSubject = 'Duong Dieu Phap',
+    [string]$CertSubject = 'Photo Viewer',
     [string]$CertFile = '',
     [string]$CertPassword = '',
     [string]$TimestampUrl = 'http://timestamp.sectigo.com',
@@ -106,7 +106,7 @@ Set-StrictMode -Version Latest
 
 # --- Paths ---------------------------------------------------------------------
 $WorkspaceDir = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$ProjectFile  = Join-Path $WorkspaceDir 'ImageGlass.Win32\ImageGlass.Win32.csproj'
+$ProjectFile  = Join-Path $WorkspaceDir 'PhotoViewer.Win32\PhotoViewer.Win32.csproj'
 $BuildProps   = Join-Path $WorkspaceDir 'Directory.Build.props'
 $AppExtras    = Join-Path $WorkspaceDir '__assets\__app'
 $DistDir      = Join-Path $WorkspaceDir '__artifacts\bundle'
@@ -428,21 +428,21 @@ $buildNumber = if ($versionFields.Count -ge 4) { [int]$versionFields[3] } else {
 
 $upgradeCode = Get-WxiDefine 'IgUpgradeCode'
 if (-not $upgradeCode) { throw "Could not read IgUpgradeCode from $WxiFile" }
-$productCode = New-DeterministicGuid ([guid]$upgradeCode) "ImageGlass-msi-$Platform-$msiVersion"
+$productCode = New-DeterministicGuid ([guid]$upgradeCode) "PhotoViewer-msi-$Platform-$msiVersion"
 
 # --- Plan ----------------------------------------------------------------------
 $rid         = "win-$Platform"
 $msbuildPlat = 'x64'
 $publishDir  = Join-Path $WorkspaceDir "__artifacts\publish\$rid"
 $stagingDir  = Join-Path $DistDir "$rid-msi"
-$payloadDir  = Join-Path $stagingDir 'ImageGlass'
+$payloadDir  = Join-Path $stagingDir 'PhotoViewer'
 $objDir      = Join-Path $stagingDir 'obj'
-$wixPdb      = Join-Path $stagingDir 'ImageGlass.wixpdb'
-$stagedMsi   = Join-Path $stagingDir "ImageGlass_${relLabel}_${rid}.msi"
+$wixPdb      = Join-Path $stagingDir 'PhotoViewer.wixpdb'
+$stagedMsi   = Join-Path $stagingDir "PhotoViewer_${relLabel}_${rid}.msi"
 # Inspected/validated in place of the real thing; see step 5. Lives outside the staging dir so a
 # lingering msiexec handle cannot block the cleanup.
 $checkMsi    = Join-Path ([System.IO.Path]::GetTempPath()) "ig-msi-check-$PID.msi"
-$outMsi      = Join-Path $DistDir "ImageGlass_${relLabel}_${rid}.msi"
+$outMsi      = Join-Path $DistDir "PhotoViewer_${relLabel}_${rid}.msi"
 
 $script:doSign = [bool]$Sign
 if ($script:doSign -and -not (Test-SigningCert)) {
@@ -456,7 +456,7 @@ $wix = Find-WixTool
 $wixFound = Assert-WixVersion $wix
 Assert-WixUiExtension $wix
 
-Write-Host "==> Packing ImageGlass $igVersion as MSI ($Platform)"
+Write-Host "==> Packing Photo Viewer $igVersion as MSI ($Platform)"
 Write-Host "    Version     : $msiVersion (ProductVersion)"
 Write-Host "    ProductCode : {$($productCode.ToString().ToUpperInvariant())}"
 Write-Host "    UpgradeCode : {$upgradeCode}"
@@ -468,7 +468,7 @@ Write-Host "    wix         : $wix ($wixFound)"
 if ($script:doSign) { Write-Host "    signtool    : $signtool" }
 
 # --- 1. Publish a fresh self-contained AOT build -------------------------------
-if ($SkipPublish -and (Test-Path (Join-Path $publishDir 'ImageGlass.exe'))) {
+if ($SkipPublish -and (Test-Path (Join-Path $publishDir 'PhotoViewer.exe'))) {
     Write-Host "    reusing publish output: $publishDir"
 }
 else {
@@ -479,8 +479,8 @@ else {
     # Bundle the shared app assets (themes, credits, etc.), mirroring the publish-win tasks.
     Copy-Item -Path (Join-Path $AppExtras '*') -Destination $publishDir -Recurse -Force
 }
-if (-not (Test-Path (Join-Path $publishDir 'ImageGlass.exe'))) {
-    throw "Publish did not produce ImageGlass.exe in $publishDir"
+if (-not (Test-Path (Join-Path $publishDir 'PhotoViewer.exe'))) {
+    throw "Publish did not produce PhotoViewer.exe in $publishDir"
 }
 
 # Sweep any check copy a previous run was still locked out of.
@@ -494,17 +494,11 @@ if (Test-Path $stagingDir) {
 }
 New-Item -ItemType Directory -Path $payloadDir -Force | Out-Null
 Copy-Item -Path (Join-Path $publishDir '*') -Destination $payloadDir -Recurse -Force
+Copy-Item -LiteralPath (Join-Path (Split-Path $WorkspaceDir -Parent) 'LICENSE'), (Join-Path (Split-Path $WorkspaceDir -Parent) 'README.md') -Destination $payloadDir
 
 # Drop debug symbols: they are ~290 MB of the publish dir and are not part of the product.
 Get-ChildItem -Path $payloadDir -Recurse -Include '*.pdb' -File -ErrorAction SilentlyContinue |
     Remove-Item -Force
-
-# The exportable Store license ships in the msstore MSIX only. Refuse to build rather than
-# quietly strip it: the failure mode is a leaked Pro license, not a cosmetic one.
-$storeLicenseDir = Join-Path $payloadDir '_store'
-if (Test-Path $storeLicenseDir) {
-    throw "Refusing to build: '$storeLicenseDir' exists. The store license ships only in the msstore MSIX."
-}
 
 # An installed copy carrying the portable marker cannot start: Program Files is not writable and
 # ConfigMode reports the error and quits instead of falling back to %LocalAppData%.
