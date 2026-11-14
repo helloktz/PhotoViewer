@@ -24,7 +24,6 @@
                     Variant="Link" />
             </StackPanel>
 
-            <!--  Hotkeys table (rows built in code-behind)  -->
             <ui:PhTableControl x:Name="PART_Table" HorizontalAlignment="Stretch" />
 
         </StackPanel>

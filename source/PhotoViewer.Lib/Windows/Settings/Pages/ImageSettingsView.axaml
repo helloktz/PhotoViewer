@@ -13,11 +13,9 @@
 
     <StackPanel Orientation="Vertical">
 
-        <!--  Browsing  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_Browsing" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
 
-            <!--  Loading order + order type (side by side)  -->
             <StackPanel
                 Margin="0,0,0,6"
                 Orientation="Horizontal"
@@ -50,7 +48,6 @@
                 <ui:PhTextBlock LangKey="Settings_EnableAutoSwitchSiblingDir" TextWrapping="Wrap" />
             </CheckBox>
 
-            <!--  Sub-group: Browsing mode  -->
             <ui:PhTextBlock Classes="subgroup" LangKey="Settings_BrowsingMode" />
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ComboBox x:Name="PART_BrowsingMode" MinWidth="200">
@@ -77,8 +74,6 @@
                 </ComboBox>
             </StackPanel>
 
-
-            <!--  Sub-group: Transition effect (both labels share the subgroup style, so they sit on one line)  -->
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <Grid
                     HorizontalAlignment="Left"
@@ -116,7 +111,6 @@
                                         Spacing="2">
                                         <TextBlock Text="{CompiledBinding Name}" TextTrimming="CharacterEllipsis" />
 
-                                        <!--  effect file path  -->
                                         <TextBlock
                                             FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
                                             IsVisible="{CompiledBinding HasFilePath}"
@@ -155,8 +149,6 @@
                 </StackPanel>
             </StackPanel>
 
-
-            <!--  Sub-group: Image preview  -->
             <ui:PhTextBlock Classes="subgroup" LangKey="Settings_ImagePreview" />
             <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
                 <CheckBox x:Name="PART_ImagePreview">
@@ -169,7 +161,6 @@
                     <ui:PhTextBlock LangKey="Settings_EnableOnlyLoadNonRawPreview" TextWrapping="Wrap" />
                 </CheckBox>
 
-                <!--  Minimum embedded-thumbnail size (visible only when a preview-only option is on)  -->
                 <StackPanel x:Name="PART_PreviewSizeSection">
                     <ui:PhTextBlock
                         Margin="0,8,0,8"
@@ -199,8 +190,6 @@
 
         </StackPanel>
 
-
-        <!--  File watcher (Pro)  -->
         <StackPanel
             Margin="0,20,0,8"
             Orientation="Horizontal"
@@ -220,8 +209,6 @@
             </CheckBox>
         </StackPanel>
 
-
-        <!--  Color management  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_ColorManagement" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
             <CheckBox x:Name="PART_HdrToneMapping">
@@ -238,14 +225,12 @@
                     <ui:PhButton x:Name="PART_BrowseColorProfile" VerticalAlignment="Stretch" />
                 </StackPanel>
 
-                <!--  Custom profile file path (visible when "Custom" is selected)  -->
                 <ui:PhButton
                     x:Name="PART_CustomColorProfile"
                     Margin="0,2,0,0"
                     HorizontalAlignment="Left"
                     Variant="Link" />
 
-                <!--  Note for the current monitor profile option  -->
                 <ui:PhTextBlock
                     x:Name="PART_MonitorProfileNote"
                     FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
@@ -256,11 +241,8 @@
             </StackPanel>
         </StackPanel>
 
-
-        <!--  Caching  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_Caching" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}" Spacing="10">
-            <!--  Maximum cached images (0 - 30)  -->
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock
                     x:Name="PART_CacheMaxFilesLabel"

@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -29,35 +11,21 @@ using System.Collections.Specialized;
 
 namespace PhotoViewer.UI;
 
-
-/// <summary>
-/// A virtualizing panel, optimized for uniform-size items (thumbnail gallery).
-/// </summary>
 public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsInfo
 {
-    // Realized element tracking
     private readonly List<RealizedElement> _realizedElements = [];
     private readonly Stack<Control> _recyclePool = new();
 
-    // Layout cache (recalculated per measure pass)
     private int _columnsPerRow = 1;
     private int _totalRows;
     private double _itemWidth;
     private double _itemHeight;
 
-    // Scroll tracking
     private ScrollViewer? _scrollViewer;
     private Vector _lastViewport;
     private double _lastAvailableWidth;
     private bool _isAttached;
 
-
-
-    #region Styled Properties
-
-    /// <summary>
-    /// Gets, sets the view mode.
-    /// </summary>
     public PhVirtualizingUniformPanelViewMode ViewMode
     {
         get => GetValue(ViewModeProperty);
@@ -66,10 +34,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
     public static readonly StyledProperty<PhVirtualizingUniformPanelViewMode> ViewModeProperty =
         AvaloniaProperty.Register<PhVirtualizingUniformPanel, PhVirtualizingUniformPanelViewMode>(nameof(ViewMode), PhVirtualizingUniformPanelViewMode.FilmStrip);
 
-
-    /// <summary>
-    /// Gets, sets the uniform item size (width = height).
-    /// </summary>
     public double ItemSize
     {
         get => GetValue(ItemSizeProperty);
@@ -78,11 +42,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
     public static readonly StyledProperty<double> ItemSizeProperty =
         AvaloniaProperty.Register<PhVirtualizingUniformPanel, double>(nameof(ItemSize), 80d);
 
-
-    /// <summary>
-    /// Gets, sets the margin around each item. Must match the Margin set on
-    /// the item element in the DataTemplate so layout calculation is accurate.
-    /// </summary>
     public Thickness ItemMargin
     {
         get => GetValue(ItemMarginProperty);
@@ -91,23 +50,9 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
     public static readonly StyledProperty<Thickness> ItemMarginProperty =
         AvaloniaProperty.Register<PhVirtualizingUniformPanel, Thickness>(nameof(ItemMargin));
 
-
-    /// <summary>
-    /// Gets the number of columns per row.
-    /// </summary>
     public int ColumnsPerRow => _columnsPerRow;
 
-
-    /// <summary>
-    /// Gets the total number of rows.
-    /// </summary>
     public int TotalRows => _totalRows;
-
-    #endregion // Styled Properties
-
-
-
-    #region IScrollSnapPointsInfo
 
     public bool AreHorizontalSnapPointsRegular
     {
@@ -121,7 +66,7 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         set { }
     }
 
-#pragma warning disable CS0067 // required by IScrollSnapPointsInfo
+#pragma warning disable CS0067
     public event EventHandler<RoutedEventArgs>? HorizontalSnapPointsChanged;
     public event EventHandler<RoutedEventArgs>? VerticalSnapPointsChanged;
 #pragma warning restore CS0067
@@ -140,12 +85,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         return 0;
     }
 
-    #endregion // IScrollSnapPointsInfo
-
-
-
-    #region Override Methods
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -159,7 +98,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         }
     }
 
-
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -172,7 +110,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
             _scrollViewer.PropertyChanged += OnScrollViewerPropertyChanged;
         }
     }
-
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -189,14 +126,12 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         base.OnDetachedFromVisualTree(e);
     }
 
-
     protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
     {
         base.OnItemsChanged(items, e);
         RecycleAllElements();
         InvalidateMeasure();
     }
-
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -210,7 +145,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
             return default;
         }
 
-        // Cell size = item content size + margin on each side.
         var margin = ItemMargin;
         _itemWidth = ItemSize + margin.Left + margin.Right;
         _itemHeight = ItemSize + margin.Top + margin.Bottom;
@@ -225,7 +159,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         }
     }
 
-
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (ViewMode == PhVirtualizingUniformPanelViewMode.FilmStrip)
@@ -238,7 +171,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         }
     }
 
-
     protected override Control? ContainerFromIndex(int index)
     {
         for (var i = 0; i < _realizedElements.Count; i++)
@@ -248,7 +180,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         }
         return null;
     }
-
 
     protected override int IndexFromContainer(Control container)
     {
@@ -260,7 +191,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         return -1;
     }
 
-
     protected override IEnumerable<Control> GetRealizedContainers()
     {
         for (var i = 0; i < _realizedElements.Count; i++)
@@ -269,14 +199,12 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         }
     }
 
-
     protected override Control ScrollIntoView(int index)
     {
         var items = Items;
         if (items is null || index < 0 || index >= items.Count)
             return null!;
 
-        // Ensure the element is realized
         var element = ContainerFromIndex(index);
         if (element is null)
         {
@@ -284,7 +212,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
             element.Measure(new Size(_itemWidth, _itemHeight));
         }
 
-        // Bring into view by scrolling the ScrollViewer
         if (_scrollViewer is not null)
         {
             if (ViewMode == PhVirtualizingUniformPanelViewMode.FilmStrip)
@@ -310,7 +237,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
 
         return element;
     }
-
 
     protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
     {
@@ -357,18 +283,11 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         return ContainerFromIndex(targetIndex) ?? ScrollIntoView(targetIndex);
     }
 
-    #endregion // Override Methods
-
-
-
-    #region FilmStrip Mode (single horizontal line)
-
     private Size MeasureFilmStrip(Size availableSize, IReadOnlyList<object?> items, int itemCount)
     {
         _columnsPerRow = itemCount;
         _totalRows = 1;
 
-        // Determine visible range from viewport
         double viewportStart = 0;
         double viewportEnd = availableSize.Width;
         if (_scrollViewer is not null)
@@ -377,7 +296,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
             viewportEnd = viewportStart + _scrollViewer.Viewport.Width;
         }
 
-        // Add buffer (1 extra screen on each side)
         var bufferSize = viewportEnd - viewportStart;
         var extStart = Math.Max(0, viewportStart - bufferSize);
         var extEnd = viewportEnd + bufferSize;
@@ -389,7 +307,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
 
         RealizeRange(items, firstRealized, lastRealized, firstVisible, lastVisible);
 
-        // Measure realized elements
         var constraint = new Size(_itemWidth, _itemHeight);
         for (var i = 0; i < _realizedElements.Count; i++)
         {
@@ -398,7 +315,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
 
         return new Size(itemCount * _itemWidth, _itemHeight);
     }
-
 
     private Size ArrangeFilmStrip(Size finalSize)
     {
@@ -412,16 +328,8 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         return finalSize;
     }
 
-    #endregion // FilmStrip Mode
-
-
-
-    #region Gallery Mode (wrap rows, vertical scroll)
-
     private Size MeasureGallery(Size availableSize, IReadOnlyList<object?> items, int itemCount)
     {
-        // Use the constraint width from the parent (Border with padding already subtracted).
-        // Only fall back to ScrollViewer viewport when the constraint is infinite.
         var availWidth = !double.IsInfinity(availableSize.Width)
             ? availableSize.Width
             : (_scrollViewer is not null && _scrollViewer.Viewport.Width > 0
@@ -433,7 +341,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
 
         var totalHeight = _totalRows * _itemHeight;
 
-        // Determine visible row range from viewport
         double viewportStart = 0;
         double viewportEnd = availableSize.Height;
         if (_scrollViewer is not null)
@@ -442,7 +349,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
             viewportEnd = viewportStart + _scrollViewer.Viewport.Height;
         }
 
-        // Add buffer (1 extra screen on each side)
         var bufferSize = Math.Max(1, viewportEnd - viewportStart);
         var extStart = Math.Max(0, viewportStart - bufferSize);
         var extEnd = viewportEnd + bufferSize;
@@ -459,19 +365,16 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
 
         RealizeRange(items, firstRealized, lastRealized, firstVisible, lastVisible);
 
-        // Measure realized elements
         var constraint = new Size(_itemWidth, _itemHeight);
         for (var i = 0; i < _realizedElements.Count; i++)
         {
             _realizedElements[i].Element.Measure(constraint);
         }
 
-        // Desired width = actual columns used, capped to available width.
         var desiredWidth = Math.Min(_columnsPerRow * _itemWidth, availWidth);
 
         return new Size(desiredWidth, totalHeight);
     }
-
 
     private Size ArrangeGallery(Size finalSize)
     {
@@ -489,19 +392,9 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         return finalSize;
     }
 
-    #endregion // Gallery Mode
-
-
-
-    #region Virtualization Helpers
-
-    /// <summary>
-    /// Realizes elements in [firstIndex, lastIndex] range and recycles out-of-range ones.
-    /// </summary>
     private void RealizeRange(IReadOnlyList<object?> items, int firstIndex, int lastIndex,
         int visibleFirstIndex, int visibleLastIndex)
     {
-        // 1) Recycle elements outside the new range
         for (var i = _realizedElements.Count - 1; i >= 0; i--)
         {
             var idx = _realizedElements[i].Index;
@@ -512,14 +405,12 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
             }
         }
 
-        // 2) Build a set of already-realized indices for O(1) lookup
         var realizedIndices = new HashSet<int>(_realizedElements.Count);
         for (var i = 0; i < _realizedElements.Count; i++)
         {
             realizedIndices.Add(_realizedElements[i].Index);
         }
 
-        // 3) Realize visible elements before the buffered range so their thumbnails start first.
         void RealizeMissingRange(int start, int end)
         {
             for (var idx = start; idx <= end; idx++)
@@ -536,10 +427,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         RealizeMissingRange(visibleLastIndex + 1, lastIndex);
     }
 
-
-    /// <summary>
-    /// Gets an element from the recycle pool or creates a new one.
-    /// </summary>
     private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
     {
         var item = items[index]!;
@@ -579,10 +466,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         return element;
     }
 
-
-    /// <summary>
-    /// Recycles an element back to the pool.
-    /// </summary>
     private void RecycleElement(RealizedElement re)
     {
         var element = re.Element;
@@ -591,10 +474,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         _recyclePool.Push(element);
     }
 
-
-    /// <summary>
-    /// Recycles all currently realized elements.
-    /// </summary>
     private void RecycleAllElements()
     {
         for (var i = _realizedElements.Count - 1; i >= 0; i--)
@@ -604,10 +483,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         _realizedElements.Clear();
     }
 
-
-    /// <summary>
-    /// Handles effective viewport changes to re-virtualize.
-    /// </summary>
     private void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
     {
         if (!_isAttached) return;
@@ -620,10 +495,6 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         }
     }
 
-
-    /// <summary>
-    /// Detects ScrollViewer viewport size changes (window resize) to rearrange Gallery layout.
-    /// </summary>
     private void OnScrollViewerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (!_isAttached) return;
@@ -638,41 +509,18 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
         }
     }
 
-    #endregion // Virtualization Helpers
-
-
 }
 
-
-
-/// <summary>
-/// View mode for <see cref="PhVirtualizingUniformPanel"/>.
-/// </summary>
 public enum PhVirtualizingUniformPanelViewMode
 {
-    /// <summary>
-    /// Items placed horizontally, wrapped into multiple rows, with vertical scrollbar.
-    /// </summary>
+
     Gallery,
 
-    /// <summary>
-    /// Items placed horizontally in a single line, with horizontal scrollbar.
-    /// </summary>
     FilmStrip,
 }
 
-
-
-/// <summary>
-/// Tracks a realized item index and its container element.
-/// </summary>
 record struct RealizedElement(int Index, Control Element);
 
-
-
-/// <summary>
-/// Helper to get list element by ref to avoid struct copies.
-/// </summary>
 static class CollectionsMarshalHelper
 {
     public static ref RealizedElement GetRef(List<RealizedElement> list, int index)
@@ -680,4 +528,3 @@ static class CollectionsMarshalHelper
         return ref System.Runtime.InteropServices.CollectionsMarshal.AsSpan(list)[index];
     }
 }
-

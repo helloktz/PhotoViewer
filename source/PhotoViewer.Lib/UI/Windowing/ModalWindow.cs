@@ -1,22 +1,4 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -38,13 +20,6 @@ public partial class ModalWindow : DialogWindow
     protected Border _noteContainer;
     protected CheckBox _chkRememberOption;
 
-
-
-    #region Public Properties
-
-    /// <summary>
-    /// Gets, sets the extra content above the footer.
-    /// </summary>
     public object? ModalExtraContent
     {
         get => GetValue(ModalExtraContentProperty);
@@ -53,10 +28,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<object?> ModalExtraContentProperty =
         AvaloniaProperty.Register<ModalWindow, object?>(nameof(ModalExtraContent));
 
-
-    /// <summary>
-    /// Gets, sets the text of modal's heading.
-    /// </summary>
     public string? Heading
     {
         get => GetValue(HeadingProperty);
@@ -65,10 +36,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<string?> HeadingProperty =
         AvaloniaProperty.Register<ModalWindow, string?>(nameof(Heading));
 
-
-    /// <summary>
-    /// Gets, sets the text of modal's description.
-    /// </summary>
     public string? Description
     {
         get => GetValue(DescriptionProperty);
@@ -77,10 +44,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<string?> DescriptionProperty =
         AvaloniaProperty.Register<ModalWindow, string?>(nameof(Description));
 
-
-    /// <summary>
-    /// Gets, sets the text of modal's details.
-    /// </summary>
     public string? Details
     {
         get => GetValue(DetailsProperty);
@@ -89,10 +52,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<string?> DetailsProperty =
         AvaloniaProperty.Register<ModalWindow, string?>(nameof(Details));
 
-
-    /// <summary>
-    /// Gets, sets the text of modal's note.
-    /// </summary>
     public string? Note
     {
         get => GetValue(NoteProperty);
@@ -101,10 +60,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<string?> NoteProperty =
         AvaloniaProperty.Register<ModalWindow, string?>(nameof(Note));
 
-
-    /// <summary>
-    /// Gets, sets the style of modal's note.
-    /// </summary>
     public InfoBarSeverity NoteStyle
     {
         get => GetValue(NoteStyleProperty);
@@ -117,10 +72,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<InfoBarSeverity> NoteStyleProperty =
         AvaloniaProperty.Register<ModalWindow, InfoBarSeverity>(nameof(NoteStyle), InfoBarSeverity.Info);
 
-
-    /// <summary>
-    /// Gets, sets the thumbnail of modal.
-    /// </summary>
     public IImage? Thumbnail
     {
         get => GetValue(ThumbnailProperty);
@@ -129,10 +80,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<IImage?> ThumbnailProperty =
         AvaloniaProperty.Register<ModalWindow, IImage?>(nameof(Thumbnail));
 
-
-    /// <summary>
-    /// Gets, sets the thumbnail icon of modal.
-    /// </summary>
     public StockIconId? ThumbnailIcon
     {
         get => GetValue(ThumbnailIconProperty);
@@ -141,10 +88,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<StockIconId?> ThumbnailIconProperty =
         AvaloniaProperty.Register<ModalWindow, StockIconId?>(nameof(ThumbnailIcon));
 
-
-    /// <summary>
-    /// Gets, sets the value of input control.
-    /// </summary>
     public string InputValue
     {
         get => _txtInput?.GetValue(TextBox.TextProperty) ?? string.Empty;
@@ -153,10 +96,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<string> InputValueProperty =
         AvaloniaProperty.Register<ModalWindow, string>(nameof(InputValue), string.Empty);
 
-
-    /// <summary>
-    /// Gets, sets the rules for the input control.
-    /// </summary>
     public TextBoxAcceptValue AcceptValue
     {
         get => GetValue(AcceptValueProperty);
@@ -165,10 +104,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<TextBoxAcceptValue> AcceptValueProperty =
         AvaloniaProperty.Register<ModalWindow, TextBoxAcceptValue>(nameof(AcceptValue), TextBoxAcceptValue.Any);
 
-
-    /// <summary>
-    /// Gets, sets the placeholder text of the input control.
-    /// </summary>
     public string? InputPlaceholder
     {
         get => GetValue(InputPlaceholderProperty);
@@ -177,10 +112,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<string?> InputPlaceholderProperty =
         AvaloniaProperty.Register<ModalWindow, string?>(nameof(InputPlaceholder));
 
-
-    /// <summary>
-    /// Gets, sets the progress value.
-    /// </summary>
     public double ProgressValue
     {
         get => GetValue(ProgressValueProperty);
@@ -189,10 +120,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<double> ProgressValueProperty =
         AvaloniaProperty.Register<ModalWindow, double>(nameof(ProgressValue));
 
-
-    /// <summary>
-    /// Gets, sets the progress visibility
-    /// </summary>
     public bool IsProgressVisible
     {
         get => GetValue(IsProgressVisibleProperty);
@@ -201,10 +128,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<bool> IsProgressVisibleProperty =
         AvaloniaProperty.Register<ModalWindow, bool>(nameof(IsProgressVisible));
 
-
-    /// <summary>
-    /// Gets, sets the progress indeterminate state.
-    /// </summary>
     public bool IsProgressIndeterminate
     {
         get => GetValue(IsProgressIndeterminateProperty);
@@ -213,66 +136,34 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<bool> IsProgressIndeterminateProperty =
         AvaloniaProperty.Register<ModalWindow, bool>(nameof(IsProgressIndeterminate));
 
-
-    /// <summary>
-    /// Gets the visibility of heading control.
-    /// </summary>
     public bool IsHeadingVisible => !string.IsNullOrWhiteSpace(Heading);
     public static readonly DirectProperty<ModalWindow, bool> IsHeadingVisibleProperty =
         AvaloniaProperty.RegisterDirect<ModalWindow, bool>(nameof(IsHeadingVisible), i => i.IsHeadingVisible);
 
-
-    /// <summary>
-    /// Gets the visibility of description control.
-    /// </summary>
     public bool IsDescriptionVisible => !string.IsNullOrWhiteSpace(Description);
     public static readonly DirectProperty<ModalWindow, bool> IsDescriptionVisibleProperty =
         AvaloniaProperty.RegisterDirect<ModalWindow, bool>(nameof(IsDescriptionVisible), i => i.IsDescriptionVisible);
 
-
-    /// <summary>
-    /// Gets the visibility of details control.
-    /// </summary>
     public bool IsDetailsVisible => !string.IsNullOrWhiteSpace(Details);
     public static readonly DirectProperty<ModalWindow, bool> IsDetailsVisibleProperty =
         AvaloniaProperty.RegisterDirect<ModalWindow, bool>(nameof(IsDetailsVisible), i => i.IsDetailsVisible);
 
-
-    /// <summary>
-    /// Gets the visibility of thumbnail.
-    /// </summary>
     public bool IsThumbnailVisible => Thumbnail is not null;
     public static readonly DirectProperty<ModalWindow, bool> IsThumbnailVisibleProperty =
         AvaloniaProperty.RegisterDirect<ModalWindow, bool>(nameof(IsThumbnailVisible), i => i.IsThumbnailVisible);
 
-
-    /// <summary>
-    /// Gets the visibility of thumbnail icon.
-    /// </summary>
     public bool IsThumbnailIconVisible => ThumbnailIcon is not null;
     public static readonly DirectProperty<ModalWindow, bool> IsThumbnailIconVisibleProperty =
         AvaloniaProperty.RegisterDirect<ModalWindow, bool>(nameof(IsThumbnailIconVisible), i => i.IsThumbnailIconVisible);
 
-
-    /// <summary>
-    /// Gets the visibility of thumbnail section.
-    /// </summary>
     public bool IsThumbnailSectionVisible => Thumbnail is not null || ThumbnailIcon is not null;
     public static readonly DirectProperty<ModalWindow, bool> IsThumbnailSectionVisibleProperty =
         AvaloniaProperty.RegisterDirect<ModalWindow, bool>(nameof(IsThumbnailSectionVisible), i => i.IsThumbnailSectionVisible);
 
-
-    /// <summary>
-    /// Gets the visibility of note control.
-    /// </summary>
     public bool IsNoteVisible => !string.IsNullOrWhiteSpace(Note);
     public static readonly DirectProperty<ModalWindow, bool> IsNoteVisibleProperty =
         AvaloniaProperty.RegisterDirect<ModalWindow, bool>(nameof(IsNoteVisible), i => i.IsNoteVisible);
 
-
-    /// <summary>
-    /// Gets, sets the visibility of input control.
-    /// </summary>
     public bool IsInputVisible
     {
         get => GetValue(IsInputVisibleProperty);
@@ -281,10 +172,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<bool> IsInputVisibleProperty =
         AvaloniaProperty.Register<ModalWindow, bool>(nameof(IsInputVisible));
 
-
-    /// <summary>
-    /// Gets, sets the visibility of remember checkbox.
-    /// </summary>
     public bool IsRememberOptionVisible
     {
         get => GetValue(IsRememberOptionVisibleProperty);
@@ -293,10 +180,6 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<bool> IsRememberOptionVisibleProperty =
         AvaloniaProperty.Register<ModalWindow, bool>(nameof(IsRememberOptionVisible));
 
-
-    /// <summary>
-    /// Gets, sets the text of remember option checkbox.
-    /// </summary>
     public string RememberOptionText
     {
         get => GetValue(RememberOptionTextProperty);
@@ -305,25 +188,13 @@ public partial class ModalWindow : DialogWindow
     public static readonly StyledProperty<string> RememberOptionTextProperty =
         AvaloniaProperty.Register<ModalWindow, string>(nameof(RememberOptionText), "[Don't show this message again]");
 
-
-    /// <summary>
-    /// Gets the check state of Remember option checkbox.
-    /// </summary>
     public bool IsRememberOptionChecked => _chkRememberOption?.IsChecked ?? false;
-
-    #endregion // Public Properties
-
-
 
     public ModalWindow()
     {
         DialogContent = CreateDialogContentElement();
         DialogFooterLeftContent = CreateDialogFooterLeftContentElement();
     }
-
-
-
-    #region Override methods
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
@@ -337,7 +208,6 @@ public partial class ModalWindow : DialogWindow
             _txtInput.SelectAll();
         }
     }
-
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
@@ -372,7 +242,6 @@ public partial class ModalWindow : DialogWindow
 
     }
 
-
     protected override void OnIgLanguageChanged()
     {
         base.OnIgLanguageChanged();
@@ -380,10 +249,8 @@ public partial class ModalWindow : DialogWindow
         RememberOptionText = Core.Lang[LangId._DoNotShowThisMessageAgain];
     }
 
-
     protected override async void OnDialogSubmitted(DialogEventArgs e)
     {
-        // don't proceed if value is invalid
         var isValid = _txtInput.ValidateAndShowError();
         if (!isValid)
         {
@@ -391,25 +258,12 @@ public partial class ModalWindow : DialogWindow
             return;
         }
 
-
         base.OnDialogSubmitted(e);
     }
 
-
-    #endregion // Override methods
-
-
-
-    #region Private methods
-
-    /// <summary>
-    /// Creates dialog content element.
-    /// </summary>
     [MemberNotNull(nameof(_thumbnailIconImage), nameof(_txtInput), nameof(_noteContainer))]
     private StackPanel CreateDialogContentElement()
     {
-        // 1. create the main 2-column layout
-        // 1.1 create left section
         var leftSection = new Grid
         {
             Width = THUMBNAIL_SIZE,
@@ -424,7 +278,6 @@ public partial class ModalWindow : DialogWindow
             Width = THUMBNAIL_SIZE,
             Height = THUMBNAIL_SIZE,
             Stretch = Avalonia.Media.Stretch.Uniform,
-            // Both, not DownOnly: the slot is a fixed 80px box, and a vector source has no natural size
             StretchDirection = Avalonia.Media.StretchDirection.Both,
             [!Viewbox.IsVisibleProperty] = this[!IsThumbnailVisibleProperty],
             Child = new Image
@@ -443,8 +296,6 @@ public partial class ModalWindow : DialogWindow
         leftSection.Children.Add(thumbnailViewbox);
         leftSection.Children.Add(_thumbnailIconImage);
 
-
-        // 1.2 create right section
         var rightSection = new StackPanel
         {
             Orientation = Avalonia.Layout.Orientation.Vertical,
@@ -515,15 +366,11 @@ public partial class ModalWindow : DialogWindow
             }
         };
 
-
-        // extra content
         var extraContentSlot = new ContentControl
         {
             [!ContentControl.ContentProperty] = this[!ModalExtraContentProperty],
         };
 
-
-        // progress bar
         var progressEl = new ProgressBar
         {
             Minimum = 0,
@@ -533,7 +380,6 @@ public partial class ModalWindow : DialogWindow
             [!ProgressBar.IsVisibleProperty] = this[!IsProgressVisibleProperty],
         };
 
-
         rightSection.Children.Add(lblHeading);
         rightSection.Children.Add(lblDescription);
         rightSection.Children.Add(_txtInput);
@@ -541,7 +387,6 @@ public partial class ModalWindow : DialogWindow
         rightSection.Children.Add(_noteContainer);
         rightSection.Children.Add(extraContentSlot);
         rightSection.Children.Add(progressEl);
-
 
         Grid.SetColumn(leftSection, 0);
         Grid.SetColumn(rightSection, 1);
@@ -552,8 +397,6 @@ public partial class ModalWindow : DialogWindow
         mainGrid.Children.Add(leftSection);
         mainGrid.Children.Add(rightSection);
 
-
-        // 2. create root element
         var root = new StackPanel
         {
             Orientation = Avalonia.Layout.Orientation.Vertical,
@@ -566,10 +409,6 @@ public partial class ModalWindow : DialogWindow
         return root;
     }
 
-
-    /// <summary>
-    /// Create left section element for dialog footer.
-    /// </summary>
     [MemberNotNull(nameof(_chkRememberOption))]
     private StackPanel CreateDialogFooterLeftContentElement()
     {
@@ -583,7 +422,6 @@ public partial class ModalWindow : DialogWindow
             },
         };
 
-
         var root = new StackPanel
         {
             Orientation = Avalonia.Layout.Orientation.Vertical,
@@ -595,18 +433,12 @@ public partial class ModalWindow : DialogWindow
         return root;
     }
 
-
-    /// <summary>
-    /// Loads thumbnail icon.
-    /// </summary>
     protected void LoadThumbnailIconSource()
     {
         if (_thumbnailIconImage.Source is not null) return;
 
-        // get system icon
         var bmp = Resx.GetStockIcon(ThumbnailIcon);
 
-        // set the icon
         _thumbnailIconImage.Width = Thumbnail is null ? 50 : 40;
         _thumbnailIconImage.Height = Thumbnail is null ? 50 : 40;
         _thumbnailIconImage.Source = bmp;
@@ -622,17 +454,12 @@ public partial class ModalWindow : DialogWindow
             _thumbnailIconImage.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom;
         }
 
-
         if (bmp is not null)
         {
             Icon = new WindowIcon(bmp);
         }
     }
 
-
-    /// <summary>
-    /// Creates binding for note's background.
-    /// </summary>
     private void BindNoteBackground()
     {
         if (_noteContainer is null) return;
@@ -647,16 +474,6 @@ public partial class ModalWindow : DialogWindow
         };
     }
 
-
-    #endregion // Private methods
-
-
-
-    #region Public static methods
-
-    /// <summary>
-    /// Shows modal dialog.
-    /// </summary>
     public static async Task<ModalWindowResult> ShowAsync(PhWindow? owner,
         ModalWindowOptions options,
         ModalWindowButton buttons = ModalWindowButton.OK,
@@ -682,8 +499,6 @@ public partial class ModalWindow : DialogWindow
             UseCustomWindowIcon = options.ThumbnailIcon != null,
         };
 
-
-        // set default focus button
         if (!modal.IsInputVisible)
         {
             modal.DefaultFocus = DialogFocus.Button1;
@@ -745,14 +560,8 @@ public partial class ModalWindow : DialogWindow
                 break;
         }
 
-
-
-
-
-        // show modal window
         var exitCode = await modal.ShowAsync(owner);
 
-        // get dialog result
         var result = new ModalWindowResult()
         {
             ExitCode = exitCode,
@@ -763,10 +572,6 @@ public partial class ModalWindow : DialogWindow
         return result;
     }
 
-
-    /// <summary>
-    /// Shows modal dialog for warning.
-    /// </summary>
     public static async Task<ModalWindowResult> ShowWarningAsync(PhWindow? owner,
         ModalWindowOptions options, ModalWindowButton buttons = ModalWindowButton.OK)
     {
@@ -777,10 +582,6 @@ public partial class ModalWindow : DialogWindow
         return await ShowAsync(owner, options, buttons);
     }
 
-
-    /// <summary>
-    /// Shows modal dialog for error.
-    /// </summary>
     public static async Task<ModalWindowResult> ShowErrorAsync(PhWindow? owner,
         ModalWindowOptions options, ModalWindowButton buttons = ModalWindowButton.OK)
     {
@@ -791,10 +592,6 @@ public partial class ModalWindow : DialogWindow
         return await ShowWarningAsync(owner, options, buttons);
     }
 
-
-    /// <summary>
-    /// Shows modal dialog for information.
-    /// </summary>
     public static async Task<ModalWindowResult> ShowInfoAsync(PhWindow? owner,
         ModalWindowOptions options, ModalWindowButton buttons = ModalWindowButton.OK)
     {
@@ -805,10 +602,6 @@ public partial class ModalWindow : DialogWindow
         return await ShowAsync(owner, options, buttons);
     }
 
-
-    /// <summary>
-    /// Shows modal dialog for information.
-    /// </summary>
     public static async Task<ModalWindowResult> ShowInputAsync(PhWindow? owner,
         ModalWindowOptions options, ModalWindowButton buttons = ModalWindowButton.OK_Cancel)
     {
@@ -817,10 +610,6 @@ public partial class ModalWindow : DialogWindow
         return await ShowAsync(owner, options, buttons);
     }
 
-
-    /// <summary>
-    /// Reports why <see cref="Config.SaveAsync"/> could not write the settings file; no-op if it did.
-    /// </summary>
     public static async Task ShowSettingsSaveErrorAsync(PhWindow? owner, string title)
     {
         if (Config.SavingException is not Exception ex) return;
@@ -833,15 +622,9 @@ public partial class ModalWindow : DialogWindow
         });
     }
 
-
-    /// <summary>
-    /// Reports unhandled exception,
-    /// returns <c>true</c> if user ignores the error to continue.
-    /// </summary>
     public static async Task<bool> ShowUnhandledErrorAsync(Exception ex, PhWindow? owner = null,
         string? heading = null, string? description = null)
     {
-        // get error details
         var details = BHelper.GetExceptionDetails(ex);
         var isContinue = false;
 
@@ -849,7 +632,6 @@ public partial class ModalWindow : DialogWindow
             ? string.Empty
             : ex.Message;
 
-        // show error modal dialog
         var result = await ShowErrorAsync(owner, new ModalWindowOptions
         {
             Title = $"{Core.Lang[LangId._UnhandledException]} – {BHelper.AppDisplayName}",
@@ -861,8 +643,6 @@ public partial class ModalWindow : DialogWindow
             Note = Core.Lang[LangId._UnhandledException_Description],
         }, ModalWindowButton.Continue_Quit);
 
-
-        // user chooses 'Quit': force exit
         if (result.ExitCode == DialogExitCode.Cancel)
         {
             BHelper.ExitApp(true, 0);
@@ -875,10 +655,4 @@ public partial class ModalWindow : DialogWindow
         return isContinue;
     }
 
-
-    #endregion // Public static methods
-
-
-
 }
-

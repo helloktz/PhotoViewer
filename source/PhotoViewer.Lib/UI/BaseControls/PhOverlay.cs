@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -29,15 +11,9 @@ using System;
 
 namespace PhotoViewer.UI;
 
-
-/// <summary>
-/// The side a <see cref="PhOverlay"/> slides in from when it shows.
-/// </summary>
 public enum PhOverlayDirection
 {
-    /// <summary>
-    /// Fades in where it is, without sliding.
-    /// </summary>
+
     Auto,
     Top,
     Bottom,
@@ -45,20 +21,14 @@ public enum PhOverlayDirection
     Right,
 }
 
-
-/// <summary>
-/// A floating surface in the in-app message style, which animates its content in and out.
-/// </summary>
 public class PhOverlay : PhControl
 {
-    // the in-app message surface, lifted off what is under it by a hairline edge and a soft shadow
     private const int BORDER_ALPHA = 20;
     private const double SHADOW_OFFSET_Y = 4;
     private const double SHADOW_BLUR = 24;
     private const int SHADOW_ALPHA_DARK = 56;
     private const int SHADOW_ALPHA_LIGHT = 28;
 
-    // it fades in growing out of the side it enters from, quicker on the way out
     private const double SHOW_MS = 200;
     private const double HIDE_MS = 150;
     private const double SLIDE_DISTANCE = 12;
@@ -69,18 +39,10 @@ public class PhOverlay : PhControl
     private ImmutablePen? _borderPen;
     private BoxShadows _shadow;
 
-    // 0 = hidden, 1 = shown
     private double _progress;
     private bool _isAnimating;
     private TimeSpan _lastFrameTime;
 
-
-
-    #region Public Properties
-
-    /// <summary>
-    /// Gets, sets whether the overlay shows; it animates in and out, and leaves the layout once hidden.
-    /// </summary>
     public bool IsShown
     {
         get => GetValue(IsShownProperty);
@@ -89,10 +51,6 @@ public class PhOverlay : PhControl
     public static readonly StyledProperty<bool> IsShownProperty =
         AvaloniaProperty.Register<PhOverlay, bool>(nameof(IsShown));
 
-
-    /// <summary>
-    /// Gets, sets the side the overlay slides in from; <see cref="PhOverlayDirection.Auto"/> fades it in place.
-    /// </summary>
     public PhOverlayDirection TransitionDirection
     {
         get => GetValue(TransitionDirectionProperty);
@@ -101,10 +59,6 @@ public class PhOverlay : PhControl
     public static readonly StyledProperty<PhOverlayDirection> TransitionDirectionProperty =
         AvaloniaProperty.Register<PhOverlay, PhOverlayDirection>(nameof(TransitionDirection), PhOverlayDirection.Auto);
 
-
-    /// <summary>
-    /// Gets whether the overlay can be seen: shown, or still fading out.
-    /// </summary>
     public bool IsOnScreen
     {
         get
@@ -116,20 +70,13 @@ public class PhOverlay : PhControl
         }
     }
 
-    #endregion // Public Properties
-
-
-
     static PhOverlay()
     {
-        // hidden until shown, so it takes no room and no input meanwhile
         IsVisibleProperty.OverrideDefaultValue<PhOverlay>(false);
         AffectsRender<PhOverlay>(CornerRadiusProperty);
 
-        // a templated control clips to its bounds by default, which would cut the shadow off
         ClipToBoundsProperty.OverrideDefaultValue<PhOverlay>(false);
     }
-
 
     public PhOverlay()
     {
@@ -138,16 +85,11 @@ public class PhOverlay : PhControl
         UpdateTransformOrigin();
     }
 
-
-
-    #region Control Events
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
         UpdateBrushes();
     }
-
 
     protected override void OnIgThemeChanged(ThemePackChangedEventArgs e)
     {
@@ -156,7 +98,6 @@ public class PhOverlay : PhControl
         UpdateBrushes();
         InvalidateVisual();
     }
-
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -173,7 +114,6 @@ public class PhOverlay : PhControl
         }
     }
 
-
     public override void Render(DrawingContext c)
     {
         base.Render(c);
@@ -182,20 +122,10 @@ public class PhOverlay : PhControl
         if (size.Width <= 0) return;
         if (size.Height <= 0) return;
 
-        // the surface, under the content
         var surface = new RoundedRect(new Rect(size), GetCornerRadius());
         c.DrawRectangle(_fillBrush, _borderPen, surface, _shadow);
     }
 
-    #endregion // Control Events
-
-
-
-    #region Private Methods
-
-    /// <summary>
-    /// Builds the surface from the in-app message background of the current theme.
-    /// </summary>
     private void UpdateBrushes()
     {
         var fillColor = Resx.GetBrushColor(ResxId.IG_OverlayBackgroundBrush, AppThemeColors.BgBrush.Color);
@@ -212,10 +142,6 @@ public class PhOverlay : PhControl
         });
     }
 
-
-    /// <summary>
-    /// Gets the corner radius set on the overlay, else the shared overlay one.
-    /// </summary>
     private CornerRadius GetCornerRadius()
     {
         var isCustom = IsSet(CornerRadiusProperty);
@@ -227,10 +153,6 @@ public class PhOverlay : PhControl
         return CornerRadius;
     }
 
-
-    /// <summary>
-    /// Makes the overlay grow out of the side it enters from, or out of its middle when it fades in place.
-    /// </summary>
     private void UpdateTransformOrigin()
     {
         RenderTransformOrigin = TransitionDirection switch
@@ -243,10 +165,8 @@ public class PhOverlay : PhControl
         };
     }
 
-
     private void OnIsShownChanged()
     {
-        // it joins the layout at the start of the fade, so its first frame is still clear
         if (IsShown)
         {
             ApplyProgress();
@@ -256,15 +176,10 @@ public class PhOverlay : PhControl
         StartAnimation();
     }
 
-
-    /// <summary>
-    /// Runs the fade until it settles.
-    /// </summary>
     private void StartAnimation()
     {
         if (_isAnimating) return;
 
-        // with no window there is no frame to wait for, so it settles at once
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
         {
@@ -278,10 +193,8 @@ public class PhOverlay : PhControl
         topLevel.RequestAnimationFrame(OnAnimationFrame);
     }
 
-
     private void OnAnimationFrame(TimeSpan time)
     {
-        // taken off screen while playing, so it settles at once
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
         {
@@ -303,7 +216,6 @@ public class PhOverlay : PhControl
 
         ApplyProgress();
 
-        // on to the next frame until it settles
         var targetProgress = isShown ? 1 : 0;
         var isSettled = _progress == targetProgress;
         if (isSettled)
@@ -315,10 +227,6 @@ public class PhOverlay : PhControl
         topLevel.RequestAnimationFrame(OnAnimationFrame);
     }
 
-
-    /// <summary>
-    /// Fades, scales and slides the overlay to the current progress, and takes it out of the layout once hidden.
-    /// </summary>
     private void ApplyProgress()
     {
         var eased = EaseOutCubic(_progress);
@@ -336,19 +244,12 @@ public class PhOverlay : PhControl
         Opacity = eased;
         _transform.Matrix = Matrix.CreateScale(scale, scale) * Matrix.CreateTranslation(offset);
 
-        // a showing overlay starts at 0 too, so only one on its way out leaves
         if (IsShown) return;
 
         var isFadedOut = _progress <= 0;
         if (isFadedOut) SetCurrentValue(IsVisibleProperty, false);
     }
 
-
-    /// <summary>
-    /// Fast at first, gentle at the end.
-    /// </summary>
     private static double EaseOutCubic(double t) => 1 - Math.Pow(1 - t, 3);
-
-    #endregion // Private Methods
 
 }

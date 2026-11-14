@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -32,27 +14,20 @@ namespace PhotoViewer.Common.Windows;
 
 public partial class MouseSettingsView : SettingsPageView
 {
-    // shared width for the wheel dropdowns and click buttons
     private const double ACTION_CONTROL_WIDTH = 250;
 
     private readonly Dictionary<MouseWheelEvent, MouseWheelAction> _wheelActions = [];
     private readonly Dictionary<MouseClickEvent, SingleAction> _clickActions = [];
-
 
     public MouseSettingsView()
     {
         InitializeComponent();
     }
 
-
-    /// <summary>
-    /// Creates the page bound to the given working-copy view model.
-    /// </summary>
     public MouseSettingsView(SettingsViewModel vm, SettingsNavId navId, LangId? pageLabel = null) : this()
     {
         Initialize(vm, navId, pageLabel);
     }
-
 
     protected override void Build()
     {
@@ -60,15 +35,8 @@ public partial class MouseSettingsView : SettingsPageView
         BuildClickActions();
     }
 
-
-    #region Mouse wheel actions
-
-    /// <summary>
-    /// Loads the working copy of the wheel actions and wires the table + reset link.
-    /// </summary>
     private void BuildWheelActions()
     {
-        // seed from defaults (effective values), then overlay the stored config
         foreach (var (evt, action) in Config.DefaultMouseWheelActions) _wheelActions[evt] = action;
         foreach (var (evt, action) in VM.GetValue(ConfigId.MouseWheelActions,
             new Dictionary<MouseWheelEvent, MouseWheelAction>()))
@@ -87,18 +55,10 @@ public partial class MouseSettingsView : SettingsPageView
         DisableIfLocked(ConfigId.MouseWheelActions, PART_WheelTable, PART_ResetWheel);
     }
 
-
-    /// <summary>
-    /// Stages the current working copy of wheel actions into the view model.
-    /// </summary>
     private void StageWheelActions()
         => VM.SetValue(ConfigId.MouseWheelActions,
             new Dictionary<MouseWheelEvent, MouseWheelAction>(_wheelActions));
 
-
-    /// <summary>
-    /// Restores the default wheel actions and re-renders.
-    /// </summary>
     private void ResetWheelActions()
     {
         _wheelActions.Clear();
@@ -108,10 +68,6 @@ public partial class MouseSettingsView : SettingsPageView
         RebuildWheelTable();
     }
 
-
-    /// <summary>
-    /// Rebuilds the wheel rows: each event shows its label above an action dropdown.
-    /// </summary>
     private void RebuildWheelTable()
     {
         PART_WheelTable.Children.Clear();
@@ -126,10 +82,6 @@ public partial class MouseSettingsView : SettingsPageView
         }
     }
 
-
-    /// <summary>
-    /// Builds the action dropdown for a wheel event, bound to the working copy.
-    /// </summary>
     private ComboBox BuildWheelCombo(MouseWheelEvent evt)
     {
         var combo = new ComboBox
@@ -154,7 +106,6 @@ public partial class MouseSettingsView : SettingsPageView
         }
         combo.SelectedIndex = selectedIndex;
 
-        // subscribe after the initial selection so loading doesn't stage
         combo.SelectionChanged += (_, _) =>
         {
             if (combo.SelectedItem is ComboBoxItem { Tag: MouseWheelAction action })
@@ -167,18 +118,8 @@ public partial class MouseSettingsView : SettingsPageView
         return combo;
     }
 
-    #endregion // Mouse wheel actions
-
-
-
-    #region Mouse click actions
-
-    /// <summary>
-    /// Loads the working copy of the click actions and wires the table + reset link.
-    /// </summary>
     private void BuildClickActions()
     {
-        // seed from defaults (effective values), then overlay the stored config
         foreach (var (evt, action) in Config.DefaultMouseClickActions) _clickActions[evt] = action;
         foreach (var (evt, action) in VM.GetValue(ConfigId.MouseClickActions,
             new Dictionary<MouseClickEvent, SingleAction>()))
@@ -198,18 +139,10 @@ public partial class MouseSettingsView : SettingsPageView
 
     }
 
-
-    /// <summary>
-    /// Stages the current working copy of click actions into the view model.
-    /// </summary>
     private void StageClickActions()
         => VM.SetValue(ConfigId.MouseClickActions,
             new Dictionary<MouseClickEvent, SingleAction>(_clickActions));
 
-
-    /// <summary>
-    /// Restores the default click actions and re-renders.
-    /// </summary>
     private void ResetClickActions()
     {
         _clickActions.Clear();
@@ -219,10 +152,6 @@ public partial class MouseSettingsView : SettingsPageView
         RebuildClickTable();
     }
 
-
-    /// <summary>
-    /// Rebuilds the click rows: each event shows its label above its editor button.
-    /// </summary>
     private void RebuildClickTable()
     {
         PART_ClickTable.Children.Clear();
@@ -244,11 +173,6 @@ public partial class MouseSettingsView : SettingsPageView
         }
     }
 
-
-    /// <summary>
-    /// Builds the action button for a click event: shows the bound executable (or "Do nothing")
-    /// and opens the editor when clicked.
-    /// </summary>
     private PhButton BuildClickButton(MouseClickEvent evt)
     {
         var exe = _clickActions.GetValueOrDefault(evt)?.Executable?.Trim();
@@ -258,11 +182,9 @@ public partial class MouseSettingsView : SettingsPageView
         {
             Width = ACTION_CONTROL_WIDTH,
             HorizontalAlignment = HorizontalAlignment.Left,
-            // stretch the content so the label fills the width and can ellipsis-trim
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
         };
 
-        // PhButton.Text centers and never trims, so use our own trimming label as the content
         var label = new TextBlock
         {
             Text = hasExe ? System.IO.Path.GetFileName(exe!) : Core.Lang[LangId.MouseWheelAction_DoNothing],
@@ -279,10 +201,6 @@ public partial class MouseSettingsView : SettingsPageView
         return btn;
     }
 
-
-    /// <summary>
-    /// Opens the editor for a click event and stages the result; empty unbinds it.
-    /// </summary>
     private async Task EditClickActionAsync(MouseClickEvent evt)
     {
         var existing = _clickActions.GetValueOrDefault(evt);
@@ -298,18 +216,7 @@ public partial class MouseSettingsView : SettingsPageView
         RebuildClickTable();
     }
 
-    #endregion // Mouse click actions
-
-
-
-    #region Helpers
-
-    /// <summary>
-    /// Gets the localized label of an enum value via the <c>{EnumType}_{Value}</c> key.
-    /// </summary>
     private static string EnumLabel<TEnum>(string enumName, TEnum value) where TEnum : struct, Enum
         => Lang.GetKey($"{enumName}_{value}") is { } key ? Core.Lang[key] : value.ToString();
-
-    #endregion // Helpers
 
 }

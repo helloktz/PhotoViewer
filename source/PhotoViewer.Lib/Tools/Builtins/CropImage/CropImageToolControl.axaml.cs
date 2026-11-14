@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -38,10 +20,8 @@ namespace PhotoViewer.Tools;
 
 public partial class CropImageToolControl : PhControl, IToolControl
 {
-    // prevents dead-loop when updating NumericUpDown values from SelectionChanged
     private bool _isUpdatingSelectionUI;
     private Rect _lastSelectionArea;
-
 
     public static string TOOL_ID => "Tool_CropImage";
     public string ToolId => TOOL_ID;
@@ -52,27 +32,19 @@ public partial class CropImageToolControl : PhControl, IToolControl
     public CropImageConfig Options => (CropImageConfig)Settings!;
     public ViewerControl Viewer { get; set; } = null!;
 
-
     public CropImageToolControl()
     {
         InitializeComponent();
     }
 
-
-
-    #region Control Events
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
 
-        // enable selection on the viewer
         Viewer.EnableSelection = true;
 
-        // subscribe to viewer selection changes
         Viewer.SelectionChanged += Viewer_SelectionChanged;
 
-        // subscribe to button clicks
         PART_BtnReset.Click += PART_BtnReset_Click;
         PART_BtnSave.Click += PART_BtnSave_Click;
         PART_BtnSaveAs.Click += PART_BtnSaveAs_Click;
@@ -81,39 +53,31 @@ public partial class CropImageToolControl : PhControl, IToolControl
         PART_BtnPrint.Click += PART_BtnPrint_Click;
         PART_BtnPrint.IsVisible = !FeatureManager.IsLocked(API.IG_Print);
 
-        // subscribe to aspect ratio change
         PART_CmdAspectRatio.SelectionChanged += PART_CmdAspectRatio_SelectionChanged;
 
-        // subscribe to NumericUpDown value changes
         PART_NumX.ValueChanged += NumSelection_ValueChanged;
         PART_NumY.ValueChanged += NumSelection_ValueChanged;
         PART_NumWidth.ValueChanged += NumSelection_ValueChanged;
         PART_NumHeight.ValueChanged += NumSelection_ValueChanged;
 
-        // subscribe to custom ratio value changes
         PART_NumRatioFrom.ValueChanged += NumRatio_ValueChanged;
         PART_NumRatioTo.ValueChanged += NumRatio_ValueChanged;
 
-        // subscribe to photo loading to restore default selection on new photo
         Viewer.PhotoLoading += Viewer_PhotoLoading;
 
-        // load initial values from settings
         _isUpdatingSelectionUI = true;
         PART_NumRatioFrom.Value = Options.AspectRatioValues[0];
         PART_NumRatioTo.Value = Options.AspectRatioValues[1];
         PART_CmdAspectRatio.SelectedIndex = (int)Options.AspectRatio;
         _isUpdatingSelectionUI = false;
 
-        // apply aspect ratio and load default selection
         UpdateAspectRatioValues();
         UpdateCustomRatioVisibility();
         LoadDefaultSelection();
     }
 
-
     protected override void OnUnloaded(RoutedEventArgs e)
     {
-        // unsubscribe events
         Viewer.SelectionChanged -= Viewer_SelectionChanged;
 
         PART_BtnReset.Click -= PART_BtnReset_Click;
@@ -135,13 +99,11 @@ public partial class CropImageToolControl : PhControl, IToolControl
 
         Viewer.PhotoLoading -= Viewer_PhotoLoading;
 
-        // reset selection and disable selection mode
         Viewer.SourceSelection = default;
         Viewer.EnableSelection = false;
 
         base.OnUnloaded(e);
     }
-
 
     protected override void OnIgLanguageChanged()
     {
@@ -159,15 +121,12 @@ public partial class CropImageToolControl : PhControl, IToolControl
         PART_CmdAspectRatio.Items[2] = Core.Lang[LangId.Tool_Crop_SelectionAspectRatio_Original];
     }
 
-
     private void Viewer_SelectionChanged(ViewerControl sender, ViewerSelectionChangedEventArgs e)
     {
-        // track the latest selection for UseTheLastSelection mode.
         _lastSelectionArea = e.SourceSelection;
 
         UpdateSelectionUI(e.SourceSelection);
     }
-
 
     private void PART_CmdAspectRatio_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
@@ -177,12 +136,10 @@ public partial class CropImageToolControl : PhControl, IToolControl
         LoadDefaultSelection();
     }
 
-
     private void NumRatio_ValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
     {
         if (_isUpdatingSelectionUI) return;
 
-        // update settings and viewer with new custom ratio values
         var ratioW = (int)(PART_NumRatioFrom.Value ?? 1);
         var ratioH = (int)(PART_NumRatioTo.Value ?? 1);
 
@@ -192,12 +149,10 @@ public partial class CropImageToolControl : PhControl, IToolControl
         LoadDefaultSelection();
     }
 
-
     private void Viewer_PhotoLoading(ViewerControl sender, PhotoLoadingEventArgs e)
     {
         if (e.State != PhotoState.Loaded) return;
 
-        // restore default selection when the new photo is fully loaded
         Dispatcher.UIThread.Post(() =>
         {
             UpdateAspectRatioValues();
@@ -205,15 +160,12 @@ public partial class CropImageToolControl : PhControl, IToolControl
         });
     }
 
-
     private void NumSelection_ValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
     {
-        // guard against dead-loop: viewer SelectionChanged -> update UI -> value changed -> update viewer
         if (_isUpdatingSelectionUI) return;
 
         LoadSelectionFromInputs();
     }
-
 
     private void NumericUpDown_KeyDown(object? sender, KeyEventArgs e)
     {
@@ -223,13 +175,11 @@ public partial class CropImageToolControl : PhControl, IToolControl
         }
     }
 
-
     private void PART_BtnReset_Click(object? sender, RoutedEventArgs e)
     {
         Viewer.SourceSelection = default;
         Viewer.Refresh(false);
     }
-
 
     private async void PART_BtnSave_Click(object? sender, RoutedEventArgs e)
     {
@@ -241,7 +191,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         }
     }
 
-
     private async void PART_BtnSaveAs_Click(object? sender, RoutedEventArgs e)
     {
         await Core.API!.RunApiAsync(API.IG_SaveAs);
@@ -252,10 +201,8 @@ public partial class CropImageToolControl : PhControl, IToolControl
         }
     }
 
-
     private async void PART_BtnCrop_Click(object? sender, RoutedEventArgs e)
     {
-        // the copy becomes the photo's own image, so it is not copied a second time
         using var shownState = Viewer.CaptureImageState();
         using var bitmap = shownState?.CopyPixels(ViewerImageRegion.Selection);
         var photo = new Photo(SkiaCodec.ToSKImageNoCopy(bitmap));
@@ -263,27 +210,16 @@ public partial class CropImageToolControl : PhControl, IToolControl
         await AppAPIProvider.LoadClipboardPhotoAsync(photo);
     }
 
-
     private async void PART_BtnCopy_Click(object? sender, RoutedEventArgs e)
     {
         await Core.API!.RunApiAsync(API.IG_CopyImagePixels);
     }
-
 
     private async void PART_BtnPrint_Click(object? sender, RoutedEventArgs e)
     {
         await Core.API!.RunApiAsync(API.IG_Print, nameof(PrintRegion.Selection));
     }
 
-    #endregion // Control Events
-
-
-
-    #region Control Methods
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
     public void LoadSettings(JsonElement? jsonEl)
     {
         var settings = jsonEl?.Deserialize(CropImageConfigJsonContext.Default.CropImageConfig);
@@ -295,10 +231,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         _lastSelectionArea = Options.InitSelectedArea;
     }
 
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
     public JsonElement? SaveSettings()
     {
         if (Options.InitSelectionType == DefaultSelectionType.UseTheLastSelection)
@@ -311,10 +243,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         return jsonEl;
     }
 
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
     public async Task ShowSettingsWindowAsync()
     {
         var window = new CropImageSettingsWindow(Options);
@@ -325,7 +253,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         {
             Settings = window.ResultConfig;
 
-            // re-apply aspect ratio and reload default selection
             _isUpdatingSelectionUI = true;
             PART_CmdAspectRatio.SelectedIndex = (int)Options.AspectRatio;
             _isUpdatingSelectionUI = false;
@@ -335,11 +262,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         }
     }
 
-
-    /// <summary>
-    /// Updates the viewer's <see cref="ViewerControl.SelectionAspectRatio"/>
-    /// based on the current aspect ratio selection.
-    /// </summary>
     private void UpdateAspectRatioValues()
     {
         var ratio = (SelectionAspectRatio)PART_CmdAspectRatio.SelectedIndex;
@@ -363,7 +285,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
             ratioW = (int)(PART_NumRatioFrom.Value ?? 1);
             ratioH = (int)(PART_NumRatioTo.Value ?? 1);
 
-            // default to the image's simplified ratio if no custom values set
             if (ratioW <= 0 || ratioH <= 0)
             {
                 var srcW = (int)Viewer.BitmapSize.Width;
@@ -388,20 +309,16 @@ public partial class CropImageToolControl : PhControl, IToolControl
             ratioH = value[1];
         }
 
-        // update the custom ratio UI
         _isUpdatingSelectionUI = true;
         PART_NumRatioFrom.Value = ratioW;
         PART_NumRatioTo.Value = ratioH;
         _isUpdatingSelectionUI = false;
 
-        // save to settings
         Options.AspectRatio = ratio;
         Options.AspectRatioValues = [ratioW, ratioH];
 
-        // update visibility of custom ratio controls
         UpdateCustomRatioVisibility();
 
-        // apply to viewer
         if (ratio == SelectionAspectRatio.FreeRatio)
         {
             Viewer.SelectionAspectRatio = new Size();
@@ -412,11 +329,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         }
     }
 
-
-    /// <summary>
-    /// Shows or hides the custom ratio NumericUpDown controls.
-    /// They are visible for Custom and Original ratios, but only editable for Custom.
-    /// </summary>
     private void UpdateCustomRatioVisibility()
     {
         var ratio = (SelectionAspectRatio)PART_CmdAspectRatio.SelectedIndex;
@@ -430,10 +342,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         PART_NumRatioTo.IsEnabled = ratio == SelectionAspectRatio.Custom;
     }
 
-
-    /// <summary>
-    /// Loads the default selection area based on settings.
-    /// </summary>
     private void LoadDefaultSelection()
     {
         var srcW = (int)Viewer.BitmapSize.Width;
@@ -488,7 +396,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
             h = (int)(srcH * selectPercent);
         }
 
-        // update selection size according to the aspect ratio
         if (Options.AspectRatio != SelectionAspectRatio.FreeRatio
             && Options.AspectRatioValues[0] > 0
             && Options.AspectRatioValues[1] > 0)
@@ -498,14 +405,12 @@ public partial class CropImageToolControl : PhControl, IToolControl
             h = (int)ratioSize.Height;
         }
 
-        // auto-center the selection (skip for UseTheLastSelection)
         if (Options.AutoCenterSelection && !useLastSelection)
         {
             x = srcW / 2 - w / 2;
             y = srcH / 2 - h / 2;
         }
 
-        // validate bounds
         x = Math.Max(0, x);
         y = Math.Max(0, y);
         w = Math.Max(0, w);
@@ -515,10 +420,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         Viewer.Refresh(false);
     }
 
-
-    /// <summary>
-    /// Computes a size that fits within the image bounds while preserving the current aspect ratio.
-    /// </summary>
     private Size GetSizeWithAspectRatio(int width, int height)
     {
         var ratioW = Options.AspectRatioValues[0];
@@ -534,7 +435,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         var w = (double)width;
         var h = (double)height;
 
-        // scale to the aspect ratio
         if (w > h)
         {
             w = h * wRatio;
@@ -544,7 +444,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
             h = w * hRatio;
         }
 
-        // if new size is larger than source size
         if (w >= srcW || h >= srcH)
         {
             var srcWRatio = 1.0 * srcW / srcH;
@@ -563,10 +462,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         return new Size(w, h);
     }
 
-
-    /// <summary>
-    /// Updates the selection UI fields from the given selection rect.
-    /// </summary>
     private void UpdateSelectionUI(Rect selection)
     {
         _isUpdatingSelectionUI = true;
@@ -585,10 +480,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         }
     }
 
-
-    /// <summary>
-    /// Enables or disables action buttons based on whether a selection exists.
-    /// </summary>
     private void UpdateActionButtonStates(bool hasSelection)
     {
         PART_BtnSave.IsEnabled = hasSelection;
@@ -598,11 +489,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         PART_BtnPrint.IsEnabled = hasSelection;
     }
 
-
-    /// <summary>
-    /// Reads the current values from NumericUpDown controls and applies
-    /// them to the viewer's <see cref="ViewerControl.SourceSelection"/>.
-    /// </summary>
     private void LoadSelectionFromInputs()
     {
         var x = (double)(PART_NumX.Value ?? 0);
@@ -610,7 +496,6 @@ public partial class CropImageToolControl : PhControl, IToolControl
         var w = (double)(PART_NumWidth.Value ?? 0);
         var h = (double)(PART_NumHeight.Value ?? 0);
 
-        // don't update selection with invalid values
         if (x < 0 || y < 0 || w < 0 || h < 0) return;
 
         var newRect = new Rect(x, y, w, h);
@@ -621,8 +506,5 @@ public partial class CropImageToolControl : PhControl, IToolControl
             Viewer.Refresh(false);
         }
     }
-
-    #endregion // Control Methods
-
 
 }

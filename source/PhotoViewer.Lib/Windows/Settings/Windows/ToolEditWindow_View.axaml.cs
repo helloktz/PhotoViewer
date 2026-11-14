@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Controls;
 using PhotoViewer.Common.Localization;
 using PhotoViewer.Common.Types;
@@ -27,9 +9,7 @@ namespace PhotoViewer.Common.Windows;
 
 public partial class ToolEditWindowView : PhControl
 {
-    // tool ids already in use (the edited tool's own id excluded) for the uniqueness check
     private ISet<string> _takenIds = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
-
 
     public ToolEditWindowView()
     {
@@ -37,12 +17,10 @@ public partial class ToolEditWindowView : PhControl
 
     }
 
-
     protected override void OnIgLanguageChanged()
     {
         base.OnIgLanguageChanged();
 
-        // "Integrated with {0}" -> label text + "ImageGlass.SDK" link (+ any trailing text)
         var template = Core.Lang[LangId.Settings_Tools_IntegratedWith];
         var idx = template.IndexOf("{0}", System.StringComparison.Ordinal);
 
@@ -51,11 +29,6 @@ public partial class ToolEditWindowView : PhControl
         PART_IntegratedAfter.IsVisible = !string.IsNullOrEmpty(PART_IntegratedAfter.Text);
     }
 
-
-    /// <summary>
-    /// Loads the given tool into the fields (null means "add new", defaulting the argument to
-    /// <see cref="Const.FILE_MACRO"/>). <paramref name="isIdLocked"/> disables the id field.
-    /// </summary>
     public void LoadData(ExternalTool? tool, ISet<string> takenIds, bool isIdLocked = false)
     {
         _takenIds = takenIds;
@@ -69,15 +42,10 @@ public partial class ToolEditWindowView : PhControl
         PART_Action.Argument = tool?.Arguments ?? Const.FILE_MACRO;
         PART_Action.Hotkeys = tool?.Hotkeys ?? [];
 
-        // clear the eager required-field errors raised by setting Text above so the dialog opens clean
         DataValidationErrors.ClearErrors(PART_Id);
         PART_Action.ClearValidationErrors();
     }
 
-
-    /// <summary>
-    /// Validates the required + unique tool id and the required executable, showing inline errors.
-    /// </summary>
     public bool Validate()
     {
         var idOk = PART_Id.ValidateAndShowError();
@@ -97,10 +65,6 @@ public partial class ToolEditWindowView : PhControl
         return idOk & exeOk;
     }
 
-
-    /// <summary>
-    /// Builds an external tool from the current (trimmed) field values.
-    /// </summary>
     public ExternalTool BuildTool() => new()
     {
         ToolId = PART_Id.Text?.Trim() ?? string.Empty,

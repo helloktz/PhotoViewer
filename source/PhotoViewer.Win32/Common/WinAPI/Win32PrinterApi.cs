@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using PhotoViewer.Common.Printing;
 using SkiaSharp;
 using System;
@@ -34,16 +16,8 @@ using Windows.Win32.Storage.Xps;
 
 namespace PhotoViewer.Win32.Common;
 
-
-/// <summary>
-/// What the spooler says about one printer.
-/// </summary>
 internal sealed record Win32PrinterDetails(string? Port, string? Driver, uint Status, uint Attributes);
 
-
-/// <summary>
-/// The printers of Windows through the spooler: the list, what each can do, its DEVMODE, and the driver's own settings dialog.
-/// </summary>
 internal static unsafe class Win32PrinterApi
 {
     private const uint PRINTER_ENUM_LOCAL = 0x2;
@@ -60,21 +34,13 @@ internal static unsafe class Win32PrinterApi
     private const int IDOK = 1;
     private const int PAPER_NAME_LENGTH = 64;
 
-    // an unreachable network printer holds CreateIC for 16 s, which must not cost the papers the driver lists at once
     private const int MEASURE_TIMEOUT_MS = 2000;
 
-    // the spooler's status bits, grouped by what the window shows
     private const uint STATUS_PAUSED = 0x1;
     private const uint STATUS_OFFLINE = 0x80 | 0x1000 | 0x800000;
     private const uint STATUS_ERROR = 0x2 | 0x8 | 0x10 | 0x40 | 0x800 | 0x40000 | 0x100000 | 0x200000 | 0x400000;
     private const uint STATUS_BUSY = 0x200 | 0x400 | 0x4000 | 0x8000 | 0x10000;
 
-
-    #region Printers
-
-    /// <summary>
-    /// Lists the printers and printer connections, the default one marked.
-    /// </summary>
     public static List<PrinterInfo> GetPrinters()
     {
         var defaultName = GetDefaultPrinterName();
@@ -82,13 +48,11 @@ internal static unsafe class Win32PrinterApi
 
         foreach (var (name, attributes) in EnumPrinterNames())
         {
-            // a connection's server may be slow, so only a local printer is asked for its port
             string? extension = null;
             if ((attributes & PRINTER_ATTRIBUTE_NETWORK) == 0)
             {
                 var details = GetPrinterDetails(name);
 
-                // a fax printer opens a wizard of its own while printing
                 if (HasPort(details, "SHRFAX:")) continue;
                 extension = GetOutputFileExtension(details);
             }
@@ -103,10 +67,6 @@ internal static unsafe class Win32PrinterApi
         return printers;
     }
 
-
-    /// <summary>
-    /// Gets the state of a printer.
-    /// </summary>
     public static PrinterStatus GetStatus(string name)
     {
         var details = GetPrinterDetails(name);
@@ -114,7 +74,6 @@ internal static unsafe class Win32PrinterApi
 
         return new PrinterStatus(ToState(details.Status, details.Attributes));
     }
-
 
     private static PrinterState ToState(uint status, uint attributes)
     {
@@ -126,10 +85,6 @@ internal static unsafe class Win32PrinterApi
         return PrinterState.Ready;
     }
 
-
-    /// <summary>
-    /// Gets the port, driver and state of a printer; <c>null</c> when it cannot be opened.
-    /// </summary>
     public static Win32PrinterDetails? GetPrinterDetails(string name)
     {
         if (!TryOpenPrinter(name, out var handle)) return null;
@@ -155,12 +110,10 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-
     private static List<(string Name, uint Attributes)> EnumPrinterNames()
     {
         const uint flags = PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS;
 
-        // a printer added between the two calls needs a larger buffer, so ask again
         for (var attempt = 0; attempt < 3; attempt++)
         {
             uint needed = 0, returned = 0;
@@ -187,7 +140,6 @@ internal static unsafe class Win32PrinterApi
         throw new Win32Exception(Marshal.GetLastPInvokeError());
     }
 
-
     private static string? GetDefaultPrinterName()
     {
         uint length = 0;
@@ -201,7 +153,6 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-
     private static bool TryOpenPrinter(string name, out PRINTER_HANDLE handle)
     {
         PRINTER_HANDLE opened;
@@ -213,14 +164,12 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-
     private static PRINTER_HANDLE OpenPrinter(string name)
     {
         if (TryOpenPrinter(name, out var handle)) return handle;
 
         throw new Win32Exception(Marshal.GetLastPInvokeError());
     }
-
 
     private static bool HasPort(Win32PrinterDetails? details, string port)
     {
@@ -229,10 +178,6 @@ internal static unsafe class Win32PrinterApi
         return details.Port.Split(',', StringSplitOptions.TrimEntries).Any(i => i.Equals(port, StringComparison.OrdinalIgnoreCase));
     }
 
-
-    /// <summary>
-    /// Gets the extension of the file a printer writes instead of paper, by its driver; <c>null</c> for paper.
-    /// </summary>
     private static string? GetOutputFileExtension(Win32PrinterDetails? details)
     {
         if (!HasPort(details, "PORTPROMPT:") && !HasPort(details, "FILE:")) return null;
@@ -241,21 +186,12 @@ internal static unsafe class Win32PrinterApi
         if (driver.Contains("PDF", StringComparison.OrdinalIgnoreCase)) return ".pdf";
         if (driver.Contains("XPS", StringComparison.OrdinalIgnoreCase))
         {
-            // the v4 XPS writer saves OpenXPS
             return driver.Contains("v4", StringComparison.OrdinalIgnoreCase) ? ".oxps" : ".xps";
         }
 
         return ".prn";
     }
 
-    #endregion // Printers
-
-
-    #region Capabilities
-
-    /// <summary>
-    /// Reads what a printer can do: its papers, resolutions, color, two-sided printing, copies and collation; one device context per paper is too slow, so only the default paper's printable area is measured.
-    /// </summary>
     public static PrinterCapabilities GetCapabilities(string name, CancellationToken token)
     {
         var port = GetPrinterDetails(name)?.Port;
@@ -292,10 +228,6 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-
-    /// <summary>
-    /// Gets how many copies the driver makes of one job and whether it collates them.
-    /// </summary>
     public static (int MaxCopies, bool CanCollate) GetCopySupport(string name)
     {
         var port = GetPrinterDetails(name)?.Port;
@@ -310,16 +242,11 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-
     private static int GetCapability(char* name, char* port, PRINTER_DEVICE_CAPABILITIES capability, DEVMODEW* dm)
     {
         return PInvoke.DeviceCapabilities(name, port, capability, default, dm);
     }
 
-
-    /// <summary>
-    /// Reads the papers of the driver in its own order and names, skipping sizeless and repeated entries; sizes are portrait.
-    /// </summary>
     private static List<PaperInfo> ReadPapers(char* name, char* port, DEVMODEW* dm)
     {
         var count = GetCapability(name, port, PRINTER_DEVICE_CAPABILITIES.DC_PAPERS, dm);
@@ -341,7 +268,6 @@ internal static unsafe class Win32PrinterApi
             var seen = new HashSet<ushort>();
             for (var i = 0; i < count; i++)
             {
-                // sizes come in tenths of a millimeter
                 var w = sizes[i * 2] / 10.0;
                 var h = sizes[i * 2 + 1] / 10.0;
                 if (ids[i] == 0 || w <= 0 || h <= 0 || !seen.Add(ids[i])) continue;
@@ -357,10 +283,6 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-
-    /// <summary>
-    /// Reads the resolutions the driver offers, in dots per inch, lowest first.
-    /// </summary>
     private static List<int> ReadResolutions(char* name, char* port, DEVMODEW* dm)
     {
         var count = GetCapability(name, port, PRINTER_DEVICE_CAPABILITIES.DC_ENUMRESOLUTIONS, dm);
@@ -372,7 +294,6 @@ internal static unsafe class Win32PrinterApi
             if (PInvoke.DeviceCapabilities(name, port, PRINTER_DEVICE_CAPABILITIES.DC_ENUMRESOLUTIONS, (char*)p, dm) != count) return [];
         }
 
-        // a resolution is a horizontal and vertical pair; an uneven one prints at its lower half
         var square = Enumerable.Range(0, count).Where(i => pairs[i * 2] == pairs[i * 2 + 1]).Select(i => pairs[i * 2]);
         var any = Enumerable.Range(0, count).Select(i => Math.Min(pairs[i * 2], pairs[i * 2 + 1]));
         var dpis = (square.Any() ? square : any).Where(i => i > 0).Distinct().Order().ToList();
@@ -380,10 +301,6 @@ internal static unsafe class Win32PrinterApi
         return dpis;
     }
 
-
-    /// <summary>
-    /// Measures the printable area of the default paper and lends it to the others, which are measured once chosen.
-    /// </summary>
     private static List<PaperInfo> EstimatePrintableAreas(string name, byte[] devMode, List<PaperInfo> papers, string? defaultPaperId)
     {
         var defaultPaper = papers.FirstOrDefault(i => i.Id == defaultPaperId) ?? papers.FirstOrDefault();
@@ -395,10 +312,6 @@ internal static unsafe class Win32PrinterApi
             .ToList();
     }
 
-
-    /// <summary>
-    /// Measures the printable area of one paper; the estimate stays when the driver cannot tell.
-    /// </summary>
     public static PaperInfo MeasurePaper(string name, PaperInfo paper)
     {
         var devMode = GetDefaultDevMode(name);
@@ -410,10 +323,6 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-
-    /// <summary>
-    /// Measures a paper's margins on a worker for at most <see cref="MEASURE_TIMEOUT_MS"/>; a late worker still frees its context.
-    /// </summary>
     private static PrintMargins? MeasureMarginsBounded(string name, byte[] devMode, PaperInfo paper)
     {
         var measuring = Task.Run(() => MeasureMargins(name, devMode, paper));
@@ -428,7 +337,6 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-
     private static PrintMargins? MeasureMargins(string name, byte[] devMode, PaperInfo paper)
     {
         fixed (char* pName = name)
@@ -437,10 +345,6 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-
-    /// <summary>
-    /// Measures the margins a printer cannot print on for a paper, in points, portrait.
-    /// </summary>
     private static PrintMargins? MeasureMargins(char* name, byte[] devMode, PaperInfo paper)
     {
         if (!short.TryParse(paper.Id, NumberStyles.Integer, CultureInfo.InvariantCulture, out var paperId)) return null;
@@ -484,14 +388,6 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-    #endregion // Capabilities
-
-
-    #region DEVMODE
-
-    /// <summary>
-    /// Gets the printer's settings as the user last saved them.
-    /// </summary>
     public static byte[] GetDefaultDevMode(string name)
     {
         var handle = OpenPrinter(name);
@@ -520,10 +416,6 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-
-    /// <summary>
-    /// Builds the DEVMODE of a job: what the driver's dialog returned, else its defaults, with the window's choices on top, as the driver validates them.
-    /// </summary>
     public static byte[] BuildDevMode(string name, PrintJobSettings settings, int copies)
     {
         var input = settings.PlatformState is { Length: > 0 } state ? (byte[])state.Clone() : GetDefaultDevMode(name);
@@ -535,10 +427,6 @@ internal static unsafe class Win32PrinterApi
         return MergeDevMode(name, input, IntPtr.Zero, false) ?? input;
     }
 
-
-    /// <summary>
-    /// Shows the driver's own settings dialog over the window, then reads its choices back into <paramref name="settings"/>.
-    /// </summary>
     public static bool ShowPropertiesDialog(IntPtr owner, PrintJobSettings settings)
     {
         var name = settings.Printer.Id;
@@ -552,10 +440,6 @@ internal static unsafe class Win32PrinterApi
         return true;
     }
 
-
-    /// <summary>
-    /// Passes a DEVMODE through the driver, which validates it and, with a prompt, lets the user change it; <c>null</c> when cancelled.
-    /// </summary>
     private static byte[]? MergeDevMode(string name, byte[] input, IntPtr owner, bool prompt)
     {
         var handle = OpenPrinter(name);
@@ -573,7 +457,6 @@ internal static unsafe class Win32PrinterApi
                     var mode = DM_IN_BUFFER | DM_OUT_BUFFER | (prompt ? DM_IN_PROMPT : 0);
                     var result = PInvoke.DocumentProperties(new HWND(owner), handle, pName, (DEVMODEW*)pOut, (DEVMODEW*)pIn, mode);
 
-                    // with a prompt, anything but OK is a cancel
                     if (prompt ? result != IDOK : result < 0) return null;
                 }
 
@@ -585,7 +468,6 @@ internal static unsafe class Win32PrinterApi
             PInvoke.ClosePrinter(handle);
         }
     }
-
 
     private static void ApplySettings(DEVMODEW* dm, PrintJobSettings settings, int copies)
     {
@@ -615,10 +497,6 @@ internal static unsafe class Win32PrinterApi
         }
     }
 
-
-    /// <summary>
-    /// Selects a paper by its number, which overrides a custom length and width and a form chosen by name.
-    /// </summary>
     private static void SetPaper(DEVMODEW* dm, short paperId)
     {
         dm->dmPaperSize = paperId;
@@ -626,10 +504,6 @@ internal static unsafe class Win32PrinterApi
         dm->dmFields &= ~(DEVMODE_FIELD_FLAGS.DM_PAPERLENGTH | DEVMODE_FIELD_FLAGS.DM_PAPERWIDTH | DEVMODE_FIELD_FLAGS.DM_FORMNAME);
     }
 
-
-    /// <summary>
-    /// Reads the choices of a DEVMODE into the settings, the paper by its id only.
-    /// </summary>
     private static void ReadSettings(byte[] devMode, PrintJobSettings settings)
     {
         fixed (byte* p = devMode)
@@ -661,11 +535,9 @@ internal static unsafe class Win32PrinterApi
                 };
             }
 
-            // a negative print quality is a draft or high setting, not a resolution
             if ((fields & DEVMODE_FIELD_FLAGS.DM_PRINTQUALITY) != 0 && dm->dmPrintQuality > 0) settings.Dpi = dm->dmPrintQuality;
             else if ((fields & DEVMODE_FIELD_FLAGS.DM_YRESOLUTION) != 0 && dm->dmYResolution > 0) settings.Dpi = dm->dmYResolution;
         }
     }
 
-    #endregion // DEVMODE
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <?define IgUpgradeCode = "E4CD2163-42FF-407E-A944-C6B1F8A140EA" ?>
+
+  <?define IgExeComponentGuid = "42C7D6D4-3372-4631-9858-9ACFF22FA156" ?>
+
+  <?define IgMagickNativeFile = "Magick.Native-Q16-HDRI-OpenMP-x64.dll" ?>
+
+  <?define IgProductName  = "Photo Viewer $(var.ProductVersion)" ?>
+  <?define IgFolderName   = "Photo Viewer" ?>
+  <?define IgManufacturer = "helloktz" ?>
+
+  <?define IgSetupRegKey = "Software\helloktz\PhotoViewer" ?>
+
+  <?define WixUiArch = "X64" ?>
+
+  <?ifndef Cabinet ?>
+    <?define Cabinet = "high" ?>
+  <?endif?>
+
+</Include>

@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using PhotoViewer.Common.Localization;
@@ -29,28 +11,20 @@ namespace PhotoViewer.Common.Windows;
 
 public partial class ImageSettingsView : SettingsPageView
 {
-    // current custom .icc/.icm profile path (used when the dropdown is on "Custom")
     private string _customProfilePath = string.Empty;
-
 
     public ImageSettingsView()
     {
         InitializeComponent();
     }
 
-
-    /// <summary>
-    /// Creates the page bound to the given working-copy view model.
-    /// </summary>
     public ImageSettingsView(SettingsViewModel vm, SettingsNavId navId, LangId? pageLabel = null) : this()
     {
         Initialize(vm, navId, pageLabel);
     }
 
-
     protected override void Build()
     {
-        // Browsing
         BindEnumDropdown(PART_OrderBy, ConfigId.ImageLoadingOrder, ImageOrderBy.Name,
             LangId.Settings_ImageLoadingOrder, LangId.Settings_Browsing);
         BindEnumDropdown(PART_OrderType, ConfigId.ImageLoadingOrderType, ImageOrderType.Asc,
@@ -73,7 +47,6 @@ public partial class ImageSettingsView : SettingsPageView
             PART_OpenTransitionsFolder,
             ConfigId.NavigationTransition, ConfigId.NavigationTransitionDuration, 300u, LangId.Settings_Browsing);
 
-        // Image preview
         BindToggle(PART_ImagePreview, ConfigId.EnableImagePreview,
             LangId.Settings_EnableImagePreview, LangId.Settings_ImagePreview, true);
         BindToggle(PART_OnlyRawPreview, ConfigId.EnableOnlyLoadRawPreview,
@@ -81,7 +54,6 @@ public partial class ImageSettingsView : SettingsPageView
         BindToggle(PART_OnlyNonRawPreview, ConfigId.EnableOnlyLoadNonRawPreview,
             LangId.Settings_EnableOnlyLoadNonRawPreview, LangId.Settings_ImagePreview);
 
-        // the minimum-size inputs only matter when an embedded-thumbnail option is on
         PART_OnlyRawPreview.IsCheckedChanged += (_, _) => UpdatePreviewSizeVisibility();
         PART_OnlyNonRawPreview.IsCheckedChanged += (_, _) => UpdatePreviewSizeVisibility();
         UpdatePreviewSizeVisibility();
@@ -91,21 +63,17 @@ public partial class ImageSettingsView : SettingsPageView
         BindIntInput(PART_PreviewMinHeight, ConfigId.PreviewMinHeight,
             LangId.Settings_MinEmbeddedThumbnailSize, LangId.Settings_ImagePreview);
 
-        // File watcher
         BindToggle(PART_FileWatcher, ConfigId.EnableFileWatcher,
             LangId.Settings_EnableFileWatcher, LangId.Settings_FileWatcher, true);
         BindToggle(PART_AutoOpenNewAddedImage, ConfigId.EnableAutoOpenNewAddedImage,
             LangId.Settings_EnableAutoOpenNewAddedImage, LangId.Settings_FileWatcher);
-        // file watcher is Pro
 
-        // Color management
         BindToggle(PART_HdrToneMapping, ConfigId.EnableHdrToneMapping,
             LangId.Settings_EnableHdrToneMapping, LangId.Settings_ColorManagement, true);
         BindToggle(PART_AlwaysApplyColorProfile, ConfigId.EnableAlwaysApplyColorProfile,
             LangId.Settings_EnableAlwaysApplyColorProfile, LangId.Settings_ColorManagement);
         BuildColorProfile();
 
-        // Caching
         BindUIntSlider(PART_CacheMaxFiles, ConfigId.CacheMaxFiles,
             LangId.Settings_ImageBoosterCacheMaxFiles, LangId.Settings_Caching, 10u, PART_CacheMaxFilesLabel);
         BindUIntInput(PART_CacheMaxMemory, ConfigId.CacheMaxMemoryInMb,
@@ -116,11 +84,6 @@ public partial class ImageSettingsView : SettingsPageView
             LangId.Settings_ImageBoosterCacheMaxFileSizeInMb, LangId.Settings_Caching, 100d);
     }
 
-
-    /// <summary>
-    /// Builds the Browsing mode dropdown. Uses data items instead of <c>BindEnumDropdown</c>
-    /// so each option can show its description beneath the mode name.
-    /// </summary>
     private void BuildBrowsingMode()
     {
         var options = new List<BrowsingModeOption>
@@ -147,23 +110,12 @@ public partial class ImageSettingsView : SettingsPageView
             ConfigId.BrowsingMode, LangId.Settings_Browsing);
     }
 
-
-    /// <summary>
-    /// Toggles the visibility of the minimum embedded-thumbnail size inputs: shown only
-    /// when at least one "load only embedded thumbnail" option is enabled.
-    /// </summary>
     private void UpdatePreviewSizeVisibility()
     {
         PART_PreviewSizeSection.IsVisible =
             (PART_OnlyRawPreview.IsChecked ?? false) || (PART_OnlyNonRawPreview.IsChecked ?? false);
     }
 
-
-    /// <summary>
-    /// Builds the color-profile dropdown (the <see cref="ColorProfileOption"/> values) plus the
-    /// Browse button + custom-file link. The <c>ColorProfile</c> config stores either an enum
-    /// name or a custom file path (a value containing a '.').
-    /// </summary>
     private void BuildColorProfile()
     {
         var current = VM.GetValue(ConfigId.ColorProfile, nameof(ColorProfileOption.CurrentMonitorProfile));
@@ -175,7 +127,6 @@ public partial class ImageSettingsView : SettingsPageView
             ToolTip.SetTip(PART_CustomColorProfile, current);
         }
 
-        // populate options from the enum; localized labels where a key exists, else the raw name
         var names = Enum.GetNames<ColorProfileOption>();
         var selectedIndex = 0;
         for (var i = 0; i < names.Length; i++)
@@ -214,11 +165,6 @@ public partial class ImageSettingsView : SettingsPageView
         DisableIfLocked(ConfigId.ColorProfile, PART_ColorProfile, PART_BrowseColorProfile);
     }
 
-
-    /// <summary>
-    /// Stages the color-profile value: the custom file path when "Custom" is selected
-    /// (else the chosen enum name).
-    /// </summary>
     private void StageColorProfile()
     {
         var selected = SelectedColorProfileName();
@@ -233,11 +179,6 @@ public partial class ImageSettingsView : SettingsPageView
         }
     }
 
-
-    /// <summary>
-    /// Shows the Browse button + custom-file link only for "Custom", and the monitor-profile
-    /// note only for "CurrentMonitorProfile".
-    /// </summary>
     private void UpdateColorProfileVisibility()
     {
         var selected = SelectedColorProfileName();
@@ -248,7 +189,6 @@ public partial class ImageSettingsView : SettingsPageView
         PART_MonitorProfileNote.IsVisible = selected == nameof(ColorProfileOption.CurrentMonitorProfile);
     }
 
-
     private string SelectedColorProfileName()
     {
         return PART_ColorProfile.SelectedItem is ComboBoxItem { Tag: string name }
@@ -256,10 +196,6 @@ public partial class ImageSettingsView : SettingsPageView
             : nameof(ColorProfileOption.CurrentMonitorProfile);
     }
 
-
-    /// <summary>
-    /// Opens a file picker for an .icc/.icm color profile and stages the chosen path.
-    /// </summary>
     private async Task BrowseColorProfileAsync()
     {
         var topLevel = TopLevel.GetTopLevel(this);

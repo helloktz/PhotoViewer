@@ -1,17 +1,9 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!--
-        ListBoxItem — WinUI 3 / Fluent 2 ListViewItem look:
-        • transparent at rest; subtle neutral SubtleFill on hover / press / selected (no accent-on-accent)
-        • rounded accent selection-indicator pill on the left that grows from center when selected
-        • foreground stays neutral (inherited theme foreground)
-    -->
-
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
 
-                <!--  Fluent 2 SubtleFill tokens (low-alpha neutral, matches WinUI 3 list rows)  -->
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="PhListItemFillSecondary" Color="#09000000" />
                     <SolidColorBrush x:Key="PhListItemFillTertiary" Color="#06000000" />
@@ -26,7 +18,6 @@
         </ResourceDictionary>
     </Styles.Resources>
 
-
     <Style Selector="ListBoxItem">
         <Setter Property="Margin" Value="4, 0" />
         <Setter Property="Padding" Value="{DynamicResource MenuFlyoutItemThemePaddingNarrow}" />
@@ -37,7 +28,6 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
 
-        <!--  custom template: content host + accent selection-indicator pill  -->
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -53,7 +43,6 @@
                         ContentTemplate="{TemplateBinding ContentTemplate}"
                         CornerRadius="{TemplateBinding CornerRadius}" />
 
-                    <!--  pill: hidden (collapsed + scaled down) at rest, grows from center when selected  -->
                     <Rectangle
                         Name="SelectionIndicator"
                         Width="3.5"
@@ -82,7 +71,6 @@
             </ControlTemplate>
         </Setter>
 
-        <!--  fill hover/press transition  -->
         <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Transitions">
                 <Transitions>
@@ -91,17 +79,14 @@
             </Setter>
         </Style>
 
-        <!--  pointer-over  -->
         <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource PhListItemFillSecondary}" />
         </Style>
 
-        <!--  pressed  -->
         <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource PhListItemFillTertiary}" />
         </Style>
 
-        <!--  selected: subtle fill + reveal the accent pill  -->
         <Style Selector="^:selected /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource PhListItemFillSecondary}" />
         </Style>
@@ -110,7 +95,6 @@
             <Setter Property="RenderTransform" Value="scaleY(1)" />
         </Style>
 
-        <!--  selected + hover: dips to tertiary (WinUI 3 behavior); pill tracks the accent button hover brush  -->
         <Style Selector="^:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource PhListItemFillTertiary}" />
         </Style>
@@ -118,7 +102,6 @@
             <Setter Property="Fill" Value="{DynamicResource PhAccentFillPointerOver}" />
         </Style>
 
-        <!--  selected + pressed: back to secondary; pill tracks the accent button pressed brush and shrinks  -->
         <Style Selector="^:selected:pressed /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource PhListItemFillSecondary}" />
         </Style>
@@ -127,7 +110,6 @@
             <Setter Property="RenderTransform" Value="scaleY(0.7)" />
         </Style>
 
-        <!--  disabled  -->
         <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Opacity" Value="0.5" />
         </Style>

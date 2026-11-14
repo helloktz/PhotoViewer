@@ -12,30 +12,24 @@
     HorizontalAlignment="Stretch">
 
     <windows:SettingsPageView.Resources>
-        <!--  Shared width: image-info tags box and the layout arranger line up  -->
         <x:Double x:Key="LayoutSectionWidth">460</x:Double>
     </windows:SettingsPageView.Resources>
 
-
     <windows:SettingsPageView.Styles>
-        <!--  An empty drop slot in the layout arranger  -->
         <Style Selector="Border.zone">
             <Setter Property="Padding" Value="4" />
             <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
             <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralBrush}" />
         </Style>
 
-        <!--  Horizontal bar slots (toolbar / gallery top & bottom): fixed height so nothing reflows  -->
         <Style Selector="Border.zone.bar">
             <Setter Property="Height" Value="44" />
         </Style>
 
-        <!--  Side slots (gallery left / right): fixed width, fill the row height  -->
         <Style Selector="Border.zone.side">
             <Setter Property="Width" Value="88" />
         </Style>
 
-        <!--  Dashed outline overlay, shown only while dragging  -->
         <Style Selector="Rectangle.zoneDash">
             <Setter Property="IsVisible" Value="False" />
             <Setter Property="IsHitTestVisible" Value="False" />
@@ -64,12 +58,10 @@
             <Setter Property="Opacity" Value="0.95" />
             <Setter Property="Stroke" Value="{DynamicResource ZoneAccentBorder}" />
         </Style>
-        <!--  The viewer placeholder at the center  -->
         <Style Selector="Border.viewer">
             <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
             <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralBrush}" />
         </Style>
-        <!--  Faint label shown inside an empty slot  -->
         <Style Selector="TextBlock.slotLabel">
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -79,14 +71,11 @@
         </Style>
     </windows:SettingsPageView.Styles>
 
-
     <StackPanel Orientation="Vertical">
 
-        <!--  Controls  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_Controls" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
 
-            <!--  Position dropdowns  -->
             <StackPanel Orientation="Horizontal" Spacing="14">
                 <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                     <ui:PhTextBlock LangKey="Settings_Layout_ToolbarPosition" />
@@ -98,7 +87,6 @@
                 </StackPanel>
             </StackPanel>
 
-            <!--  Drag-and-drop arranger  -->
             <ui:PhTextBlock
                 MaxWidth="{StaticResource TextContentMaxWidth}"
                 Margin="0,14,0,8"
@@ -119,7 +107,6 @@
                 CornerRadius="{DynamicResource ControlCornerRadius}">
                 <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="8">
 
-                    <!--  Toolbar - top  -->
                     <Grid Grid.Row="0">
                         <Border Classes="zone bar">
                             <Grid x:Name="PART_ZoneToolbarTop" />
@@ -127,7 +114,6 @@
                         <Rectangle Classes="zoneDash" />
                     </Grid>
 
-                    <!--  Gallery - top  -->
                     <Grid Grid.Row="1">
                         <Border Classes="zone bar">
                             <Grid x:Name="PART_ZoneGalleryTop" />
@@ -135,7 +121,6 @@
                         <Rectangle Classes="zoneDash" />
                     </Grid>
 
-                    <!--  Gallery left | Viewer | Gallery right  -->
                     <Grid
                         Grid.Row="2"
                         ColumnDefinitions="Auto,*,Auto"
@@ -161,7 +146,6 @@
                         </Grid>
                     </Grid>
 
-                    <!--  Gallery - bottom  -->
                     <Grid Grid.Row="3">
                         <Border Classes="zone bar">
                             <Grid x:Name="PART_ZoneGalleryBottom" />
@@ -169,7 +153,6 @@
                         <Rectangle Classes="zoneDash" />
                     </Grid>
 
-                    <!--  Toolbar - bottom  -->
                     <Grid Grid.Row="4">
                         <Border Classes="zone bar">
                             <Grid x:Name="PART_ZoneToolbarBottom" />
@@ -177,7 +160,6 @@
                         <Rectangle Classes="zoneDash" />
                     </Grid>
 
-                    <!--  Topmost overlay that hosts the floating chip while dragging  -->
                     <Canvas
                         x:Name="PART_DragLayer"
                         Grid.Row="0"
@@ -188,9 +170,6 @@
 
         </StackPanel>
 
-
-
-        <!--  Window  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_Window" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
             <CheckBox x:Name="PART_ShowAppIcon" IsVisible="{OnPlatform False, Windows=True, x:TypeArguments=x:Boolean}">
@@ -201,13 +180,9 @@
             </CheckBox>
         </StackPanel>
 
-
-
-        <!--  Image information  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_ImageInfo" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}" Spacing="10">
 
-            <!--  Overlay  -->
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_ImageInfoOverlay" />
                 <ComboBox
@@ -216,7 +191,6 @@
                     HorizontalAlignment="Left" />
             </StackPanel>
 
-            <!--  Tags  -->
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_ImageInfoTags" />
                 <ui:PhTextBox
@@ -244,7 +218,6 @@
             </StackPanel>
 
         </StackPanel>
-
 
     </StackPanel>
 

@@ -12,7 +12,6 @@
 
     <StackPanel Orientation="Vertical">
 
-        <!--  File extension icons (Windows only)  -->
         <ui:PhTextBlock
             x:Name="PART_ExtIconsHeading"
             Classes="group"
@@ -37,8 +36,6 @@
             </StackPanel>
         </StackPanel>
 
-
-        <!--  Default photo viewer (Windows only)  -->
         <ui:PhTextBlock
             x:Name="PART_DefaultViewerHeading"
             Classes="group"
@@ -84,8 +81,6 @@
             </StackPanel>
         </StackPanel>
 
-
-        <!--  Applications menu (visibility decided in code: AppImage builds only)  -->
         <ui:PhTextBlock
             x:Name="PART_AppMenuHeading"
             Classes="group"
@@ -119,8 +114,6 @@
             </StackPanel>
         </StackPanel>
 
-
-        <!--  File formats  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_FileFormats" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}" Spacing="10">
             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -135,7 +128,6 @@
                     Variant="Link" />
             </StackPanel>
 
-            <!--  search (left) + total count (right)  -->
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                 <ui:PhSearchBoxControl
                     x:Name="PART_Search"
@@ -148,7 +140,6 @@
                     LangKey="Settings_TotalSupportedFormats" />
             </Grid>
 
-            <!--  formats table (rows built in code-behind)  -->
             <ui:PhTableControl x:Name="PART_Table" HorizontalAlignment="Stretch" />
         </StackPanel>
 

@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -28,11 +10,8 @@ using System.Linq;
 
 namespace PhotoViewer.UI;
 
-
 public partial class ToolbarControl
 {
-    // window-mode toggles that live at the top level of the in-app menu; on a macOS menu bar
-    // they cannot be bar titles, so they are folded into the Layout menu
     private static readonly LangId[] _windowModeKeys =
     [
         LangId.Menu_MnuWindowFit,
@@ -41,21 +20,8 @@ public partial class ToolbarControl
         LangId.Menu_MnuSlideshow,
     ];
 
-    // maps each native menu item back to its source PhMenuItem so state can be re-synced on open
     private readonly List<(NativeMenuItem Native, PhMenuItem Source)> _nativeMenuPairs = [];
 
-
-    /// <summary>
-    /// Builds the macOS menu-bar menu (the window-level <see cref="NativeMenu"/>) that mirrors the
-    /// in-app main menu defined in XAML (<c>PART_MainMenu</c>).
-    /// <para>
-    /// The native menu is only a <i>view</i> of the existing menu: every leaf routes its click back
-    /// to the source <see cref="PhMenuItem"/> so all command logic and external-tool handlers are
-    /// reused without duplication. The tree is built once; item state (checked/enabled/text) is
-    /// re-synced in place when a submenu opens — never restructured — because AppKit's Help-menu
-    /// search indexer opens every submenu and mutating the collection mid-iteration crashes.
-    /// </para>
-    /// </summary>
     public NativeMenu BuildNativeWindowMenu()
     {
         PrepareSourceMenu();
@@ -64,8 +30,6 @@ public partial class ToolbarControl
 
         foreach (var src in PART_MainMenu.Items)
         {
-            // only submenus can be menu-bar titles; loose top-level items/separators are handled
-            // elsewhere (window modes -> Layout; Settings/Exit -> app menu)
             if (src is not PhMenuItem item || item.Items.Count == 0) continue;
             if (!item.IsVisible) continue;
 
@@ -73,7 +37,6 @@ public partial class ToolbarControl
             var submenu = new NativeMenu();
             BuildNativeItems(submenu, item.Items);
 
-            // fold the loose window-mode toggles into the Layout menu
             if (item.LangKey == LangId.Menu_MnuLayout)
             {
                 submenu.Add(new NativeMenuItemSeparator());
@@ -94,11 +57,6 @@ public partial class ToolbarControl
         return root;
     }
 
-
-    /// <summary>
-    /// Ensures the source menu's bindings (IsChecked, etc.) and dynamic state are current, even
-    /// though the in-app ContextMenu popup may never have been opened on this platform.
-    /// </summary>
     private void PrepareSourceMenu()
     {
         _nativeMenuPairs.Clear();
@@ -106,13 +64,9 @@ public partial class ToolbarControl
 
         PART_MainMenu.DataContext = vm.ButtonMenuVM;
         RefreshMainMenuState();
-        _ = vm.ButtonMenuVM.OnPropertyChanged(string.Empty); // evaluate IsChecked bindings
+        _ = vm.ButtonMenuVM.OnPropertyChanged(string.Empty);
     }
 
-
-    /// <summary>
-    /// Recursively builds the native items of <paramref name="target"/> from the source items.
-    /// </summary>
     private void BuildNativeItems(NativeMenu target, ItemCollection sourceItems)
     {
         foreach (var src in sourceItems)
@@ -120,14 +74,12 @@ public partial class ToolbarControl
             if (src is not PhMenuItem item) continue;
             if (!item.IsVisible) continue;
 
-            // separator: the menu uses the "-" header convention
             if (item.Header is "-")
             {
                 target.Add(new NativeMenuItemSeparator());
                 continue;
             }
 
-            // submenu
             if (item.Items.Count > 0)
             {
                 var nativeParent = new NativeMenuItem { Header = GetNativeHeader(item) };
@@ -139,7 +91,6 @@ public partial class ToolbarControl
                 _nativeMenuPairs.Add((nativeParent, item));
                 target.Add(nativeParent);
             }
-            // leaf
             else
             {
                 target.Add(CreateNativeLeaf(item));
@@ -147,10 +98,6 @@ public partial class ToolbarControl
         }
     }
 
-
-    /// <summary>
-    /// Creates a native leaf item mirroring <paramref name="source"/> and routing its click back to it.
-    /// </summary>
     private NativeMenuItem CreateNativeLeaf(PhMenuItem source, KeyGesture? gesture = null)
     {
         var nativeItem = new NativeMenuItem
@@ -170,18 +117,12 @@ public partial class ToolbarControl
         return nativeItem;
     }
 
-
-    /// <summary>
-    /// Re-syncs scalar state (enabled/checked/text) from the source items onto the existing native
-    /// items. Property-only updates — no add/remove — so it is safe to run while AppKit iterates the
-    /// menu (e.g. the Help-menu search indexer opens every submenu).
-    /// </summary>
     private void SyncNativeStates()
     {
         UpdateMenuItemEnableStates();
         EditingApp.UpdateAppNameForMenuEdit(PART_MnuEdit);
         if (DataContext is ToolbarControlModel vm)
-            _ = vm.ButtonMenuVM.OnPropertyChanged(string.Empty); // re-evaluate IsChecked bindings
+            _ = vm.ButtonMenuVM.OnPropertyChanged(string.Empty);
 
         foreach (var (native, source) in _nativeMenuPairs)
         {
@@ -191,12 +132,6 @@ public partial class ToolbarControl
         }
     }
 
-
-    /// <summary>
-    /// Resolves the display text for a native menu item, preferring the source item's already
-    /// localized header and falling back to localizing via <see cref="PhMenuItem.LangKey"/>
-    /// (the source may not have been localized yet because its popup never opened).
-    /// </summary>
     private static string GetNativeHeader(PhMenuItem item)
     {
         if (item.Header is string h && !string.IsNullOrWhiteSpace(h) && h != "-") return h;
@@ -210,11 +145,6 @@ public partial class ToolbarControl
         return item.Header?.ToString() ?? string.Empty;
     }
 
-
-    /// <summary>
-    /// Resolves the keyboard shortcut for a menu item, honoring user-configured hotkeys first then
-    /// the built-in action default. macOS routes the key equivalent to the menu, so it fires once.
-    /// </summary>
     private static KeyGesture? GetNativeGesture(PhMenuItem item)
     {
         if (item.LangKey is not LangId key) return null;
@@ -231,10 +161,6 @@ public partial class ToolbarControl
         return hk.ToGesture();
     }
 
-
-    /// <summary>
-    /// Finds the first source <see cref="PhMenuItem"/> with the given language key (searches submenus).
-    /// </summary>
     private PhMenuItem? FindSourceItem(LangId langKey) => FindSourceItem(PART_MainMenu.Items, langKey);
 
     private static PhMenuItem? FindSourceItem(ItemCollection items, LangId langKey)

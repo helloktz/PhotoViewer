@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -28,9 +10,6 @@ using System.Collections.Generic;
 
 namespace PhotoViewer.Common.Windows;
 
-/// <summary>
-/// Modal window to add, edit, remove or restore the hotkeys of a single main-menu action.
-/// </summary>
 internal sealed class MenuHotkeyEditWindow : DialogWindow
 {
     private readonly string _actionPath;
@@ -41,21 +20,11 @@ internal sealed class MenuHotkeyEditWindow : DialogWindow
     private readonly WrapPanel _defaultChips;
     private readonly PhTextBlock? _defaultEmptyLabel;
 
-
     protected override int MIN_WIDTH => 460;
     protected override int MAX_WIDTH => 460;
 
-
-    /// <summary>
-    /// Gets the hotkeys built from the picker, or <c>null</c> if the dialog wasn't submitted.
-    /// </summary>
     public Hotkey[]? ResultHotkeys { get; private set; }
 
-
-    /// <summary>
-    /// Opens the editor for the action labelled <paramref name="actionPath"/>, seeded with its
-    /// <paramref name="current"/> hotkeys; "Reset to default" reverts to <paramref name="defaultHotkeys"/>.
-    /// </summary>
     public MenuHotkeyEditWindow(string actionPath, IReadOnlyList<Hotkey> current, IReadOnlyList<Hotkey> defaultHotkeys)
     {
         _actionPath = actionPath;
@@ -67,7 +36,6 @@ internal sealed class MenuHotkeyEditWindow : DialogWindow
         DefaultButton = DialogButton.Button1;
         DefaultFocus = DialogFocus.Default;
 
-        // Enter is reserved for the hotkey recorder, so it must not submit the dialog
         PressEnterToSubmit = false;
 
         _pathLabel = new PhTextBlock
@@ -79,7 +47,6 @@ internal sealed class MenuHotkeyEditWindow : DialogWindow
         _restoreBtn = new PhButton { Variant = PhButtonVariant.Link };
         _restoreBtn.Click += (_, _) => _picker.Hotkeys = [.. _defaultHotkeys];
 
-        // read-only keycaps of the default hotkeys (or an "empty" hint when there are none)
         _defaultChips = new WrapPanel { Opacity = 0.85 };
         if (_defaultHotkeys.Length > 0)
         {
@@ -97,7 +64,6 @@ internal sealed class MenuHotkeyEditWindow : DialogWindow
             _defaultChips.Children.Add(_defaultEmptyLabel);
         }
 
-        // reset link with the default-hotkey hint directly below it
         var footer = new StackPanel
         {
             Orientation = Orientation.Vertical,
@@ -113,7 +79,6 @@ internal sealed class MenuHotkeyEditWindow : DialogWindow
         };
     }
 
-
     protected override void OnIgLanguageChanged()
     {
         base.OnIgLanguageChanged();
@@ -125,10 +90,8 @@ internal sealed class MenuHotkeyEditWindow : DialogWindow
         _restoreBtn.Text = Core.Lang[LangId._ResetToDefault];
         _picker.PlaceholderText = Core.Lang[LangId.Settings_Toolbar_RecordHotkeyHint];
 
-        // only the "empty" hint is localized; the keycaps show non-localized key names
         if (_defaultEmptyLabel is not null) _defaultEmptyLabel.Text = Core.Lang[LangId._Empty];
     }
-
 
     protected override void OnDialogSubmitted(DialogEventArgs e)
     {

@@ -1,22 +1,4 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Input;
 using PhotoViewer.Common;
 using PhotoViewer.Common.Loggers;
@@ -30,9 +12,6 @@ namespace PhotoViewer.Win32;
 
 sealed class Program
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any
-    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-    // yet and stuff might break.
     [STAThread]
     public static int Main(string[] args)
     {
@@ -50,7 +29,6 @@ sealed class Program
 
         var isHandled = App.InitializeAppInstance(args, () =>
         {
-            // initialize service providers
             Core.FileSearchProvider = new Win32FileSearchProvider();
             Core.PreviewProvider = new Win32PhotoPreviewProvider();
             Core.ShellProvider = new Win32ShellProvider();
@@ -65,9 +43,6 @@ sealed class Program
             .StartWithClassicDesktopLifetime(args);
     }
 
-
-
-    // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
 #if DEBUG
         .LogToTrace()
@@ -89,7 +64,6 @@ sealed class Program
             var app = (App?)builder.Instance;
             app?.CreateMainWindowFn = () =>
             {
-                // create main window
                 var mainWindow = new MainWindow32();
                 mainWindow.DataContext = new MainWindowModel(mainWindow);
 

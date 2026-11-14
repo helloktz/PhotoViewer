@@ -13,7 +13,6 @@
 
     <StackPanel Orientation="Vertical">
 
-        <!--  Appearance  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_Appearance" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}" Spacing="10">
             <StackPanel>
@@ -28,7 +27,6 @@
                 </CheckBox>
             </StackPanel>
 
-            <!--  Gallery columns (1 - 100)  -->
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock x:Name="PART_GalleryColumnsLabel" LangKey="Settings_GalleryColumns" />
                 <Slider
@@ -41,7 +39,6 @@
                     TickFrequency="1" />
             </StackPanel>
 
-            <!--  Thumbnail size (px)  -->
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock x:Name="PART_ThumbnailSizeLabel" LangKey="Settings_ThumbnailSize" />
                 <Slider
@@ -54,7 +51,6 @@
                     TickFrequency="1" />
             </StackPanel>
 
-            <!--  Gallery cache size (MB)  -->
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_GalleryCacheSizeInMb" TextWrapping="Wrap" />
                 <ui:PhTextBox

@@ -12,7 +12,6 @@
     VerticalContentAlignment="Stretch">
 
     <Panel>
-        <!--  the source follows the theme pack, so it is assigned in code  -->
         <Image x:Name="PART_Logo" />
 
     </Panel>

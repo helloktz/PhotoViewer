@@ -1,22 +1,4 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Cysharp.Collections;
@@ -38,73 +20,50 @@ namespace PhotoViewer.Common.Photoing;
 
 public static partial class SkiaCodec
 {
-    /// <summary>
-    /// Skia refuses a single pixel buffer over this size, however much memory is free.
-    /// </summary>
+
     private const long MAX_PIXEL_BUFFER_BYTES = int.MaxValue;
 
-    /// <summary>
-    /// JPEG scales natively in the IDCT at eighths; largest-first to lose the least detail.
-    /// </summary>
     private static readonly float[] NATIVE_DECODE_SCALES =
         [7 / 8f, 6 / 8f, 5 / 8f, 4 / 8f, 3 / 8f, 2 / 8f, 1 / 8f];
 
-    /// <summary>
-    /// Smallest row band a draw is split into; below it, handing a band to a thread costs more than drawing it.
-    /// </summary>
     private const long MIN_DRAW_BAND_PIXELS = 1 << 18;
 
-
-    /// <summary>
-    /// Loads photo metadata from file path.
-    /// </summary>
     public static async Task<PhotoMetadata> LoadMetadataAsync(string? filePath,
         PhotoReadOptions? options = null, CancellationToken token = default)
     {
         filePath ??= string.Empty;
         var meta = new PhotoMetadata(filePath);
 
-        // 0. get file info
         if (string.IsNullOrWhiteSpace(filePath)) return meta;
 
-        // SVG: delegate to SvgCodec for metadata
         if (SvgCodec.IsSvgFile(filePath))
         {
             return await SvgCodec.LoadMetadataAsync(filePath, token);
         }
 
-        // create Skia codec
         using var decoder = SKCodec.Create(filePath);
         if (decoder.IsDisposed()) return meta;
 
-
-        // 1. calculate the specific frame index
         var frameIndex = options?.FrameIndex ?? 0;
 
-        // make sure frame index is within range
         if (frameIndex >= decoder.FrameCount) frameIndex = 0;
         else if (frameIndex < 0) frameIndex = (int)decoder.FrameCount - 1;
 
         meta.FrameCount = (uint)decoder.FrameCount;
         if (token.IsCancellationRequested) return meta;
 
-
-        // 2. read metadata of first frame only
         var readingTask = Task.Run(() =>
         {
             try
             {
-                // get animation frames
                 var skiaFramesInfo = SkiaCodec.GetFramesMetadata(meta.FilePath);
                 meta.CanAnimate = skiaFramesInfo?.Count > 0;
 
-                // get frame metadata
                 meta.Frames = skiaFramesInfo?.Select(aniInfo => new FrameMetadata
                 {
                     Animation = aniInfo,
                 }).ToImmutableList() ?? [];
 
-                // image size
                 meta.OriginalWidth = meta.Width = (uint)decoder.Info.Width;
                 meta.OriginalHeight = meta.Height = (uint)decoder.Info.Height;
 
@@ -113,11 +72,8 @@ public static partial class SkiaCodec
             catch { }
             if (token.IsCancellationRequested) return;
 
-
-            // get color profile
             try
             {
-                // get embedded color profile
                 meta.SkiaColorSpace = decoder.Info.ColorSpace;
                 using var colorProfile = decoder.Info.ColorSpace.ToProfile();
 
@@ -130,7 +86,6 @@ public static partial class SkiaCodec
                             .CopyTo(bytes);
                     }
 
-                    // create photo profile
                     var photoProfile = new PhotoColorProfile(bytes);
 
                     meta.ColorProfileName = photoProfile.GetIccDescription();
@@ -140,20 +95,15 @@ public static partial class SkiaCodec
                     }
                 }
 
-                // save to meta
                 meta.ColorSpace = decoder.Info.ColorSpace.IsSrgb
                     ? ImageMagick.ColorSpace.sRGB
                     : ImageMagick.ColorSpace.Undefined;
             }
             catch { }
 
-
-            // detect HDR transfer function, wide gamut, and bit depth
             meta.BitsPerChannel = GetBitsPerChannel(decoder.Info.ColorType);
             MagickCodec.DetectHdrInfo(meta);
 
-
-            // detect motion/live photo
             if (!token.IsCancellationRequested)
             {
                 var liveInfo = LivePhotoDetector.Detect(meta.FilePath);
@@ -163,29 +113,19 @@ public static partial class SkiaCodec
             }
         }, token).ConfigureAwait(false);
 
-
         await readingTask;
 
         return meta;
     }
 
-
-    /// <summary>
-    /// Loads photo.
-    /// </summary>
     public static async Task<SkiaDecoderOutput> LoadAsync(PhotoMetadata meta,
         PhotoReadOptions options, CancellationToken token)
     {
         return await Task.Run(() => Load(meta, options), token).ConfigureAwait(false);
     }
 
-
-    /// <summary>
-    /// Loads photo.
-    /// </summary>
     public static SkiaDecoderOutput Load(PhotoMetadata meta, PhotoReadOptions options)
     {
-        // A. SVG format: use SvgCodec for decoding
         if (meta.IsVector && SvgCodec.IsSvgFile(meta.FilePath))
         {
             var svgResult = new SkiaDecoderOutput();
@@ -197,8 +137,6 @@ public static partial class SkiaCodec
                 var intrinsicSize = SvgCodec.GetIntrinsicSize(picture);
                 svgResult.Size = new Size(intrinsicSize.Width, intrinsicSize.Height);
 
-                // pre-rasterize fallback for pixel operations (copy, export)
-                // on background thread to avoid blocking UI
                 var maxDim = (int)Math.Max(intrinsicSize.Width, intrinsicSize.Height);
                 var rasterized = SvgCodec.RasterizeThumbnail(picture, Math.Min(maxDim, 1024));
 
@@ -212,18 +150,12 @@ public static partial class SkiaCodec
             return svgResult;
         }
 
-
-        // B. Rasterize format
-        // 0. create Skia codec
         var codec = SKCodec.Create(meta.FilePath);
         var result = new SkiaDecoderOutput();
         result.Size = new Size(codec.Info.Width, codec.Info.Height);
 
-
-        // 1. read animated formats
         if (codec.FrameCount > 0)
         {
-            // the animator lives as long as the photo, and a file-backed codec blocks deleting or renaming the file
             codec.Dispose();
             codec = CreateInMemoryCodec(meta.FilePath);
 
@@ -232,12 +164,8 @@ public static partial class SkiaCodec
             return result;
         }
 
-
-        // 2. read single-frame formats
-        // images past Skia's pixel-buffer ceiling decode at the largest native reduction that fits
         var decodeInfo = GetDecodableImageInfo(codec, out var decodeScale);
 
-        // a caller that asked for a size gets a native reduced decode, like Magick's ApplySizeSettings
         if (TryGetRequestedDecodeInfo(codec, decodeInfo, options, out var requestedInfo))
         {
             decodeScale *= (double)requestedInfo.Width / decodeInfo.Width;
@@ -253,12 +181,10 @@ public static partial class SkiaCodec
 
         if (codec.GetPixels(decodeInfo, bmpFrame.GetPixels(), codecOption) == SKCodecResult.Success)
         {
-            // piex reports no origin for most RAW containers, so fall back to the one the metadata Ping read
             var origin = codec.EncodedOrigin is SKEncodedOrigin.TopLeft or SKEncodedOrigin.Default
                 ? meta.Orientation
                 : codec.EncodedOrigin;
 
-            // 2.1 correct rotation
             if (options.CorrectRotation)
             {
                 if (TryApplyOrientation(bmpFrame, origin, out var bmpOriented))
@@ -291,17 +217,12 @@ public static partial class SkiaCodec
         return result;
     }
 
-
-    /// <summary>
-    /// Creates a codec over an in-memory copy of the file, so the codec holds no file handle.
-    /// </summary>
     private static unsafe SKCodec? CreateInMemoryCodec(string filePath)
     {
         using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete);
         var length = fs.Length;
 
-        // the codec keeps its own reference to the data
         using var data = SKData.Create(length);
         var buffer = (byte*)data.Data;
 
@@ -315,12 +236,6 @@ public static partial class SkiaCodec
         return SKCodec.Create(data);
     }
 
-
-    /// <summary>
-    /// Picks the largest info the codec can decode into one pixel buffer, stepping down
-    /// through native scales when the full size does not fit. <paramref name="scale"/> is 1 if unreduced.
-    /// </summary>
-    /// <exception cref="NotSupportedException">Over the ceiling and the codec cannot scale.</exception>
     private static SKImageInfo GetDecodableImageInfo(SKCodec codec, out double scale)
     {
         scale = 1;
@@ -331,7 +246,6 @@ public static partial class SkiaCodec
         {
             var size = codec.GetScaledDimensions(candidate);
 
-            // codecs without native scaling just echo the full size back
             if (size.Width >= fullInfo.Width || size.Width <= 0 || size.Height <= 0) continue;
 
             var scaledInfo = fullInfo.WithSize(size.Width, size.Height);
@@ -349,35 +263,19 @@ public static partial class SkiaCodec
             + $"This format cannot be decoded at a reduced size.");
     }
 
-
-    /// <summary>
-    /// Checks whether a full pixel buffer for the info stays within Skia's byte-size ceiling.
-    /// </summary>
     private static bool FitsInPixelBuffer(SKImageInfo info)
     {
         return (long)info.Width * info.Height * info.BytesPerPixel <= MAX_PIXEL_BUFFER_BYTES;
     }
 
-
-    /// <summary>
-    /// Returns the linear scale that brings a <c>width * height * bytesPerPixel</c> buffer
-    /// under the ceiling, or 1 when it already fits.
-    /// </summary>
     private static double GetPixelBufferFitScale(long width, long height, int bytesPerPixel)
     {
         var bytes = width * height * bytesPerPixel;
         if (bytes <= 0 || bytes <= MAX_PIXEL_BUFFER_BYTES) return 1;
 
-        // area grows with the square of the linear scale; trim slightly to absorb rounding up
         return Math.Sqrt((double)MAX_PIXEL_BUFFER_BYTES / bytes) * 0.999;
     }
 
-
-    /// <summary>
-    /// Loads a thumbnail using native scaled decoding.
-    /// For JPEG, this uses libjpeg-turbo's IDCT scaling to decode at
-    /// a reduced resolution (1/2, 1/4, 1/8) without processing the full image data.
-    /// </summary>
     public static SKImage? LoadThumbnail(string filePath, int maxDimension)
     {
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) return null;
@@ -391,11 +289,9 @@ public static partial class SkiaCodec
             var origH = codec.Info.Height;
             if (origW <= 0 || origH <= 0) return null;
 
-            // calculate the scale needed to fit within maxDimension
             var scale = Math.Min((float)maxDimension / origW, (float)maxDimension / origH);
-            scale = Math.Min(scale, 1f); // don't upscale
+            scale = Math.Min(scale, 1f);
 
-            // get the native scaled dimensions (JPEG supports 1/2, 1/4, 1/8 natively)
             var scaledSize = codec.GetScaledDimensions(scale);
 
             var info = new SKImageInfo(scaledSize.Width, scaledSize.Height,
@@ -413,12 +309,6 @@ public static partial class SkiaCodec
         catch { return null; }
     }
 
-
-    /// <summary>
-    /// Saves photo to file using Magick codec.
-    /// </summary>
-    /// <returns><c>true</c> if file is saved.</returns>
-    /// <exception cref="Exception"></exception>
     public static async Task SaveAsync(SKImage? srcImg, string destFilePath,
         PhotoTransform? transform = null, uint quality = 100, CancellationToken token = default)
     {
@@ -426,19 +316,15 @@ public static partial class SkiaCodec
 
         try
         {
-            // 1. apply transforms
             using var transformedImg = TransformImage(srcImg, transform);
             var dstImg = transformedImg ?? srcImg;
             if (dstImg.IsDisposed() || token.IsCancellationRequested) return;
 
-
-            // 2. use Magick to save
             if (MagickCodec.CanWrite(destFilePath))
             {
                 using var imgM = ToMagick(dstImg);
                 if (imgM is null) return;
 
-                // write image data to file
                 imgM.Quality = quality;
                 MagickCodec.SetPngCompressionLevel(imgM, destFilePath, quality);
                 await imgM.WriteAsync(destFilePath, token);
@@ -452,10 +338,6 @@ public static partial class SkiaCodec
         catch (OperationCanceledException) { }
     }
 
-
-    /// <summary>
-    /// Checks if the photo can be pinged to get metadata.
-    /// </summary>
     public static bool CanPing(string srcFilePath)
     {
         using var codec = SKCodec.Create(srcFilePath);
@@ -464,10 +346,6 @@ public static partial class SkiaCodec
         return true;
     }
 
-
-    /// <summary>
-    /// Checks if the photo can be decoded.
-    /// </summary>
     public static bool CanRead(string srcFilePath)
     {
         using var meta = new PhotoMetadata()
@@ -478,26 +356,17 @@ public static partial class SkiaCodec
         return CanRead(meta);
     }
 
-
-    /// <summary>
-    /// Checks if the photo can be decoded.
-    /// </summary>
     public static bool CanRead(PhotoMetadata meta)
     {
         using var codec = SKCodec.Create(meta.FilePath);
         if (codec.IsDisposed()) return false;
 
-        // multiple frames
         var isMultiFrames = meta.FrameCount > 1;
         if (isMultiFrames) return codec.FrameCount > 1;
 
         return true;
     }
 
-
-    /// <summary>
-    /// Narrows the decode to the size the caller asked for, using the codec's native scales.
-    /// </summary>
     private static bool TryGetRequestedDecodeInfo(SKCodec codec, SKImageInfo currentInfo,
         PhotoReadOptions options, out SKImageInfo output)
     {
@@ -514,10 +383,6 @@ public static partial class SkiaCodec
         return true;
     }
 
-
-    /// <summary>
-    /// Checks if the RAW embedded preview can be decoded and is at least the requested size.
-    /// </summary>
     public static bool CanReadRawPreview(PhotoMetadata meta, int minWidth, int minHeight)
     {
         using var codec = SKCodec.Create(meta.FilePath);
@@ -526,10 +391,6 @@ public static partial class SkiaCodec
         return codec.Info.Width >= minWidth && codec.Info.Height >= minHeight;
     }
 
-
-    /// <summary>
-    /// Derives bits per channel from a SkiaSharp color type.
-    /// </summary>
     private static int GetBitsPerChannel(SKColorType colorType) => colorType switch
     {
         SKColorType.Rgba8888 or SKColorType.Bgra8888
@@ -543,11 +404,6 @@ public static partial class SkiaCodec
         _ => 8,
     };
 
-
-    /// <summary>
-    /// Returns <c>true</c> when the color type stores more than 8 bits per channel,
-    /// indicating a high-bit-depth or HDR pixel format.
-    /// </summary>
     public static bool IsHighBitDepthColorType(SKColorType colorType) => colorType is
         SKColorType.RgbaF16 or SKColorType.RgbaF16Clamped
         or SKColorType.RgbaF32
@@ -555,14 +411,9 @@ public static partial class SkiaCodec
         or SKColorType.Rgba1010102 or SKColorType.Bgra1010102
         or SKColorType.Rgb101010x or SKColorType.Bgr101010x;
 
-
-    /// <summary>
-    /// Extracts metadata for all frames.
-    /// </summary>
     public static List<SKCodecFrameInfo>? GetFramesMetadata(string filePath)
     {
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) return null;
-
 
         using var data = SKData.Create(filePath);
         using var codec = SKCodec.Create(data);
@@ -574,7 +425,6 @@ public static partial class SkiaCodec
 
         for (int i = 0; i < frameCount; i++)
         {
-            // GetFrameInfo provides duration and alpha info
             if (codec.GetFrameInfo(i, out var info))
             {
                 metadataList.Add(info);
@@ -586,39 +436,26 @@ public static partial class SkiaCodec
             }
         }
 
-        // an animation whose every frame is unreadable is not usable; a still image keeps its empty list
         if (frameCount > 0 && readCount == 0) return null;
 
         return metadataList;
     }
 
-
-    /// <summary>
-    /// Creates the stand-in for a frame whose info the codec cannot read.
-    /// </summary>
     private static SKCodecFrameInfo CreateUnknownFrameInfo() => new()
     {
-        // independent, so nothing composes itself onto a frame we know nothing about
         RequiredFrame = -1,
 
-        // AnimatorImpl.GetFrameDelay substitutes its default for a zero delay
         Duration = 0,
 
         DisposalMethod = SKCodecAnimationDisposalMethod.Keep,
     };
 
-
-    /// <summary>
-    /// Returns the new transformed image by applying flip, rotation, and color inversion.
-    /// </summary>
     public static SKImage? TransformImage(SKImage? imgSrc, PhotoTransform? transform)
     {
         if (imgSrc.IsDisposed() || transform is null || !transform.HasChanges) return null;
 
-        // flips then rotation, as one exact right-angle orientation
         var result = OrientImage(imgSrc, transform.Orientation);
 
-        // invert color
         if (transform.IsColorInverted)
         {
             var inverted = InvertImageColors(result ?? imgSrc);
@@ -629,15 +466,10 @@ public static partial class SkiaCodec
         return result;
     }
 
-
-    /// <summary>
-    /// Returns a new image mirrored and turned by <paramref name="orientation"/>, or <c>null</c> for the identity.
-    /// </summary>
     public static SKImage? OrientImage(SKImage? imgSrc, ImageOrientation orientation)
     {
         if (imgSrc.IsDisposed() || orientation.IsIdentity) return null;
 
-        // the exact swapped size: a bounding box from sin/cos can gain a pixel on a long panorama
         var (w, h) = (imgSrc.Width, imgSrc.Height);
         var (outW, outH) = orientation.GetSize(w, h);
 
@@ -645,7 +477,6 @@ public static partial class SkiaCodec
         using var surface = SKSurface.Create(info);
         if (surface.IsDisposed()) return null;
 
-        // canvas transforms apply last-first: mirror about the source center, then turn about the output center
         var canvas = surface.Canvas;
         canvas.Translate(outW / 2f, outH / 2f);
         canvas.RotateDegrees(orientation.Rotation);
@@ -656,23 +487,17 @@ public static partial class SkiaCodec
         return surface.Snapshot();
     }
 
-
-    /// <summary>
-    /// Returns a new image with the viewer edits in their one order (channels, invert, orientation), or <c>null</c> when there are none.
-    /// </summary>
     public static SKImage? ApplyImageEdits(SKImage? imgSrc, ColorChannels channels, bool isColorInverted, ImageOrientation orientation)
     {
         if (imgSrc.IsDisposed()) return null;
 
         SKImage? result = null;
 
-        // 1. color channels: pixel ops first, as geometry commutes with them
         if (!channels.HasFlag(ColorChannels.RGBA))
         {
             result = FilterImageColorChannels(imgSrc, channels);
         }
 
-        // 2. invert
         if (isColorInverted)
         {
             var inverted = InvertImageColors(result ?? imgSrc);
@@ -680,7 +505,6 @@ public static partial class SkiaCodec
             result = inverted;
         }
 
-        // 3. orientation
         var oriented = OrientImage(result ?? imgSrc, orientation);
         if (oriented is not null)
         {
@@ -691,10 +515,6 @@ public static partial class SkiaCodec
         return result;
     }
 
-
-    /// <summary>
-    /// Returns a new image with inverted RGB colors, preserving alpha.
-    /// </summary>
     public static SKImage? InvertImageColors(SKImage? imgSrc)
     {
         if (imgSrc.IsDisposed()) return null;
@@ -720,12 +540,6 @@ public static partial class SkiaCodec
         return surface.Snapshot();
     }
 
-
-    /// <summary>
-    /// Returns a new image with the specified color channels filtered.
-    /// Single-channel views (R, G, or B only) are shown as grayscale.
-    /// Alpha-only shows the alpha channel as grayscale with opaque output.
-    /// </summary>
     public static SKImage? FilterImageColorChannels(SKImage? imgSrc, ColorChannels colors)
     {
         if (imgSrc.IsDisposed()) return null;
@@ -746,18 +560,14 @@ public static partial class SkiaCodec
         var green = !alphaOnly && colors.HasFlag(ColorChannels.G) ? 1f : 0f;
         var blue = !alphaOnly && colors.HasFlag(ColorChannels.B) ? 1f : 0f;
 
-        // for single-channel views, spread the channel value to all RGB outputs
         var mRed = redOnly ? 1f : 0f;
         var mGreen = greenOnly ? 1f : 0f;
         var mBlue = blueOnly ? 1f : 0f;
 
-        // for alpha-only, map alpha to RGB for grayscale visualization
         var fromAlpha = alphaOnly ? 1f : 0f;
         var alphaScale = alphaOnly ? 0f : 1f;
         var alphaOffset = alphaOnly ? 1f : 0f;
 
-        // when alpha channel is not selected and not alpha-only,
-        // blend with black background instead of forcing opaque
         var blendWithBlack = !keepAlpha && !alphaOnly;
 
         #pragma warning disable format
@@ -779,7 +589,6 @@ public static partial class SkiaCodec
         using var surface = SKSurface.Create(info);
         if (surface.IsDisposed()) return null;
 
-        // blend transparent pixels with black background
         if (blendWithBlack)
         {
             surface.Canvas.Clear(SKColors.Black);
@@ -789,23 +598,16 @@ public static partial class SkiaCodec
         return surface.Snapshot();
     }
 
-
-    /// <summary>
-    /// Returns a new image rotated by the specified degree.
-    /// Handles arbitrary angles by computing the bounding box and centering.
-    /// </summary>
     public static SKImage? RotateImage(SKImage? imgSrc, double degree)
     {
         if (imgSrc.IsDisposed()) return null;
 
-        // normalize to [0, 360)
         degree = ((degree % 360) + 360) % 360;
         if (degree == 0) return null;
 
         var w = imgSrc.Width;
         var h = imgSrc.Height;
 
-        // compute the bounding box of the rotated image; cos(90) is not exactly 0, so ignore a sliver past a whole pixel
         var rad = degree * Math.PI / 180.0;
         var cos = Math.Abs(Math.Cos(rad));
         var sin = Math.Abs(Math.Sin(rad));
@@ -818,7 +620,6 @@ public static partial class SkiaCodec
 
         var canvas = surface.Canvas;
 
-        // move origin to the center of the output, rotate, then draw centered
         canvas.Translate(outW / 2f, outH / 2f);
         canvas.RotateDegrees((float)degree);
         canvas.Translate(-w / 2f, -h / 2f);
@@ -827,10 +628,6 @@ public static partial class SkiaCodec
         return surface.Snapshot();
     }
 
-
-    /// <summary>
-    /// Returns a new image flipped according to the specified options.
-    /// </summary>
     public static SKImage? FlipImage(SKImage? imgSrc, FlipOptions options)
     {
         if (imgSrc.IsDisposed() || options == FlipOptions.None) return null;
@@ -856,11 +653,6 @@ public static partial class SkiaCodec
         return surface.Snapshot();
     }
 
-
-    /// <summary>
-    /// Tries to apply the specified orientation to the source bitmap and outputs the transformed bitmap if
-    /// successful.
-    /// </summary>
     public static bool TryApplyOrientation(SKImage? imgSrc, SKEncodedOrigin? orientation, out SKImage? output)
     {
         output = null;
@@ -880,11 +672,6 @@ public static partial class SkiaCodec
         return false;
     }
 
-
-    /// <summary>
-    /// Tries to apply the specified orientation to the source bitmap and outputs the transformed bitmap if
-    /// successful.
-    /// </summary>
     public static bool TryApplyOrientation(SKBitmap? bmpSrc, SKEncodedOrigin? orientation, out SKBitmap? output)
     {
         output = null;
@@ -893,8 +680,6 @@ public static partial class SkiaCodec
         var origin = orientation ?? SKEncodedOrigin.TopLeft;
         if (origin is SKEncodedOrigin.TopLeft or SKEncodedOrigin.Default) return false;
 
-
-        // 1. determine if the result dimensions are swapped (90°/270° rotations)
         var swapDims = origin is SKEncodedOrigin.LeftTop
             or SKEncodedOrigin.RightTop
             or SKEncodedOrigin.RightBottom
@@ -908,7 +693,6 @@ public static partial class SkiaCodec
 
         try
         {
-            // 2. fix the orientation
             using (var surface = SKSurface.Create(info, bmpOutput.GetPixels(), info.RowBytes))
             {
                 var canvas = surface.Canvas;
@@ -954,7 +738,6 @@ public static partial class SkiaCodec
                 canvas.Flush();
             }
 
-
             output = bmpOutput;
             return true;
         }
@@ -966,10 +749,6 @@ public static partial class SkiaCodec
         return false;
     }
 
-
-    /// <summary>
-    /// Converts the Skia's <see cref="SKEncodedOrigin"/> value to Magick's <see cref="Orientation"/> value.
-    /// </summary>
     public static Orientation ToMagickOrientation(SKEncodedOrigin orientation)
     {
         return orientation switch
@@ -986,10 +765,6 @@ public static partial class SkiaCodec
         };
     }
 
-
-    /// <summary>
-    /// Converts the enum to an <see cref="SKSamplingOptions"/> struct.
-    /// </summary>
     public static SKSamplingOptions ToSamplingOptions(this ImageInterpolation interpolation)
     {
         return interpolation switch
@@ -1009,16 +784,11 @@ public static partial class SkiaCodec
         };
     }
 
-
-    /// <summary>
-    /// Attempts to apply the given color space to the source image and outputs a new image.
-    /// </summary>
     public static bool TryApplyColorSpace(SKImage? imgSrc, SKColorSpace? destColorSpace, out SKImage? output)
     {
         output = null;
         if (imgSrc.IsDisposed()) return false;
 
-        // convert color space
         if (destColorSpace is not null)
         {
             var info = new SKImageInfo(imgSrc.Width, imgSrc.Height,
@@ -1040,10 +810,6 @@ public static partial class SkiaCodec
         return false;
     }
 
-
-    /// <summary>
-    /// Draws <paramref name="image"/> converted to <paramref name="dest"/>'s format, in parallel row bands; <c>false</c> if Skia cannot.
-    /// </summary>
     public static bool TryDrawInBands(SKImage image, SKBitmap dest)
     {
         var pixels = dest.GetPixels();
@@ -1058,7 +824,6 @@ public static partial class SkiaCodec
         var tops = new int[bandCount];
         try
         {
-            // a surface, not an SKCanvas over the bitmap, so Skia color-manages the draw; bands never share a row
             for (var i = 0; i < bandCount; i++)
             {
                 var top = (int)((long)info.Height * i / bandCount);
@@ -1089,13 +854,8 @@ public static partial class SkiaCodec
         }
     }
 
-
-    /// <summary>
-    /// Number of row bands <see cref="TryDrawInBands"/> splits a draw of <paramref name="info"/> into.
-    /// </summary>
     private static int GetDrawBandCount(SKImage image, SKImageInfo info)
     {
-        // a lazy or GPU-backed image is not safe to read from several threads at once
         if (image.IsLazyGenerated) return 1;
         if (image.IsTextureBacked) return 1;
 
@@ -1106,13 +866,6 @@ public static partial class SkiaCodec
         return (int)Math.Clamp(bySize, 1, maxBands);
     }
 
-
-    /// <summary>
-    /// Shrinks the image so its longest side is <paramref name="maxSize"/>, entirely inside Skia.
-    /// Unlike <see cref="ResizeAsync(SKImage?, double, ImageResamplingMethod, CancellationToken)"/>
-    /// this skips the Magick round-trip (4 full pixel copies), which is far too costly for the
-    /// thumbnail pipeline. Returns <c>null</c> when the image already fits (it never upscales).
-    /// </summary>
     public static SKImage? ScaleDown(SKImage? imgSrc, double maxSize)
     {
         if (imgSrc.IsDisposed() || maxSize <= 0) return null;
@@ -1122,23 +875,17 @@ public static partial class SkiaCodec
         var newHeight = Math.Max(1, (int)newSize.Height);
         if (newWidth >= imgSrc.Width && newHeight >= imgSrc.Height) return null;
 
-        // no color space: matches the Magick path, which also read raw pixels into an unmanaged info
         var info = new SKImageInfo(newWidth, newHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
         using var bmpDest = new SKBitmap(info);
         using var pixmap = bmpDest.PeekPixels();
         if (pixmap is null) return null;
 
-        // Mitchell keeps downscaled thumbnails smooth without ringing
         var sampling = new SKSamplingOptions(SKCubicResampler.Mitchell);
         if (!imgSrc.ScalePixels(pixmap, sampling)) return null;
 
         return ToSKImage(bmpDest);
     }
 
-
-    /// <summary>
-    /// Resizes the specified bitmap to the given dimensions using the selected resampling method.
-    /// </summary>
     public static async Task<SKBitmap?> ResizeAsync(SKImage? imgSrc,
         double size, ImageResamplingMethod resample = ImageResamplingMethod.Auto,
         CancellationToken token = default)
@@ -1152,25 +899,18 @@ public static partial class SkiaCodec
         return await ResizeAsync(bmpSrc, (int)newSize.Width, (int)newSize.Height, resample, token);
     }
 
-
-    /// <summary>
-    /// Resizes the specified bitmap to the given dimensions using the selected resampling method.
-    /// </summary>
     public static async Task<SKBitmap?> ResizeAsync(SKBitmap? bmpSrc,
         int width, int height, ImageResamplingMethod resample = ImageResamplingMethod.Auto,
         CancellationToken token = default)
     {
         if (bmpSrc.IsDisposed()) return null;
 
-
         try
         {
             if (token.IsCancellationRequested) return null;
 
-            // the enum mirrors FilterType (Auto = Undefined), so it casts directly
             var filter = (FilterType)resample;
 
-            // resize with Magick.NET on a background thread
             return await Task.Run(() =>
             {
                 token.ThrowIfCancellationRequested();
@@ -1180,7 +920,6 @@ public static partial class SkiaCodec
 
                 if (filter != FilterType.Undefined) imgM.FilterType = filter;
 
-                // resize to the exact target size (the caller already computed it)
                 imgM.Resize(new MagickGeometry((uint)width, (uint)height) { IgnoreAspectRatio = true });
                 token.ThrowIfCancellationRequested();
 
@@ -1194,10 +933,6 @@ public static partial class SkiaCodec
         return null;
     }
 
-
-    /// <summary>
-    /// Creates an <see cref="SKColorSpace"/> from ICC data; <see langword="null"/> if Skia cannot parse it.
-    /// </summary>
     public static SKColorSpace? CreateIccColorSpace(SKData? iccData)
     {
         if (iccData is null || iccData.IsEmpty) return null;
@@ -1215,10 +950,6 @@ public static partial class SkiaCodec
         catch { return null; }
     }
 
-
-    /// <summary>
-    /// Creates an <see cref="SKColorSpace"/> from raw ICC bytes.
-    /// </summary>
     public static SKColorSpace? CreateIccColorSpace(ReadOnlySpan<byte> iccData)
     {
         if (iccData.IsEmpty) return null;
@@ -1230,16 +961,10 @@ public static partial class SkiaCodec
         return colorSpace;
     }
 
-
-    /// <summary>
-    /// Gets Skia color profile.
-    /// </summary>
-    /// <param name="name">Name or Full path of color profile</param>
     public static (SKColorSpace? ColorSpace, bool IsSupported) GetColorProfileByName(string name)
     {
         (SKColorSpace? ColorSpace, bool IsSupported) results = new(null, true);
 
-        // the app presents SDR, so an HDR display profile would convert every SDR image INTO PQ
         static (SKColorSpace?, bool) AsSdrProfile(SKColorSpace? cs)
         {
             if (HdrToneMapper.IsHdrColorSpace(cs))
@@ -1249,19 +974,14 @@ public static partial class SkiaCodec
             }
             else if (cs?.IsSrgb == true)
             {
-                // every sRGB profile is one shared wrapper, so any holder's Dispose would kill it; this one ignores Dispose
                 cs = SKColorSpace.CreateSrgb();
             }
 
-            return (cs, cs is not null); // Skia does not support all profiles
+            return (cs, cs is not null);
         }
 
-
-        // 1. don't use color profile
         if (name.Equals(nameof(ColorProfileOption.None))) return results;
 
-
-        // 2. use current monitor profile
         if (name.Equals(nameof(ColorProfileOption.CurrentMonitorProfile)))
         {
             if (string.IsNullOrEmpty(Core.ColorProfileProvider?.ProfilePath))
@@ -1273,8 +993,6 @@ public static partial class SkiaCodec
             return results;
         }
 
-
-        // 3. use built-in color profile
         var magickProfile = MagickCodec.GetBuiltinColorProfile(name);
         if (magickProfile is not null)
         {
@@ -1283,8 +1001,6 @@ public static partial class SkiaCodec
             return results;
         }
 
-
-        // 4. use custom color profile
         if (Path.Exists(name))
         {
             using var data = SKData.Create(name);
@@ -1293,43 +1009,26 @@ public static partial class SkiaCodec
             return results;
         }
 
-
         return results;
     }
 
-
-    /// <summary>
-    /// Converts Magick image to SKImage.
-    /// When <paramref name="isHdr"/> is <c>true</c>, exports at full float precision
-    /// (<see cref="SKColorType.RgbaF32"/>) to preserve super-white HDR values from Q16-HDRI.
-    /// </summary>
     public static unsafe SKImage? FromMagick(MagickImage? imgM, SKColorSpace? srcColorSpace = null, bool isHdr = false)
         => FromMagick(imgM, srcColorSpace, isHdr, out _);
 
-
-    /// <summary>
-    /// Converts Magick image to SKImage and reports any reduction in <paramref name="decodeScale"/>.
-    /// An image past the pixel ceiling is resized down IN PLACE first, because no
-    /// <see cref="SKImage"/> can exceed it regardless of how the pixels are supplied.
-    /// </summary>
     public static unsafe SKImage? FromMagick(MagickImage? imgM, SKColorSpace? srcColorSpace,
         bool isHdr, out double decodeScale)
     {
         decodeScale = 1;
         if (imgM is null) return null;
 
-        // an SDR hand-over (thumbnail, preview) must not carry a PQ/HLG tag, or a later
-        // conversion to the destination profile blows it out
         if (!isHdr && HdrToneMapper.IsHdrColorSpace(srcColorSpace))
         {
             srcColorSpace = null;
         }
 
-        // prepare image info
         var alphaType = imgM.HasAlpha ? SKAlphaType.Unpremul : SKAlphaType.Opaque;
         var colorType = isHdr ? SKColorType.RgbaF32 : SKColorType.Rgba8888;
 
-        // shrink to fit before converting; callers hand over images they are about to discard
         var srcWidth = imgM.Width;
         var bpp = new SKImageInfo(1, 1, colorType).BytesPerPixel;
         var fitScale = GetPixelBufferFitScale(srcWidth, imgM.Height, bpp);
@@ -1359,7 +1058,6 @@ public static partial class SkiaCodec
         }
         else
         {
-            // SDR path: 8-bit RGBA to save memory
             var bytes = pixels.ToByteArray(PixelMapping.RGBA);
             if (bytes is null) return null;
 
@@ -1367,7 +1065,6 @@ public static partial class SkiaCodec
             bytes.CopyTo(nativeBuffer.AsSpan());
         }
 
-        // create SKData backed by native memory; release callback disposes nativeBuffer
         fixed (byte* ptr = nativeBuffer)
         {
             var data = SKData.Create(
@@ -1381,19 +1078,6 @@ public static partial class SkiaCodec
         }
     }
 
-
-    /// <summary>
-    /// Wraps a raw native pixel buffer (typically returned by an external/native codec
-    /// plugin in <see cref="IGPixelBuffer"/>) in an <see cref="SKImage"/>.
-    /// </summary>
-    /// <remarks>
-    /// The bytes are copied into a host-owned <see cref="NativeMemoryArray{T}"/> so the
-    /// caller may free the original buffer immediately after this returns. The resulting
-    /// SKImage retains <paramref name="srcColorSpace"/> via its <see cref="SKImageInfo"/>;
-    /// the caller should NOT dispose <paramref name="srcColorSpace"/> right after this
-    /// call - SkiaSharp's managed wrapper participates in the underlying refcount and an
-    /// early dispose has been observed to surface the image as "untagged" downstream.
-    /// </remarks>
     public static unsafe SKImage? FromPixelBuffer(byte* data, int width, int height, int stride,
         SKColorType colorType, SKAlphaType alphaType, SKColorSpace? srcColorSpace)
     {
@@ -1406,9 +1090,6 @@ public static partial class SkiaCodec
             info = info.WithColorSpace(srcColorSpace);
         }
 
-        // Allocate a host-owned native buffer and copy the source rows. Using a tight
-        // (rowBytes == width * bytesPerPixel) layout simplifies SKImage.FromPixels and
-        // avoids row-padding mismatches when the host re-encodes the image later.
         var rowBytes = info.RowBytes;
         var totalBytes = checked((long)rowBytes * height);
         var nativeBuffer = new NativeMemoryArray<byte>(totalBytes, skipZeroClear: true, addMemoryPressure: true);
@@ -1417,12 +1098,10 @@ public static partial class SkiaCodec
         var dstSpan = nativeBuffer.AsSpan();
         if (stride == rowBytes)
         {
-            // tight pack -> single bulk copy
             srcSpan.Slice(0, (int)totalBytes).CopyTo(dstSpan);
         }
         else
         {
-            // row-by-row to strip the source stride padding
             for (var y = 0; y < height; y++)
             {
                 var src = new ReadOnlySpan<byte>(data + (long)y * stride, rowBytes);
@@ -1442,10 +1121,6 @@ public static partial class SkiaCodec
         }
     }
 
-
-    /// <summary>
-    /// Converts <see cref="Bitmap"/> to <see cref="SKBitmap"/>.
-    /// </summary>
     public static SKBitmap? FromBitmap(Bitmap? abmp)
     {
         if (abmp is null) return null;
@@ -1453,12 +1128,10 @@ public static partial class SkiaCodec
         var width = abmp.PixelSize.Width;
         var height = abmp.PixelSize.Height;
 
-        // 1. Detect pixel format and alpha from the Avalonia bitmap
         var srcFormat = abmp.Format;
         var srcAlpha = abmp.AlphaFormat;
         var (colorType, alphaType) = MapAvaloniaFormat(srcFormat, srcAlpha);
 
-        // 2. If the format maps directly to a Skia color type, do a fast direct copy
         if (colorType != SKColorType.Unknown)
         {
             var info = new SKImageInfo(width, height, colorType, alphaType);
@@ -1481,8 +1154,6 @@ public static partial class SkiaCodec
             return skBmp;
         }
 
-        // 3. Fallback: use a WriteableBitmap in Bgra8888 as an intermediate
-        //    to let Avalonia transcode unsupported formats (Rgb24, Bgr24, BlackWhite, etc.)
         var dstInfo = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
         var dstBmp = new SKBitmap(dstInfo);
 
@@ -1514,11 +1185,6 @@ public static partial class SkiaCodec
         return dstBmp;
     }
 
-
-    /// <summary>
-    /// Maps Avalonia pixel format and alpha to the corresponding SkiaSharp types.
-    /// Returns <see cref="SKColorType.Unknown"/> if no direct mapping exists.
-    /// </summary>
     private static (SKColorType ColorType, SKAlphaType AlphaType) MapAvaloniaFormat(
         PixelFormat? format, AlphaFormat? alpha)
     {
@@ -1543,10 +1209,6 @@ public static partial class SkiaCodec
         return (colorType, alphaType);
     }
 
-
-    /// <summary>
-    /// Converts bitmap to image with optional source color space.
-    /// </summary>
     public static SKImage? ToSKImage(SKBitmap? bmp)
     {
         if (bmp.IsDisposed()) return null;
@@ -1555,10 +1217,6 @@ public static partial class SkiaCodec
         return img;
     }
 
-
-    /// <summary>
-    /// Returns an independent raster copy of the image, keeping its color type, alpha type and color space.
-    /// </summary>
     public static SKImage? CopyImage(SKImage? imgSrc)
     {
         if (imgSrc.IsDisposed()) return null;
@@ -1570,10 +1228,6 @@ public static partial class SkiaCodec
         return ToSKImageNoCopy(bmp);
     }
 
-
-    /// <summary>
-    /// Converts a finished bitmap to an image sharing its pixels; only call once nothing draws into <paramref name="bmp"/> again.
-    /// </summary>
     public static SKImage? ToSKImageNoCopy(SKBitmap? bmp)
     {
         if (bmp.IsDisposed()) return null;
@@ -1582,27 +1236,16 @@ public static partial class SkiaCodec
         return SKImage.FromBitmap(bmp);
     }
 
-
-    /// <summary>
-    /// Converts <see cref="SKBitmap"/> to <see cref="MagickImage"/>.
-    /// </summary>
     public static MagickImage? ToMagick(SKBitmap? skBmp)
     {
         using var skImg = ToSKImage(skBmp);
         return ToMagick(skImg);
     }
 
-
-    /// <summary>
-    /// Converts <see cref="SKImage"/> to <see cref="MagickImage"/>.
-    /// Images are read as tightly packed Bgra8888 pixels so Skia handles
-    /// color type conversion before Magick imports the pixel buffer.
-    /// </summary>
     public static unsafe MagickImage? ToMagick(SKImage? skImg)
     {
         if (skImg.IsDisposed()) return null;
 
-        // Magick imports straight alpha, so premultiplied bytes would darken every semi-transparent pixel
         var info = new SKImageInfo(skImg.Width, skImg.Height, SKColorType.Bgra8888, SKAlphaType.Unpremul);
         var rowBytes = info.Width * info.BytesPerPixel;
         var pixelBuffer = new byte[rowBytes * info.Height];
@@ -1612,7 +1255,6 @@ public static partial class SkiaCodec
             if (!skImg.ReadPixels(info, (nint)ptr, rowBytes, 0, 0)) return null;
         }
 
-        // convert to MagickImage
         var imgM = new MagickImage();
         var settings = new PixelReadSettings((uint)info.Width, (uint)info.Height,
             StorageType.Char, PixelMapping.BGRA);
@@ -1621,23 +1263,14 @@ public static partial class SkiaCodec
         return imgM;
     }
 
-
-    /// <summary>
-    /// Converts <see cref="SKImage"/> to <see cref="WriteableBitmap"/>.
-    /// </summary>
     public static WriteableBitmap? ToWritableBitmap(SKImage? img)
     {
         if (img.IsDisposed()) return null;
 
-        // PeekPixels returns null if the image is on the GPU (Texture-backed)
         using var pixmap = img.PeekPixels();
         return ToWritableBitmap(pixmap);
     }
 
-
-    /// <summary>
-    /// Converts <see cref="SKBitmap"/> to <see cref="WriteableBitmap"/>.
-    /// </summary>
     public static WriteableBitmap? ToWritableBitmap(SKBitmap? bmp)
     {
         if (bmp.IsDisposed()) return null;
@@ -1646,10 +1279,6 @@ public static partial class SkiaCodec
         return ToWritableBitmap(pixmap);
     }
 
-
-    /// <summary>
-    /// Converts <see cref="SKPixmap"/> to <see cref="WriteableBitmap"/>.
-    /// </summary>
     public static unsafe WriteableBitmap? ToWritableBitmap(SKPixmap? pixmap)
     {
         if (pixmap.IsDisposed()) return null;
@@ -1663,8 +1292,6 @@ public static partial class SkiaCodec
 
         using (ILockedFramebuffer fb = wbmp.Lock())
         {
-            // If the source is already Bgra8888, we can do a super-fast memcpy.
-            // We also check matching AlphaType to ensure we don't copy Premul into Unpremul blindly.
             bool isFastPath = info.ColorType == SKColorType.Bgra8888 &&
                               (info.AlphaType == SKAlphaType.Premul || info.AlphaType == SKAlphaType.Opaque);
 
@@ -1678,12 +1305,10 @@ public static partial class SkiaCodec
 
                 if (srcRowBytes == dstRowBytes)
                 {
-                    // Single block copy if strides match (most common)
                     Unsafe.CopyBlock(dstPtr, srcPtr, (uint)(srcRowBytes * info.Height));
                 }
                 else
                 {
-                    // Row-by-row copy if strides differ
                     for (int y = 0; y < info.Height; y++)
                     {
                         Unsafe.CopyBlock(dstPtr, srcPtr, (uint)bytesToCopy);
@@ -1694,8 +1319,6 @@ public static partial class SkiaCodec
             }
             else
             {
-                // Slow path: Source is not Bgra8888 (e.g., Rgba8888, Gray8).
-                // We let Skia convert the pixels into the destination buffer.
                 var dstInfo = new SKImageInfo(info.Width, info.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
                 pixmap.ReadPixels(dstInfo, fb.Address, fb.RowBytes);
             }
@@ -1704,10 +1327,6 @@ public static partial class SkiaCodec
         return wbmp;
     }
 
-
-    /// <summary>
-    /// Converts SKImage to memory stream using uncompressed 32-bit BMPv4 format for transparency support.
-    /// </summary>
     public static MemoryStream? ToBitmapV4Stream(SKImage? imgSrc)
     {
         if (imgSrc.IsDisposed()) return null;
@@ -1716,21 +1335,15 @@ public static partial class SkiaCodec
         return ToBitmapV4Stream(bmpSrc);
     }
 
-
-    /// <summary>
-    /// Converts SKBitmap to memory stream using uncompressed 32-bit BMPv4 format for transparency support.
-    /// </summary>
     public static MemoryStream? ToBitmapV4Stream(SKBitmap? bmpSrc)
     {
         if (bmpSrc.IsDisposed()) return null;
-
 
         SKBitmap? converted = null;
         try
         {
             var bmp = bmpSrc;
 
-            // BMP uses BGRA byte order; convert if the source uses a different color type
             if (bmp.ColorType != SKColorType.Bgra8888)
             {
                 var info = new SKImageInfo(bmp.Width, bmp.Height, SKColorType.Bgra8888, bmp.AlphaType);
@@ -1743,53 +1356,44 @@ public static partial class SkiaCodec
             var h = bmp.Height;
             var bmpRowBytes = w * 4;
 
-            // header = 14 (file header) + 108 (BITMAPV4HEADER) = 122 bytes
             const int headerSize = 122;
             long pixelBytesL = (long)bmpRowBytes * h;
 
-            // guard against int overflow for extremely large images
             if (pixelBytesL > int.MaxValue - headerSize) return null;
 
             var pixelBytes = (int)pixelBytesL;
             var fileSize = headerSize + pixelBytes;
             var ms = new MemoryStream(fileSize);
 
-            // BMP File Header (14 bytes) + BITMAPV4HEADER (108 bytes, full alpha + color space support)
             using (var bw = new BinaryWriter(ms, System.Text.Encoding.UTF8, leaveOpen: true))
             {
-                // -- BMP File Header (14 bytes) --
                 bw.Write((byte)'B');
                 bw.Write((byte)'M');
-                bw.Write(fileSize);       // total file size in bytes
-                bw.Write(0);              // reserved
-                bw.Write(headerSize);     // pixel data offset
+                bw.Write(fileSize);
+                bw.Write(0);
+                bw.Write(headerSize);
 
-                // -- BITMAPV4HEADER (108 bytes) --
-                bw.Write(108);            // biSize: header size identifies this as V4
-                bw.Write(w);              // width in pixels
-                bw.Write(-h);             // negative height = top-down row order
-                bw.Write((short)1);       // color planes (always 1)
-                bw.Write((short)32);      // bits per pixel
-                bw.Write(3);              // biCompression: BI_BITFIELDS (required for channel masks)
-                bw.Write(pixelBytes);     // raw pixel data size
-                bw.Write(0);              // X pixels per meter (ignored)
-                bw.Write(0);              // Y pixels per meter (ignored)
-                bw.Write(0);              // palette colors used (0 = none for 32bpp)
-                bw.Write(0);              // important colors (0 = all)
+                bw.Write(108);
+                bw.Write(w);
+                bw.Write(-h);
+                bw.Write((short)1);
+                bw.Write((short)32);
+                bw.Write(3);
+                bw.Write(pixelBytes);
+                bw.Write(0);
+                bw.Write(0);
+                bw.Write(0);
+                bw.Write(0);
 
-                // BGRA channel masks (BI_BITFIELDS layout, BGRA byte order)
-                bw.Write(0x00FF0000);                     // red mask
-                bw.Write(0x0000FF00);                     // green mask
-                bw.Write(0x000000FF);                     // blue mask
-                bw.Write(unchecked((int)0xFF000000));     // alpha mask
+                bw.Write(0x00FF0000);
+                bw.Write(0x0000FF00);
+                bw.Write(0x000000FF);
+                bw.Write(unchecked((int)0xFF000000));
 
-                // V4 color space block (52 bytes)
-                bw.Write(0x73524742);                     // bV4CSType = 'sRGB' signals alpha-aware readers
-                for (int i = 0; i < 12; i++) bw.Write(0); // CIEXYZTRIPLE endpoints (36 bytes, zeroed = default)
-                                                          // bV4GammaRed/Green/Blue (12 bytes, zeroed = default)
+                bw.Write(0x73524742);
+                for (int i = 0; i < 12; i++) bw.Write(0);
             }
 
-            // write raw pixel data (zero-copy fast path if row stride matches)
             var pixels = bmp.GetPixelSpan();
             var srcRowBytes = bmp.RowBytes;
 

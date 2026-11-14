@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -30,10 +12,6 @@ using System;
 
 namespace PhotoViewer.Common.Windows;
 
-
-/// <summary>
-/// The Print window: printer, paper and layout on the left, the live preview of every page on the right.
-/// </summary>
 public sealed class PrintWindow : DialogWindow
 {
     protected override int MIN_WIDTH => 0;
@@ -49,12 +27,7 @@ public sealed class PrintWindow : DialogWindow
     private readonly PhButton _systemDialogLink;
     private readonly TextBlock _summary;
 
-
-    /// <summary>
-    /// Gets the message the main window shows once the job is done; <c>null</c> when nothing was printed.
-    /// </summary>
     public string? CompletedMessage { get; private set; }
-
 
     public PrintWindow(PrintSession session, PrintRegion region = PrintRegion.WholeImage)
     {
@@ -63,7 +36,6 @@ public sealed class PrintWindow : DialogWindow
         IsButton3Visible = false;
         DefaultButton = DialogButton.Button1;
 
-        // the window has text inputs, so Enter must not print
         PressEnterToSubmit = false;
 
         CanResize = true;
@@ -74,7 +46,6 @@ public sealed class PrintWindow : DialogWindow
         MinWidth = MIN_RESTORE_WIDTH;
         MinHeight = MIN_RESTORE_HEIGHT;
 
-
         RestoreWindowBounds(Core.Config.PrintWindowBounds,
             new(DEFAULT_WIDTH, DEFAULT_HEIGHT),
             new(MIN_RESTORE_WIDTH, MIN_RESTORE_HEIGHT));
@@ -84,7 +55,6 @@ public sealed class PrintWindow : DialogWindow
         _view.StateChanged += View_StateChanged;
         DialogContent = _view;
 
-        // the footer: the platform's own dialog, and how many pages and prints
         _systemDialogLink = new PhButton
         {
             Variant = PhButtonVariant.Link,
@@ -107,12 +77,8 @@ public sealed class PrintWindow : DialogWindow
             Children = { _systemDialogLink, _summary },
         };
 
-        // before the settings column, which scrolls on these keys once anything in it has focus
         AddHandler(KeyDownEvent, Window_PreviewKeyDown, RoutingStrategies.Tunnel);
     }
-
-
-    #region Overrides
 
     protected override void OnIgLanguageChanged()
     {
@@ -124,7 +90,6 @@ public sealed class PrintWindow : DialogWindow
         View_StateChanged();
     }
 
-
     protected override async void OnDialogSubmitted(DialogEventArgs e)
     {
         try
@@ -134,7 +99,6 @@ public sealed class PrintWindow : DialogWindow
             var printer = _view.Printer;
             if (!await _view.PrintAsync(this)) return;
 
-            // a printer's driver writes even a file after the job is handed over, so only the app's own PDF is already saved
             CompletedMessage = printer?.Id == PrintProviderBase.PDF_PRINTER_ID
                 ? Core.Lang[LangId.Print_Saved]
                 : Core.Lang[LangId.Print_Sent, printer?.DisplayName];
@@ -152,10 +116,8 @@ public sealed class PrintWindow : DialogWindow
         }
     }
 
-
     protected override void OnDialogCancelled(DialogEventArgs e)
     {
-        // Cancel stops a running job first; the next one closes
         if (_view.IsPrinting)
         {
             _view.CancelPrinting();
@@ -164,7 +126,6 @@ public sealed class PrintWindow : DialogWindow
 
         base.OnDialogCancelled(e);
     }
-
 
     protected override void OnDialogAborted()
     {
@@ -177,10 +138,8 @@ public sealed class PrintWindow : DialogWindow
         base.OnDialogAborted();
     }
 
-
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        // a closing window cannot leave a job behind
         if (_view.IsPrinting)
         {
             _view.CancelPrinting();
@@ -188,7 +147,6 @@ public sealed class PrintWindow : DialogWindow
             return;
         }
 
-        // bounds while the native window still lives; a maximized size is never the restore size
         Core.Config.EnablePrintWindowMaximized = RestorableWindowState == WindowState.Maximized;
         if (WindowedBounds is { } bounds
             && bounds.Width >= MIN_RESTORE_WIDTH
@@ -203,12 +161,6 @@ public sealed class PrintWindow : DialogWindow
         base.OnClosing(e);
     }
 
-    #endregion // Overrides
-
-
-    /// <summary>
-    /// Turns the pages of the preview on PageUp and PageDown, unless a text box or an open dropdown takes them.
-    /// </summary>
     private void Window_PreviewKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key is not (Key.PageDown or Key.PageUp) || e.KeyModifiers != KeyModifiers.None) return;
@@ -218,10 +170,8 @@ public sealed class PrintWindow : DialogWindow
         e.Handled = true;
     }
 
-
     private void View_StateChanged()
     {
-        // a printer prints, even one that writes a file; only the app's own PDF is a save
         Button1Text = _view.Printer?.Id == PrintProviderBase.PDF_PRINTER_ID
             ? Core.Lang[LangId._Save]
             : Core.Lang[LangId.Print_Title];
@@ -231,7 +181,6 @@ public sealed class PrintWindow : DialogWindow
         _summary.Text = _view.SummaryText;
     }
 
-
     private async void SystemDialogLink_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         try
@@ -239,7 +188,6 @@ public sealed class PrintWindow : DialogWindow
             if (_view.IsPrinting) return;
             if (!await _view.ShowSystemDialogAsync(this)) return;
 
-            // the platform's dialog takes it from here
             DialogResult = DialogExitCode.Cancel;
             Close(DialogResult);
         }

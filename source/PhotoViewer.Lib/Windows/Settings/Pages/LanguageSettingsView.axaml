@@ -14,10 +14,8 @@
 
     <StackPanel Orientation="Vertical">
 
-        <!--  Language  -->
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}" Spacing="14">
 
-            <!--  Display language  -->
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_DisplayLanguage" />
 
@@ -32,7 +30,6 @@
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="loc:Lang">
                                 <StackPanel Width="300" Spacing="2">
-                                    <!--  local name + english name  -->
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <TextBlock
                                             FontWeight="SemiBold"
@@ -45,7 +42,6 @@
                                             TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
 
-                                    <!--  lang pack path  -->
                                     <TextBlock
                                         FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
                                         IsVisible="{CompiledBinding !IsBuiltIn}"
@@ -65,19 +61,6 @@
                 </StackPanel>
             </StackPanel>
 
-
-            <!--  Contributors  -->
-            <StackPanel x:Name="PART_ContributorsSection" Spacing="{DynamicResource SettingsLabelInputGap}">
-                <ui:PhTextBlock FontWeight="SemiBold" LangKey="Settings_Contributors" />
-                <SelectableTextBlock
-                    x:Name="PART_Contributors"
-                    MaxWidth="600"
-                    HorizontalAlignment="Left"
-                    TextWrapping="Wrap" />
-            </StackPanel>
-
-
-            <!--  Actions  -->
             <StackPanel
                 Margin="0,14,0,0"
                 HorizontalAlignment="Left"

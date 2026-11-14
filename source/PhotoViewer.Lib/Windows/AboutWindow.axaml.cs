@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -24,15 +6,12 @@ using PhotoViewer.Common.Types;
 using PhotoViewer.UI;
 using PhotoViewer.UI.Windowing;
 using ImageMagick;
-using System;
 using System.Runtime.InteropServices;
 
 namespace PhotoViewer.Common.Windows;
 
 public partial class AboutWindow : DialogWindow
 {
-
-
 
     private const string _creditContent = """
         ◍ Avalonia                                         MIT licence
@@ -76,10 +55,7 @@ public partial class AboutWindow : DialogWindow
           https://github.com/d2phap/FileWatcherEx
           Copyright (c) 2018-2027 Dương Diệu Pháp
 
-        ◍ ImageGlass logo idea
-          Nguyễn Quốc Tuấn
         """;
-
 
     public AboutWindow()
     {
@@ -93,13 +69,10 @@ public partial class AboutWindow : DialogWindow
         DefaultFocus = DialogFocus.Button1;
         ShowInTaskbar = true;
 
-        PART_LblCopyright.Text = $"Copyright © 2010-{DateTime.UtcNow.Year} Dương Diệu Pháp";
+        PART_LblCopyright.Text = "ImageGlass © 2010–2027 Duong Dieu Phap. GPLv3. No warranty. See LICENSE.";
         PART_LblCreditContent.Text = _creditContent;
 
     }
-
-
-    #region Override Methods
 
     protected override void OnIgLanguageChanged()
     {
@@ -113,25 +86,16 @@ public partial class AboutWindow : DialogWindow
         UpdateVersionText();
     }
 
-    #endregion // Override Methods
-
-
-
-    #region Private Methods
-
     private void UpdateVersionText()
     {
         var magickVersion = MagickNET.Version;
         var dotnetVersion = RuntimeInformation.FrameworkDescription;
 
         PART_LblVersion.Text = $"""
-            {Core.Lang[LangId._AboutVersion]} {Core.BuildInfo.FullVersion}
+            {Core.Lang[LangId._AboutVersion]} {Core.BuildInfo.Version}
             {magickVersion}
             {dotnetVersion}
             """;
     }
-
-
-    #endregion // Private Methods
 
 }

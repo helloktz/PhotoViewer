@@ -1,22 +1,4 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
@@ -31,19 +13,12 @@ using System.IO;
 
 namespace PhotoViewer.Common.Types;
 
-
 public static class Resx
 {
-    /// <summary>
-    /// Cached mapping from <see cref="ResxId"/> to its string name.
-    /// </summary>
+
     private static readonly FrozenDictionary<ResxId, string> _resxIdNameCache =
         Enum.GetValues<ResxId>().ToFrozenDictionary(v => v, v => Enum.GetName(v) ?? string.Empty);
 
-
-    /// <summary>
-    /// Gets resource.
-    /// </summary>
     public static T Get<T>(ResxId resxId)
     {
         var resName = GetResxName(resxId);
@@ -52,10 +27,6 @@ public static class Resx
         return (T)value!;
     }
 
-
-    /// <summary>
-    /// Gets the color of a solid brush resource; <paramref name="fallback"/> when it is missing or not solid.
-    /// </summary>
     public static Color GetBrushColor(ResxId resxId, Color fallback)
     {
         var brush = Get<IBrush?>(resxId) as ISolidColorBrush;
@@ -63,39 +34,23 @@ public static class Resx
         return brush?.Color ?? fallback;
     }
 
-
-    /// <summary>
-    /// Sets resource.
-    /// </summary>
     public static void Set(ResxId resxId, object resValue)
     {
         var resName = GetResxName(resxId);
         App.Current?.Resources[resName] = resValue;
     }
 
-
-    /// <summary>
-    /// Gets the resource name from resource id.
-    /// </summary>
     public static string GetResxName(ResxId resxId)
     {
         return _resxIdNameCache.GetValueOrDefault(resxId, string.Empty);
     }
 
-
-    /// <summary>
-    /// Creates a binding to the input resource name.
-    /// </summary>
     public static DynamicResourceExtension CreateBinding(ResxId resxId)
     {
         var resName = GetResxName(resxId);
         return new DynamicResourceExtension(resName);
     }
 
-
-    /// <summary>
-    /// Resolves a shared icon geometry (from IconResources) by id.
-    /// </summary>
     public static StreamGeometry? GetIcon(ResxIconId? id)
     {
         if (id is null) return null;
@@ -106,10 +61,6 @@ public static class Resx
             : null;
     }
 
-
-    /// <summary>
-    /// Gets stock icon.
-    /// </summary>
     public static Bitmap? GetStockIcon(StockIconId? id)
     {
         if (id is null) return null;
@@ -124,10 +75,6 @@ public static class Resx
         return null;
     }
 
-
-    /// <summary>
-    /// Gets a bundled SVG as a scalable image.
-    /// </summary>
     public static SvgImage? GetSvg(ResxSvgId? id)
     {
         if (id is null) return null;
@@ -142,10 +89,6 @@ public static class Resx
         return null;
     }
 
-
-    /// <summary>
-    /// Gets default app icon.
-    /// </summary>
     public static WindowIcon? GetDefaultWindowIcon()
     {
         try
@@ -160,10 +103,6 @@ public static class Resx
         return null;
     }
 
-
-    /// <summary>
-    /// Gets default app icon.
-    /// </summary>
     public static Stream? GetDefaultWindowIconAsStream()
     {
         try
@@ -178,10 +117,8 @@ public static class Resx
 
 }
 
-
 public enum ResxId
 {
-    // accent colors
     SystemAccentColor,
     SystemAccentColorLight1,
     SystemAccentColorLight2,
@@ -189,24 +126,18 @@ public enum ResxId
     SystemAccentColorDark1,
     SystemAccentColorDark2,
     SystemAccentColorDark3,
-    IG_AccentBrush, // the accent color itself as a brush, for a fill the accent covers whole
+    IG_AccentBrush,
 
-
-    // accent button text (contrasts with the accent background)
     AccentButtonForeground,
     AccentButtonForegroundPointerOver,
     AccentButtonForegroundPressed,
     AccentButtonForegroundDisabled,
 
-
-    // control styles
     ControlCornerRadius,
     OverlayCornerRadius,
     ContentControlThemeFontFamily,
 
-
-    // text color
-    IG_TextAccentColor, // accent color tuned for readable text on the theme background
+    IG_TextAccentColor,
     SystemControlForegroundBaseHighBrush,
     TextControlForeground,
     TextControlForegroundPointerOver,
@@ -217,8 +148,6 @@ public enum ResxId
     CheckBoxForegroundUnchecked,
     CheckBoxForegroundUncheckedPointerOver,
 
-
-    // border color
     TextControlBorderBrush,
     TextControlBorderBrushPointerOver,
     TextControlBorderBrushDisabled,
@@ -227,8 +156,6 @@ public enum ResxId
     CheckBoxCheckBackgroundStrokeUnchecked,
     CheckBoxCheckBackgroundStrokeUncheckedPointerOver,
 
-
-    // menu =======
     MenuFlyoutPresenterBackground,
     MenuFlyoutPresenterBorderBrush,
 
@@ -237,32 +164,26 @@ public enum ResxId
     MenuFlyoutItemBackgroundPointerOver,
     MenuFlyoutItemBackgroundPressed,
 
-    // menu text
     MenuFlyoutItemForeground,
     MenuFlyoutItemForegroundPointerOver,
     MenuFlyoutItemForegroundPressed,
     MenuFlyoutItemForegroundDisabled,
 
-    // menu hotkey text
     MenuFlyoutItemKeyboardAcceleratorTextForeground,
     MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver,
     MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed,
     MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled,
 
-    // menu chevron
     MenuFlyoutSubItemChevron,
     MenuFlyoutSubItemChevronPointerOver,
     MenuFlyoutSubItemChevronPressed,
     MenuFlyoutSubItemChevronDisabled,
     MenuFlyoutSubItemChevronSubMenuOpened,
 
-    // tooltip
     ToolTipBackground,
     ToolTipForeground,
     ToolTipBorder,
 
-
-    // combobox ========
     ComboBoxForeground,
     ComboBoxDropDownBackground,
     ComboBoxDropDownBorderBrush,
@@ -278,8 +199,6 @@ public enum ResxId
     ComboBoxItemBackgroundPressed,
     ComboBoxItemBackgroundSelected,
 
-
-    // theme pack
     IG_ThemeBackgroundBrush,
     IG_ViewerBackgroundBrush,
     IG_ToolHostBackgroundBrush,
@@ -289,7 +208,6 @@ public enum ResxId
     IG_ThemeGalleryBackgroundBrush,
     IG_ThemeMenuBackgroundBrush,
 
-    // situational backgrounds
     IG_BackgroundInfoBrush,
     IG_BackgroundSuccessBrush,
     IG_BackgroundWarningBrush,
@@ -307,18 +225,12 @@ public enum ResxId
     IG_TextWarningColor,
     IG_TextDangerColor,
 
-
-    // tool button styles
     IG_ToolButtonBackground,
     IG_ToolButtonBackgroundHover,
     IG_ToolButtonBackgroundPressed,
     IG_ToolButtonBackgroundChecked,
 }
 
-
-/// <summary>
-/// Shared icon geometries defined in <c>IconResources.axaml</c>; the name maps to the resource key.
-/// </summary>
 public enum ResxIconId
 {
     IconEllipsis,
@@ -359,7 +271,6 @@ public enum ResxIconId
     IconToolLosslessCompression,
 }
 
-
 public enum StockIconId
 {
     Delete,
@@ -373,10 +284,6 @@ public enum StockIconId
     Warning,
 }
 
-
-/// <summary>
-/// Bundled SVG assets in <c>Assets/Svg</c>; the name is the file name. These are Fluent Emoji (MIT).
-/// </summary>
 public enum ResxSvgId
 {
     Cyclone,

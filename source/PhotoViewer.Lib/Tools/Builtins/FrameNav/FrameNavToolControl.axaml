@@ -31,7 +31,6 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal"
                 Spacing="4">
-                <!--  View first frame  -->
                 <ui:PhToolButton
                     x:Name="PART_BtnViewFirstFrame"
                     Padding="8"
@@ -47,8 +46,6 @@
                         IsHitTestVisible="False" />
                 </ui:PhToolButton>
 
-
-                <!--  View previous frame  -->
                 <ui:PhToolButton
                     x:Name="PART_BtnViewPreviousFrame"
                     Padding="8"
@@ -64,8 +61,6 @@
                         IsHitTestVisible="False" />
                 </ui:PhToolButton>
 
-
-                <!--  Play/Pause animation  -->
                 <ui:PhToolButton
                     x:Name="PART_BtnToggleAnimation"
                     Padding="8"
@@ -75,14 +70,12 @@
                     ToolTip.Placement="Top"
                     ToolTip.VerticalOffset="0">
                     <Panel IsHitTestVisible="False">
-                        <!--  Live Photo  -->
                         <PathIcon
                             Width="22"
                             Height="22"
                             Data="{StaticResource IconLivePhoto}"
                             IsVisible="{CompiledBinding #Root.IsLivePhoto}" />
 
-                        <!--  Animated Photo  -->
                         <StackPanel IsVisible="{CompiledBinding !#Root.IsLivePhoto}">
                             <PathIcon
                                 Width="22"
@@ -98,8 +91,6 @@
                     </Panel>
                 </ui:PhToolButton>
 
-
-                <!--  View next frame  -->
                 <ui:PhToolButton
                     x:Name="PART_BtnViewNextFrame"
                     Padding="8"
@@ -115,8 +106,6 @@
                         IsHitTestVisible="False" />
                 </ui:PhToolButton>
 
-
-                <!--  View last frame  -->
                 <ui:PhToolButton
                     x:Name="PART_BtnViewLastFrame"
                     Padding="8"
@@ -134,12 +123,10 @@
             </StackPanel>
         </Border>
 
-
         <StackPanel
             Grid.Column="2"
             VerticalAlignment="Center"
             Orientation="Horizontal">
-            <!--  Export current frame  -->
             <ui:PhToolButton
                 x:Name="PART_BtnExportFrame"
                 Padding="8"

@@ -9,7 +9,6 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <!--  Menu item spacing  -->
     <Thickness x:Key="MenuFlyoutSeparatorThemePadding">0,4</Thickness>
     <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">8,4,8,4</Thickness>
     <Thickness x:Key="MenuInputGestureTextMargin">6,0,0,0</Thickness>

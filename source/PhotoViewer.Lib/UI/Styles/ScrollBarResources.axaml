@@ -1,21 +1,17 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!--  WinUI 3-style ScrollBar resources  -->
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-            <!--  Thumb  -->
             <SolidColorBrush x:Key="PhScrollBarThumbFill" Color="#999999" />
             <SolidColorBrush x:Key="PhScrollBarThumbFillPointerOver" Color="#888888" />
             <SolidColorBrush x:Key="PhScrollBarThumbFillPressed" Color="#666666" />
             <SolidColorBrush x:Key="PhScrollBarThumbFillDisabled" Color="#30808080" />
 
-            <!--  Track  -->
             <SolidColorBrush x:Key="PhScrollBarTrackFill" Color="Transparent" />
             <SolidColorBrush x:Key="PhScrollBarTrackFillPointerOver" Color="#08000000" />
             <SolidColorBrush x:Key="PhScrollBarTrackStroke" Color="Transparent" />
             <SolidColorBrush x:Key="PhScrollBarTrackStrokePointerOver" Color="Transparent" />
 
-            <!--  Arrow buttons  -->
             <SolidColorBrush x:Key="PhScrollBarButtonArrowForeground" Color="#999999" />
             <SolidColorBrush x:Key="PhScrollBarButtonArrowForegroundPointerOver" Color="#888888" />
             <SolidColorBrush x:Key="PhScrollBarButtonArrowForegroundPressed" Color="#666666" />
@@ -29,7 +25,6 @@
             <SolidColorBrush x:Key="PhScrollBarButtonBorderBrushPressed" Color="Transparent" />
             <SolidColorBrush x:Key="PhScrollBarButtonBorderBrushDisabled" Color="Transparent" />
 
-            <!--  Background  -->
             <SolidColorBrush x:Key="PhScrollBarBackground" Color="Transparent" />
             <SolidColorBrush x:Key="PhScrollBarBackgroundPointerOver" Color="#aaffffff" />
             <SolidColorBrush x:Key="PhScrollBarBorderBrush" Color="Transparent" />
@@ -38,19 +33,16 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
-            <!--  Thumb  -->
             <SolidColorBrush x:Key="PhScrollBarThumbFill" Color="#BBBBBB" />
             <SolidColorBrush x:Key="PhScrollBarThumbFillPointerOver" Color="#CCCCCC" />
             <SolidColorBrush x:Key="PhScrollBarThumbFillPressed" Color="#DDDDDD" />
             <SolidColorBrush x:Key="PhScrollBarThumbFillDisabled" Color="#30808080" />
 
-            <!--  Track  -->
             <SolidColorBrush x:Key="PhScrollBarTrackFill" Color="Transparent" />
             <SolidColorBrush x:Key="PhScrollBarTrackFillPointerOver" Color="#0CFFFFFF" />
             <SolidColorBrush x:Key="PhScrollBarTrackStroke" Color="Transparent" />
             <SolidColorBrush x:Key="PhScrollBarTrackStrokePointerOver" Color="Transparent" />
 
-            <!--  Arrow buttons  -->
             <SolidColorBrush x:Key="PhScrollBarButtonArrowForeground" Color="#BBBBBB" />
             <SolidColorBrush x:Key="PhScrollBarButtonArrowForegroundPointerOver" Color="#CCCCCC" />
             <SolidColorBrush x:Key="PhScrollBarButtonArrowForegroundPressed" Color="#DDDDDD" />
@@ -64,7 +56,6 @@
             <SolidColorBrush x:Key="PhScrollBarButtonBorderBrushPressed" Color="Transparent" />
             <SolidColorBrush x:Key="PhScrollBarButtonBorderBrushDisabled" Color="Transparent" />
 
-            <!--  Background  -->
             <SolidColorBrush x:Key="PhScrollBarBackground" Color="Transparent" />
             <SolidColorBrush x:Key="PhScrollBarBackgroundPointerOver" Color="#33FFFFFF" />
             <SolidColorBrush x:Key="PhScrollBarBorderBrush" Color="Transparent" />
@@ -73,26 +64,15 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-
-    <!--
-        WinUI 3 metrics:
-        - Track area is 14px wide (enough for hit-testing)
-        - Thumb layout width is 6px (pill shape)
-        - Collapsed: ScaleTransform shrinks thumb to ~2px visual
-        - Expanded: RenderTransform=none shows the 6px pill
-    -->
     <x:Double x:Key="PhScrollBarSize">14</x:Double>
     <x:Double x:Key="PhScrollBarThumbSize">8</x:Double>
     <x:Double x:Key="PhScrollBarButtonArrowIconLong">10</x:Double>
     <x:Double x:Key="PhScrollBarButtonArrowIconShort">7.5</x:Double>
     <x:Double x:Key="PhScrollBarTrackBorderThemeThickness">0</x:Double>
 
-    <!--  Collapsed: scale the 6px thumb to ~2px (0.33 * 6 = 2)  -->
     <ScaleTransform x:Key="PhVerticalSmallScrollThumbScaleTransform" ScaleX="0.33" ScaleY="1" />
     <ScaleTransform x:Key="PhHorizontalSmallScrollThumbScaleTransform" ScaleX="1" ScaleY="0.33" />
 
-
-    <!--  Thumb theme: pill-shaped with fully rounded corners  -->
     <ControlTheme x:Key="PhScrollBarThumb" TargetType="Thumb">
         <Setter Property="Background" Value="{DynamicResource PhScrollBarThumbFill}" />
         <Setter Property="Template">
@@ -120,8 +100,6 @@
         </Style>
     </ControlTheme>
 
-
-    <!--  Page (track area) button: invisible hit-test area  -->
     <ControlTheme x:Key="PhScrollBarPageButton" TargetType="RepeatButton">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
@@ -134,8 +112,6 @@
         </Setter>
     </ControlTheme>
 
-
-    <!--  Line (arrow) button: hidden by default, shown on expanded state  -->
     <ControlTheme x:Key="PhScrollBarLineButton" TargetType="RepeatButton">
         <Setter Property="Opacity" Value="0" />
         <Setter Property="Foreground" Value="{DynamicResource PhScrollBarButtonArrowForeground}" />
@@ -179,8 +155,6 @@
         </Style>
     </ControlTheme>
 
-
-    <!--  Main ScrollBar ControlTheme (WinUI 3 style)  -->
     <ControlTheme x:Key="{x:Type ScrollBar}" TargetType="ScrollBar">
         <Setter Property="MinWidth" Value="{DynamicResource PhScrollBarSize}" />
         <Setter Property="MinHeight" Value="{DynamicResource PhScrollBarSize}" />
@@ -188,7 +162,6 @@
         <Setter Property="Foreground" Value="{DynamicResource PhScrollBarForeground}" />
         <Setter Property="BorderBrush" Value="{DynamicResource PhScrollBarBorderBrush}" />
 
-        <!--  ===== VERTICAL =====  -->
         <Style Selector="^:vertical">
             <Setter Property="Template">
                 <ControlTemplate>
@@ -257,7 +230,6 @@
                                             Focusable="False"
                                             Theme="{StaticResource PhScrollBarPageButton}" />
                                     </Track.IncreaseButton>
-                                    <!--  Thumb: 6px layout width, visually scaled to ~2px when collapsed  -->
                                     <Thumb
                                         Width="{DynamicResource PhScrollBarThumbSize}"
                                         MinHeight="{DynamicResource PhScrollBarSize}"
@@ -290,7 +262,6 @@
             </Setter>
         </Style>
 
-        <!--  ===== HORIZONTAL =====  -->
         <Style Selector="^:horizontal">
             <Setter Property="Template">
                 <ControlTemplate>
@@ -358,7 +329,6 @@
                                             Focusable="False"
                                             Theme="{StaticResource PhScrollBarPageButton}" />
                                     </Track.IncreaseButton>
-                                    <!--  Thumb: 6px layout height, visually scaled to ~2px when collapsed  -->
                                     <Thumb
                                         Height="{DynamicResource PhScrollBarThumbSize}"
                                         MinWidth="{DynamicResource PhScrollBarSize}"
@@ -391,7 +361,6 @@
             </Setter>
         </Style>
 
-        <!--  ===== EXPANDED STATE (pointer over scrollbar area) =====  -->
         <Style Selector="^[IsExpanded=true]">
             <Style Selector="^ /template/ Border#VerticalRoot">
                 <Setter Property="Background" Value="{DynamicResource PhScrollBarBackgroundPointerOver}" />
@@ -404,7 +373,6 @@
                 <Setter Property="Stroke" Value="{DynamicResource PhScrollBarTrackStrokePointerOver}" />
                 <Setter Property="Opacity" Value="1" />
             </Style>
-            <!--  Expanded: remove scale transform to show full 6px pill thumb  -->
             <Style Selector="^ /template/ Thumb">
                 <Setter Property="Background" Value="{DynamicResource PhScrollBarThumbBackgroundColor}" />
                 <Setter Property="RenderTransform" Value="none" />

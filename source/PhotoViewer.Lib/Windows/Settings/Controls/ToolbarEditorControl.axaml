@@ -10,10 +10,6 @@
     HorizontalAlignment="Stretch">
 
     <ui:PhControl.Styles>
-        <!--
-            A drop zone hosting a wrapped row of button chips: soft neutral fill, unchanged while
-            dragging (only the dashed outline below reacts).
-        -->
         <Style Selector="Border.zone">
             <Setter Property="Padding" Value="8" />
             <Setter Property="MinHeight" Value="56" />
@@ -22,10 +18,6 @@
             <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralBrush}" />
         </Style>
 
-        <!--
-            Dashed outline overlay, shown only while dragging: gray for a valid zone, accent under the cursor.
-            A small Margin keeps the 1.5px stroke from being clipped at the zone edges.
-        -->
         <Style Selector="Rectangle.zoneDash">
             <Setter Property="IsVisible" Value="False" />
             <Setter Property="IsHitTestVisible" Value="False" />
@@ -54,14 +46,12 @@
             <Setter Property="Opacity" Value="0.95" />
             <Setter Property="Stroke" Value="{DynamicResource ZoneAccentBorder}" />
         </Style>
-        <!--  Danger: the Available zone under the cursor when a custom button is dragged in (drop = delete). Declared after .hover so it wins.  -->
         <Style Selector="Rectangle.zoneDash.danger">
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="Opacity" Value="0.95" />
             <Setter Property="Stroke" Value="{DynamicResource IG_TextDangerBrush}" />
         </Style>
 
-        <!--  The insertion marker shown between chips while dragging (stays inside the editor)  -->
         <Style Selector="Border.dropMarker">
             <Setter Property="Width" Value="3" />
             <Setter Property="CornerRadius" Value="1.5" />
@@ -69,19 +59,8 @@
             <Setter Property="Background" Value="{DynamicResource ZoneAccentBorder}" />
         </Style>
 
-        <!--
-            Note: the floating ghost + the "Delete" chip (shown when a custom button is dragged over
-            the Available zone) are styled inline in code because they are hosted on the window
-            OverlayLayer (outside this control's style scope).
-        -->
     </ui:PhControl.Styles>
 
-
-    <!--
-        content + topmost drag overlay. A single left-anchored, max-width column fills from the left
-        up to the max and shrinks with a small window, so it's never centered on a wide monitor
-        (which a Stretch element with MaxWidth would be) and never clipped on a narrow one.
-    -->
     <Grid HorizontalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MaxWidth="1500" />
@@ -89,7 +68,6 @@
 
         <StackPanel Orientation="Vertical" Spacing="10">
 
-            <!--  Actions  -->
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <ui:PhButton x:Name="PART_AddCustomBtn" Variant="Default" />
                 <ui:PhButton x:Name="PART_ResetBtn" Variant="Link" />
@@ -102,8 +80,6 @@
                 Opacity="0.7"
                 TextWrapping="Wrap" />
 
-
-            <!--  Current buttons: primary | secondary side by side, equal height  -->
             <StackPanel Spacing="6">
                 <ui:PhTextBlock FontWeight="SemiBold" LangKey="Settings_Toolbar_CurrentButtons" />
 
@@ -132,7 +108,6 @@
                 </Grid>
             </StackPanel>
 
-            <!--  Available buttons: full width, below the Current buttons  -->
             <StackPanel Spacing="6">
                 <ui:PhTextBlock FontWeight="SemiBold" LangKey="Settings_Toolbar_AvailableButtons" />
                 <Grid>
@@ -145,7 +120,6 @@
 
         </StackPanel>
 
-        <!--  Topmost overlay that hosts the floating chip + insertion marker while dragging  -->
         <Canvas x:Name="PART_DragLayer" IsHitTestVisible="False" />
     </Grid>
 

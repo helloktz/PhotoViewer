@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -48,65 +30,27 @@ public partial class QuickSetupView : PhControl
     private string _selectedLangValue = "English";
     private readonly Action _loadLangAction;
 
-    // local language used to preview the wizard only; the app is untouched until Save
     private Lang _previewLang = Core.Lang;
 
-    // registration scope (per-user vs per-machine), derived from where the app is installed
     private static DefaultAppScope DefaultViewerScope
         => Core.ShellProvider?.GetDefaultViewerScope() ?? DefaultAppScope.CurrentUser;
 
-
-    /// <summary>
-    /// Gets the language currently previewed in the wizard (not applied to the app until Save).
-    /// </summary>
     public Lang PreviewLang => _previewLang;
 
-
-    /// <summary>
-    /// Raised when the previewed language changes, so the host window can re-localize its footer.
-    /// </summary>
     public event EventHandler? PreviewLanguageChanged;
 
-
-    /// <summary>
-    /// Gets the total number of steps (language + profile, plus the optional default-viewer and
-    /// upgrade-to-Pro steps).
-    /// </summary>
     public int StepCount => _stepPanels.Count;
 
-
-    /// <summary>
-    /// Whether the default-photo-viewer step applies: Windows only, and only where the shell honors
-    /// our associations (excludes the virtualized Store build).
-    /// </summary>
     private static bool CanSetDefaultViewer => BHelper.OS == OSType.Windows
         && Core.ShellProvider?.IsDefaultViewerConfigurable != false;
 
-
-    /// <summary>
-    /// Whether the applications-menu step applies: only a build that installs nothing has an entry
-    /// to add (currently the Linux AppImage).
-    /// </summary>
     private static bool CanRegisterAppMenuEntry => Core.ShellProvider?.CanRegisterAppMenuEntry == true;
 
-
-    /// <summary>
-    /// Gets the current 1-based step index.
-    /// </summary>
     public int CurrentStep { get; private set; } = 1;
 
-
-    /// <summary>
-    /// Gets the selected display-language config value (a pack file name, or "English").
-    /// </summary>
     public string SelectedLanguageValue => _selectedLangValue;
 
-
-    /// <summary>
-    /// Gets whether the "Professional user" profile is selected.
-    /// </summary>
     public bool IsProfessional { get; private set; }
-
 
     public QuickSetupView()
     {
@@ -116,39 +60,29 @@ public partial class QuickSetupView : PhControl
 
         _stepPanels = [PART_Step1, PART_Step2];
 
-        // the default-viewer step is Windows-only and unreachable from the Store build
         if (CanSetDefaultViewer) _stepPanels.Add(PART_Step3);
         else PART_Step3.IsVisible = false;
 
-        // the applications-menu step is the AppImage counterpart of the default-viewer step
         if (CanRegisterAppMenuEntry) _stepPanels.Add(PART_StepAppMenu);
         else PART_StepAppMenu.IsVisible = false;
 
         BuildStepDots();
 
-        // step 1: language
         PART_LanguageList.SelectionChanged += Language_SelectionChanged;
 
-        // step 2: profile
         PART_BtnStandard.Click += (_, _) => SelectProfile(false);
         PART_BtnProfessional.Click += (_, _) => SelectProfile(true);
         SelectProfile(false);
 
-        // step 3: default photo viewer (applied immediately, it is not a config setting)
         PART_BtnRegisterViewer.Click += async (_, _) => await AppAPIProvider.SetDefaultPhotoViewerAsync(
             true, TopLevel.GetTopLevel(this) as PhWindow, _previewLang);
 
-        // applications menu (applied immediately, it is not a config setting)
         PART_BtnRegisterAppMenu.Click += async (_, _) => await RegisterAppMenuEntryAsync();
 
         LocalizeAll();
         SetStep(1);
         _ = LoadLanguagesAsync();
     }
-
-
-
-    #region Overrides
 
     protected override void OnIgThemeChanged(ThemePackChangedEventArgs e)
     {
@@ -157,39 +91,19 @@ public partial class QuickSetupView : PhControl
         UpdateStepDots();
     }
 
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
 
-        // stronger entrance animation on first open
         AnimateStepIn(_stepPanels[CurrentStep - 1], isFirstOpen: true);
     }
 
-    #endregion // Overrides
-
-
-
-    #region Public methods
-
-    /// <summary>
-    /// Shows the given 1-based step with a soft slide/fade transition.
-    /// </summary>
     public void ShowStep(int step)
     {
         SetStep(step);
         AnimateStepIn(_stepPanels[CurrentStep - 1], isFirstOpen: false);
     }
 
-    #endregion // Public methods
-
-
-
-    #region Step display
-
-    /// <summary>
-    /// Sets the visible step and refreshes the progress header (no animation).
-    /// </summary>
     private void SetStep(int step)
     {
         CurrentStep = Math.Clamp(step, 1, StepCount);
@@ -203,18 +117,12 @@ public partial class QuickSetupView : PhControl
         UpdateStepDots();
     }
 
-
-    /// <summary>
-    /// Fades and slides a step panel into view. The first open uses a larger, longer motion;
-    /// step navigation uses a softer one.
-    /// </summary>
     private static void AnimateStepIn(Control panel, bool isFirstOpen)
     {
         var duration = TimeSpan.FromMilliseconds(isFirstOpen ? 420 : 260);
         var offset = isFirstOpen ? 26 : 12;
         var easing = new CubicEaseOut();
 
-        // apply the start state instantly (transitions off), then animate to rest
         panel.Transitions = null;
         panel.Opacity = 0;
         panel.RenderTransform = TransformOperations.Parse($"translateY({offset}px)");
@@ -232,12 +140,6 @@ public partial class QuickSetupView : PhControl
         }, DispatcherPriority.Render);
     }
 
-    #endregion // Step display
-
-
-
-    #region Language
-
     private void Language_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_isPopulatingLangs || PART_LanguageList.SelectedItem is not Lang lang) return;
@@ -246,11 +148,6 @@ public partial class QuickSetupView : PhControl
         BHelper.Debounce(120, _loadLangAction);
     }
 
-
-    /// <summary>
-    /// Loads the selected language pack and previews it in the wizard only (the running app is
-    /// not affected until Save).
-    /// </summary>
     private async Task LoadSelectedLanguageAsync()
     {
         var path = Lang.ResolveFilePath(_selectedLangValue);
@@ -265,15 +162,10 @@ public partial class QuickSetupView : PhControl
         });
     }
 
-
-    /// <summary>
-    /// Loads installed language packs and selects the current one.
-    /// </summary>
     private async Task LoadLanguagesAsync()
     {
         var packs = await Lang.LoadAllLanguagePacksAsync();
 
-        // built-in English first (so users can revert)
         List<Lang> langs = [new(string.Empty), .. packs];
 
         _isPopulatingLangs = true;
@@ -288,18 +180,8 @@ public partial class QuickSetupView : PhControl
         _isPopulatingLangs = false;
     }
 
-
     private static string ToConfigValue(Lang lang) => lang.IsBuiltIn ? "English" : lang.FileName;
 
-    #endregion // Language
-
-
-
-    #region Profile
-
-    /// <summary>
-    /// Selects a setting profile and refreshes the "will be applied" checklist.
-    /// </summary>
     private void SelectProfile(bool professional)
     {
         IsProfessional = professional;
@@ -313,15 +195,6 @@ public partial class QuickSetupView : PhControl
         PART_ChkRawThumbnail.IsChecked = !professional;
     }
 
-    #endregion // Profile
-
-
-    #region Applications menu
-
-    /// <summary>
-    /// Registers the app in the system applications menu, reusing the shared result dialog. The
-    /// button latches off once it succeeds, and comes back on failure so the user can retry.
-    /// </summary>
     private async Task RegisterAppMenuEntryAsync()
     {
         PART_BtnRegisterAppMenu.IsEnabled = false;
@@ -332,16 +205,6 @@ public partial class QuickSetupView : PhControl
         PART_BtnRegisterAppMenu.IsEnabled = !ok;
     }
 
-    #endregion // Applications menu
-
-
-
-
-    #region Header
-
-    /// <summary>
-    /// Creates one progress dot per step.
-    /// </summary>
     private void BuildStepDots()
     {
         for (var i = 0; i < StepCount; i++)
@@ -357,10 +220,6 @@ public partial class QuickSetupView : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Colors/sizes the dots to reflect the current step (active dot is a wider accent pill).
-    /// </summary>
     private void UpdateStepDots()
     {
         var accent = Core.AccentColor.ToBrush();
@@ -374,21 +233,11 @@ public partial class QuickSetupView : PhControl
         }
     }
 
-
     private void UpdateStepInfo()
     {
         PART_StepInfo.Text = _previewLang[LangId.QuickSetup_StepInfo, CurrentStep, StepCount];
     }
 
-    #endregion // Header
-
-
-
-    #region Localization
-
-    /// <summary>
-    /// Localizes every wizard string from the local preview language.
-    /// </summary>
     private void LocalizeAll()
     {
         var lang = _previewLang;
@@ -418,10 +267,7 @@ public partial class QuickSetupView : PhControl
         PART_LblAppMenuWarning.Text = lang[LangId.Settings_UnmanagedSettingReminder];
         PART_BtnRegisterAppMenu.Text = lang[LangId._Register];
 
-
         UpdateStepInfo();
     }
-
-    #endregion // Localization
 
 }

@@ -10,7 +10,6 @@
 
     <StackPanel Orientation="Vertical" Spacing="14">
 
-        <!--  File extension  -->
         <StackPanel Spacing="5">
             <ui:PhTextBlock LangKey="_FileExtension" />
             <ui:PhTextBox
@@ -19,7 +18,6 @@
                 PlaceholderText=".jpg;.png;.svg" />
         </StackPanel>
 
-        <!--  App name  -->
         <StackPanel Spacing="5">
             <ui:PhTextBlock LangKey="Settings_EditApps_AppName" />
             <ui:PhTextBox
@@ -30,7 +28,6 @@
                                              x:TypeArguments=x:String}" />
         </StackPanel>
 
-        <!--  Executable, argument & command preview  -->
         <ui:PhActionEditorControl
             x:Name="PART_Action"
             ArgumentPlaceholder="&lt;file&gt;"

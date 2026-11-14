@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using PhotoViewer.Common;
 using PhotoViewer.Common.Localization;
 using PhotoViewer.Common.Photoing;
@@ -25,9 +7,6 @@ using System.Threading.Tasks;
 
 namespace PhotoViewer.Tools;
 
-/// <summary>
-/// Non-hosted tool for Lossless Compression.
-/// </summary>
 public sealed class LosslessCompressionTool : ITool
 {
     public static string TOOL_ID => "Tool_LosslessCompression";
@@ -37,14 +16,12 @@ public sealed class LosslessCompressionTool : ITool
     public object? Settings { get; private set; }
     public ViewerControl Viewer { get; set; } = null!;
 
-
     public async Task ExecuteAsync(ToolExecutionContext context)
     {
         if (Core.IsBusy || Core.Photos.Count == 0 || Core.ClipboardImage != null) return;
 
         var filePath = Core.Photos.CurrentFilePath;
 
-        // check if image format not supported
         if (!MagickCodec.IsLosslessCompressSupported(filePath))
         {
             _ = await ModalWindow.ShowInfoAsync(context.Window, new ModalWindowOptions
@@ -58,7 +35,6 @@ public sealed class LosslessCompressionTool : ITool
             return;
         }
 
-        // perform lossless compression
         Core.IsBusy = true;
 
         try
@@ -68,7 +44,6 @@ public sealed class LosslessCompressionTool : ITool
         }
         finally
         {
-            // never leave the app stuck in the busy state
             Core.IsBusy = false;
         }
     }

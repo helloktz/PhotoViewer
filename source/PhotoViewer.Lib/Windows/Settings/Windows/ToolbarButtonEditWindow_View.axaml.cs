@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
@@ -34,18 +16,12 @@ namespace PhotoViewer.Common.Windows;
 
 public partial class ToolbarButtonEditWindowView : PhControl
 {
-    /// <summary>
-    /// One entry in the icon picker: a theme icon, or <c>null</c> for the "Custom…" (SVG path) option.
-    /// </summary>
+
     private sealed record IconOption(IgThemeIcon? Icon, string Display);
 
-
-    // icon picker options (index 0 is the "Custom…" entry)
     private List<IconOption> _imageOptions = [];
 
-    // button IDs already in use (the edited button's own ID excluded) for the uniqueness check
     private ISet<string> _takenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
 
     public ToolbarButtonEditWindowView()
     {
@@ -57,7 +33,6 @@ public partial class ToolbarButtonEditWindowView : PhControl
         PART_BrowseImage.Click += async (_, _) => await BrowseImageAsync();
     }
 
-
     protected override void OnIgLanguageChanged()
     {
         base.OnIgLanguageChanged();
@@ -65,15 +40,6 @@ public partial class ToolbarButtonEditWindowView : PhControl
         ToolTip.SetTip(PART_BrowseImage, Core.Lang[LangId._Browse]);
     }
 
-
-    #region Load / build
-
-    /// <summary>
-    /// Loads the given button into the fields (a null model means "add new"), selecting its theme
-    /// icon or falling back to the "Custom…" path. When <paramref name="isReadOnly"/> is set (built-in
-    /// button) the fields are disabled and a note is shown. <paramref name="takenIds"/> drives the
-    /// id-uniqueness check on submit.
-    /// </summary>
     public void LoadData(ToolbarItemModel? model, bool isReadOnly, ISet<string> takenIds)
     {
         _takenIds = takenIds;
@@ -90,21 +56,13 @@ public partial class ToolbarButtonEditWindowView : PhControl
         SelectImage(model?.Image);
         UpdateConfigBindingVisibility();
 
-        // built-in buttons are read-only
         PART_Fields.IsEnabled = !isReadOnly;
         PART_ReadonlyNote.IsVisible = isReadOnly;
 
-        // setting Text above eagerly raised the required-field errors; clear them so the dialog
-        // opens clean (validation re-runs as the user edits and on submit)
         DataValidationErrors.ClearErrors(PART_Id);
         DataValidationErrors.ClearErrors(PART_CustomImagePath);
     }
 
-
-    /// <summary>
-    /// Validates the required + unique id, the required executable, and (when "Custom…" is selected)
-    /// the icon path, showing inline errors.
-    /// </summary>
     public bool Validate()
     {
         var idOk = PART_Id.ValidateAndShowError();
@@ -121,17 +79,12 @@ public partial class ToolbarButtonEditWindowView : PhControl
 
         var exeOk = PART_Action.ValidateExecutable();
 
-        // the icon path is only relevant for the "Custom…" option
         var imgOk = (PART_Image.SelectedItem as IconOption)?.Icon is not null
             || PART_CustomImagePath.ValidateAndShowError();
 
         return idOk & exeOk & imgOk;
     }
 
-
-    /// <summary>
-    /// Builds a toolbar button from the current (trimmed) field values.
-    /// </summary>
     public ToolbarItemModel BuildModel()
     {
         var selected = PART_Image.SelectedItem as IconOption;
@@ -141,7 +94,6 @@ public partial class ToolbarButtonEditWindowView : PhControl
 
         var text = PART_Text.Text?.Trim() ?? string.Empty;
 
-        // the config (toggle) binding only applies when the checkbox is on
         var bindEnabled = PART_EnableConfigBinding.IsChecked == true;
 
         var action = new HotkeySingleAction
@@ -167,21 +119,9 @@ public partial class ToolbarButtonEditWindowView : PhControl
         };
     }
 
-
-    /// <summary>
-    /// Shows the config name/value inputs only when the toggle-binding checkbox is on.
-    /// </summary>
     private void UpdateConfigBindingVisibility()
         => PART_ConfigBindingInputs.IsVisible = PART_EnableConfigBinding.IsChecked == true;
 
-    #endregion // Load / build
-
-
-    #region Icon picker
-
-    /// <summary>
-    /// Populates the icon picker: the "Custom…" entry first, then every theme icon except the app logo.
-    /// </summary>
     private void PopulateImageOptions()
     {
         _imageOptions = [new IconOption(null, Core.Lang[LangId.Settings_Toolbar_CustomIcon])];
@@ -196,11 +136,6 @@ public partial class ToolbarButtonEditWindowView : PhControl
             opt is null ? null : BuildIconOptionVisual(opt));
     }
 
-
-    /// <summary>
-    /// Selects the picker entry matching the given image: a theme icon (enum name, app logo excluded),
-    /// otherwise the "Custom…" entry with the raw value shown in the path box.
-    /// </summary>
     private void SelectImage(string? image)
     {
         if (!string.IsNullOrWhiteSpace(image)
@@ -212,23 +147,15 @@ public partial class ToolbarButtonEditWindowView : PhControl
             return;
         }
 
-        // custom path (or empty/new button): the "Custom…" entry reveals the path row
         PART_Image.SelectedIndex = 0;
         PART_CustomImagePath.Text = image ?? string.Empty;
     }
-
 
     private void UpdateCustomImageRow()
     {
         PART_CustomImageRow.IsVisible = (PART_Image.SelectedItem as IconOption)?.Icon is null;
     }
 
-
-    /// <summary>
-    /// Builds the icon-picker row visual: the SVG preview (when available) plus the display name.
-    /// Uses the <c>Svg</c> control (not <c>Image</c>+<c>SvgImage</c>) so the disabled-state
-    /// <c>Svg.CurrentCss</c> opacity reaches the glyph (SvgImage ignores composited Opacity).
-    /// </summary>
     private static StackPanel BuildIconOptionVisual(IconOption opt)
     {
         var panel = new StackPanel
@@ -241,7 +168,6 @@ public partial class ToolbarButtonEditWindowView : PhControl
         if (opt.Icon is { } icon
             && new ToolbarItemModel { Image = icon.ToString() }.ImagePath is { Length: > 0 } path)
         {
-            // baseUri is unused for the rooted ImagePath, but the Svg ctor requires one
             panel.Children.Add(new Avalonia.Svg.Skia.Svg(new Uri("file:///"))
             {
                 Width = 18,
@@ -259,10 +185,6 @@ public partial class ToolbarButtonEditWindowView : PhControl
         return panel;
     }
 
-
-    /// <summary>
-    /// Opens a file picker to choose a custom SVG icon.
-    /// </summary>
     private async Task BrowseImageAsync()
     {
         var topLevel = TopLevel.GetTopLevel(this);
@@ -279,7 +201,5 @@ public partial class ToolbarButtonEditWindowView : PhControl
 
         PART_CustomImagePath.Text = path;
     }
-
-    #endregion // Icon picker
 
 }

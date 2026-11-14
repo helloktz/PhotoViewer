@@ -2,7 +2,6 @@
 
     <Style Selector="RadioButton">
 
-        <!--  ===== unchecked outer ring: match the CheckBox box (default Button face) =====  -->
         <Style Selector="^ /template/ Ellipse#OuterEllipse">
             <Setter Property="Transitions">
                 <Transitions>
@@ -24,7 +23,6 @@
             <Setter Property="Stroke" Value="{DynamicResource PhButtonBorderBrushPressed}" />
         </Style>
 
-        <!--  ===== checked ring: normal box background + thin 1px accent outline =====  -->
         <Style Selector="^ /template/ Ellipse#CheckOuterEllipse">
             <Setter Property="Transitions">
                 <Transitions>
@@ -34,7 +32,6 @@
             </Setter>
         </Style>
         <Style Selector="^:checked /template/ Ellipse#CheckOuterEllipse">
-            <!--  thin 1px outline (StyleTrigger so it beats the template thickness)  -->
             <Setter Property="StrokeThickness" Value="1" />
             <Setter Property="Fill" Value="{DynamicResource PhButtonBackground}" />
             <Setter Property="Stroke" Value="{DynamicResource PhAccentFill}" />
@@ -48,7 +45,6 @@
             <Setter Property="Stroke" Value="{DynamicResource PhAccentFillPressed}" />
         </Style>
 
-        <!--  ===== inner dot: bigger solid disc, same color as the checked CheckBox =====  -->
         <Style Selector="^:checked /template/ Ellipse#CheckGlyph">
             <Setter Property="Width" Value="10" />
             <Setter Property="Height" Value="10" />
@@ -64,7 +60,6 @@
             <Setter Property="Stroke" Value="{DynamicResource PhAccentFillPressed}" />
         </Style>
 
-        <!--  disabled: shared neutral palette + subtle outline, gray dot  -->
         <Style Selector="^:disabled:not(:checked) /template/ Ellipse#OuterEllipse">
             <Setter Property="Fill" Value="{DynamicResource PhControlFillDisabled}" />
             <Setter Property="Stroke" Value="{DynamicResource PhControlBorderDisabled}" />

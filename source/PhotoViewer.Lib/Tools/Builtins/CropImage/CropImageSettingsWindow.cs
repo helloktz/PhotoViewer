@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -40,12 +22,7 @@ internal class CropImageSettingsWindow : DialogWindow
     private NumericUpDown _numWidth = null!;
     private NumericUpDown _numHeight = null!;
 
-
-    /// <summary>
-    /// Gets a snapshot of the edited config values.
-    /// </summary>
     public CropImageConfig ResultConfig { get; private set; } = new();
-
 
     public CropImageSettingsWindow(CropImageConfig config)
     {
@@ -60,10 +37,6 @@ internal class CropImageSettingsWindow : DialogWindow
         LoadConfigValues(config);
     }
 
-
-
-    #region Override Methods
-
     protected override void OnIgLanguageChanged()
     {
         base.OnIgLanguageChanged();
@@ -77,7 +50,6 @@ internal class CropImageSettingsWindow : DialogWindow
 
         LoadSelectionTypeItems();
     }
-
 
     protected override void OnDialogSubmitted(DialogEventArgs e)
     {
@@ -98,15 +70,6 @@ internal class CropImageSettingsWindow : DialogWindow
         base.OnDialogSubmitted(e);
     }
 
-    #endregion // Override Methods
-
-
-
-    #region Private Methods
-
-    /// <summary>
-    /// Loads the current config values into the controls.
-    /// </summary>
     private void LoadConfigValues(CropImageConfig config)
     {
         _chkCloseToolAfterSaving.IsChecked = config.CloseAfterSaved;
@@ -117,17 +80,12 @@ internal class CropImageSettingsWindow : DialogWindow
         _numWidth.Value = (decimal)config.InitSelectedArea.Width;
         _numHeight.Value = (decimal)config.InitSelectedArea.Height;
 
-        // load selection type items and select the current one
         LoadSelectionTypeItems();
         _cmbSelectionType.SelectedIndex = (int)config.InitSelectionType;
 
         UpdateSelectionTypeUI();
     }
 
-
-    /// <summary>
-    /// Loads localized selection type items into the ComboBox.
-    /// </summary>
     private void LoadSelectionTypeItems()
     {
         var selectedIndex = _cmbSelectionType.SelectedIndex;
@@ -138,7 +96,6 @@ internal class CropImageSettingsWindow : DialogWindow
             var enumName = Enum.GetName(enumValue) ?? string.Empty;
             string displayName;
 
-            // try specific lang key first
             var specificKey = enumValue switch
             {
                 DefaultSelectionType.UseTheLastSelection => LangId.Tool_Crop_DefaultSelectionType_UseTheLastSelection,
@@ -154,7 +111,6 @@ internal class CropImageSettingsWindow : DialogWindow
             }
             else
             {
-                // use the "Select X%" template
                 var percentText = enumValue switch
                 {
                     DefaultSelectionType.Select10Percent => "10%",
@@ -179,43 +135,30 @@ internal class CropImageSettingsWindow : DialogWindow
             _cmbSelectionType.Items.Add(new ComboBoxItem { Content = displayName });
         }
 
-        // restore selection
         if (selectedIndex >= 0 && selectedIndex < _cmbSelectionType.Items.Count)
         {
             _cmbSelectionType.SelectedIndex = selectedIndex;
         }
     }
 
-
-    /// <summary>
-    /// Updates the visibility of controls based on the selected <see cref="DefaultSelectionType"/>.
-    /// </summary>
     private void UpdateSelectionTypeUI()
     {
         var selectionType = (DefaultSelectionType)_cmbSelectionType.SelectedIndex;
 
-        // show auto-center for most selection types
         _chkAutoCenterSelection.IsVisible = selectionType is not DefaultSelectionType.SelectNone
             and not DefaultSelectionType.SelectAll
             and not DefaultSelectionType.UseTheLastSelection;
 
-        // show custom area inputs only for CustomArea
         _panelCustomArea.IsVisible = selectionType == DefaultSelectionType.CustomArea;
 
-        // disable X/Y when auto-center is checked
         _numX.IsEnabled = _chkAutoCenterSelection.IsChecked != true;
         _numY.IsEnabled = _chkAutoCenterSelection.IsChecked != true;
     }
 
-
-    /// <summary>
-    /// Creates dialog content with all settings controls.
-    /// </summary>
     private StackPanel CreateDialogContentElement()
     {
         _chkCloseToolAfterSaving = new CheckBox();
 
-        // default selection section
         var lblDefaultSelection = new PhTextBlock
         {
             LangKey = LangId.Tool_Crop_LblDefaultSelection,
@@ -240,7 +183,6 @@ internal class CropImageSettingsWindow : DialogWindow
             _numY.IsEnabled = _chkAutoCenterSelection.IsChecked != true;
         };
 
-        // custom area: location
         var lblLocation = new PhTextBlock
         {
             LangKey = LangId.Tool_Crop_LblLocation,
@@ -260,7 +202,6 @@ internal class CropImageSettingsWindow : DialogWindow
             MinWidth = 80,
         };
 
-        // custom area: size
         var lblSize = new PhTextBlock
         {
             LangKey = LangId.Tool_Crop_LblSize,
@@ -304,8 +245,6 @@ internal class CropImageSettingsWindow : DialogWindow
         Grid.SetRow(_numWidth, 1);
         Grid.SetRow(_numHeight, 1);
 
-
-        // root
         var root = new StackPanel
         {
             Orientation = Orientation.Vertical,
@@ -323,7 +262,5 @@ internal class CropImageSettingsWindow : DialogWindow
 
         return root;
     }
-
-    #endregion // Private Methods
 
 }

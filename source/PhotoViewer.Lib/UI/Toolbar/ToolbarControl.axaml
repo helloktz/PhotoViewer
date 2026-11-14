@@ -17,15 +17,12 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center">
 
-            <!--  Toolbar: Primary Items  -->
             <StackPanel
                 x:Name="PART_PrimaryGroup"
                 HorizontalAlignment="Center"
                 Orientation="Horizontal"
                 Spacing="{CompiledBinding ItemSpacing}" />
 
-
-            <!--  Toolbar: Right column  -->
             <StackPanel
                 x:Name="PART_RightGroup"
                 HorizontalAlignment="Right"
@@ -34,7 +31,6 @@
                 Spacing="{CompiledBinding ItemSpacing}"
                 ZIndex="90">
 
-                <!--  Toolbar: Overflow button  -->
                 <ui:ToolbarButton
                     x:Name="PART_BtnOverflowMenu"
                     VerticalAlignment="Stretch"
@@ -69,15 +65,11 @@
                     </ui:ToolbarButton.DropdownMenu>
                 </ui:ToolbarButton>
 
-
-                <!--  Toolbar: Secondary Items  -->
                 <StackPanel
                     x:Name="PART_SecondaryGroup"
                     Orientation="Horizontal"
                     Spacing="{CompiledBinding ItemSpacing}" />
 
-
-                <!--  Main Menu button  -->
                 <Panel>
                     <Border
                         x:Name="PART_UpdateBadge"
@@ -110,9 +102,6 @@
                                 HorizontalOffset="6"
                                 Placement="BottomEdgeAlignedRight">
 
-                                <!--  Install update (only when a package is ready)  -->
-
-                                <!--  File  -->
                                 <ui:PhMenuItem LangKey="Menu_MnuFile">
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuOpenFile" />
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuNewWindow" />
@@ -142,8 +131,6 @@
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuImageProperties" />
                                 </ui:PhMenuItem>
 
-
-                                <!--  Navigation  -->
                                 <ui:PhMenuItem LangKey="Menu_MnuNavigation">
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuViewNext" />
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuViewPrevious" />
@@ -172,8 +159,6 @@
                                         LangKey="Menu_MnuViewLastFrame" />
                                 </ui:PhMenuItem>
 
-
-                                <!--  Zoom  -->
                                 <ui:PhMenuItem LangKey="Menu_MnuZoom">
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuZoomIn" />
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuZoomOut" />
@@ -213,8 +198,6 @@
                                         ToggleType="CheckBox" />
                                 </ui:PhMenuItem>
 
-
-                                <!--  Panning  -->
                                 <ui:PhMenuItem LangKey="Menu_MnuPanning">
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuPanLeft" />
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuPanRight" />
@@ -228,8 +211,6 @@
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuPanToBottom" />
                                 </ui:PhMenuItem>
 
-
-                                <!--  Image  -->
                                 <ui:PhMenuItem LangKey="Menu_MnuImage">
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuRefresh" />
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuReload" />
@@ -409,8 +390,6 @@
                                         LangKey="Menu_MnuSetLockScreen" />
                                 </ui:PhMenuItem>
 
-
-                                <!--  Clipboard  -->
                                 <ui:PhMenuItem LangKey="Menu_MnuClipboard">
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuPasteImage" />
                                     <ui:PhMenuItem Header="-" />
@@ -429,8 +408,6 @@
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuClearClipboard" />
                                 </ui:PhMenuItem>
 
-
-                                <!--  Window modes  -->
                                 <ui:PhMenuItem Header="-" />
                                 <ui:PhMenuItem
                                     Click="MainMenuItem_Click"
@@ -457,8 +434,6 @@
                                     ToggleType="CheckBox" />
                                 <ui:PhMenuItem Header="-" />
 
-
-                                <!--  Layout  -->
                                 <ui:PhMenuItem LangKey="Menu_MnuLayout">
                                     <ui:PhMenuItem
                                         Click="MainMenuItem_Click"
@@ -481,8 +456,6 @@
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuChangeBackgroundColor" />
                                 </ui:PhMenuItem>
 
-
-                                <!--  Tools  -->
                                 <ui:PhMenuItem x:Name="PART_MnuTools" LangKey="Menu_MnuTools">
                                     <ui:PhMenuItem
                                         Click="MainMenuItem_Click"
@@ -522,13 +495,9 @@
                                 </ui:PhMenuItem>
                                 <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuPlugins" />
 
-
-                                <!--  Settings  -->
                                 <ui:PhMenuItem Header="-" />
                                 <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuSettings" />
 
-
-                                <!--  Help  -->
                                 <ui:PhMenuItem LangKey="Menu_MnuHelp">
 
                                     <ui:PhMenuItem Header="-" />
@@ -540,8 +509,6 @@
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuAbout" />
                                 </ui:PhMenuItem>
 
-
-                                <!--  Exit  -->
                                 <ui:PhMenuItem Header="-" />
                                 <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuExit" />
 

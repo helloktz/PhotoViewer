@@ -17,7 +17,6 @@
 
     <Grid x:Name="PART_Layout" RowDefinitions="Auto, *, Auto, Auto">
 
-        <!--  Toolbar  -->
         <ui:ToolbarControl
             x:Name="PART_Toolbar"
             Grid.Row="0"
@@ -27,8 +26,6 @@
             ItemsSource="{CompiledBinding ToolbarButtons, Source={x:Static cm:Core.Config}}"
             ZIndex="90" />
 
-
-        <!--  Viewer  -->
         <Grid
             x:Name="PART_ViewerWrapper"
             Grid.Row="1"
@@ -56,7 +53,6 @@
                         <viewer:SlideshowCountdownOverlay x:Name="PART_SlideshowCountdown" IsHitTestVisible="False" />
                         <viewer:NavButtonsOverlay IsVisible="{CompiledBinding EnableNavigationButtons, Source={x:Static cm:Core.Config}}" />
 
-                        <!--  Above NavButtonsOverlay, whose full-size hit area blocks text selection  -->
                         <ui:MessageOverlayControl x:Name="PART_Message" />
                         <ui:MotionPhotoOverlayControl x:Name="PART_MotionOverlay" />
                     </Panel>
@@ -69,8 +65,6 @@
                 Background="{DynamicResource IG_ToolHostBackgroundBrush}" />
         </Grid>
 
-
-        <!--  Gallery  -->
         <ui:GalleryControl
             x:Name="PART_Gallery"
             Grid.Row="2"
@@ -79,7 +73,6 @@
             ItemsSource="{CompiledBinding Items, Source={x:Static cm:Core.Photos}}"
             ViewMode="FilmStrip"
             ZIndex="80" />
-
 
         <ui:PhGridSplitter
             x:Name="PART_GalleryResizer"

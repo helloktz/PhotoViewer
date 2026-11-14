@@ -1,22 +1,4 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
@@ -34,26 +16,20 @@ using System.Threading;
 
 namespace PhotoViewer.UI.Viewer;
 
-
 public partial class ViewerControl
 {
-    // FPS
     private double _fps;
     private long _lastFpsTime = Environment.TickCount64;
     private TimeSpan _lastAnimationFrameTime = TimeSpan.Zero;
 
-
-    // drawing image
     internal SKImageRef? _imgSource;
     internal SKImageRef? _imgRender;
     private AnimatorImpl? _animator;
     internal MipmapTileCache? _mipmapCache;
 
-    // retained pre-tone-map HDR frame for live in-memory re-tone-mapping (only while the HDR tool is active)
     private SKImageRef? _imgHdrSource;
     private InterlockedBool _liveHdrToneMapping = new(false);
 
-    // coalescing state for the background HDR re-tone-map pump (latest-request-wins)
     private volatile bool _hdrDirty;
     private int _hdrActive;
 
@@ -62,13 +38,6 @@ public partial class ViewerControl
 
     internal readonly Lock _lock = new();
 
-
-
-    #region Public Properties
-
-    /// <summary>
-    /// Gets, sets the debug mode.
-    /// </summary>
     public bool EnableDebug
     {
         get => GetValue(EnableDebugProperty);
@@ -77,28 +46,12 @@ public partial class ViewerControl
     public static readonly StyledProperty<bool> EnableDebugProperty =
         AvaloniaProperty.Register<ViewerControl, bool>(nameof(EnableDebug));
 
-
-    /// <summary>
-    /// Gets, sets value indicates whether the previewing is enabled or not.
-    /// </summary>
     public bool EnableImagePreview { get; set; } = true;
 
-
-    /// <summary>
-    /// Gets the rectangle of the source image region being drawn.
-    /// </summary>
     public Rect SrcRect { get; internal set; } = new();
 
-
-    /// <summary>
-    /// Gets rectangle of the viewport.
-    /// </summary>
     public Rect DestRect { get; internal set; } = new();
 
-
-    /// <summary>
-    /// Gets or sets the mode of the checkerboard.
-    /// </summary>
     public CheckerboardType CheckerboardMode
     {
         get => GetValue(CheckerboardModeProperty);
@@ -119,11 +72,6 @@ public partial class ViewerControl
                 return value;
             });
 
-
-    /// <summary>
-    /// Gets, sets interpolation mode used when the
-    /// <see cref="ZoomFactor"/> is less than or equal <c>1.0f</c>.
-    /// </summary>
     public ImageInterpolation InterpolationScaleDown
     {
         get => GetValue(InterpolationScaleDownProperty);
@@ -141,11 +89,6 @@ public partial class ViewerControl
             return value;
         });
 
-
-    /// <summary>
-    /// Gets, sets interpolation mode used when the
-    /// <see cref="ZoomFactor"/> is greater than <c>1.0f</c>.
-    /// </summary>
     public ImageInterpolation InterpolationScaleUp
     {
         get => GetValue(InterpolationScaleUpProperty);
@@ -163,10 +106,6 @@ public partial class ViewerControl
             return value;
         });
 
-
-    /// <summary>
-    /// Gets the current <see cref="ImageInterpolation"/> mode.
-    /// </summary>
     public ImageInterpolation CurrentInterpolation
     {
         get
@@ -178,40 +117,28 @@ public partial class ViewerControl
         }
     }
 
-    #endregion // Public Properties
-
-
-
-    #region Override / Virtual Methods
-
     protected void DisposeCheckerboard()
     {
         _bmpCheckerboard?.Dispose();
         _bmpCheckerboard = null;
     }
 
-
     public override void Render(DrawingContext c)
     {
-        // right before drawing, so the mirror viewport matches the content it draws
         if (MirrorSource is not null) SyncFromMirrorSource();
 
         base.Render(c);
 
         using (c.PushClip(DrawingArea))
         {
-            OnDrawCheckerboard(c);      // draw checkerboard
-            OnDrawImage(c);             // draw image
-            OnDrawSelection(c);         // draw selection
+            OnDrawCheckerboard(c);
+            OnDrawImage(c);
+            OnDrawSelection(c);
         }
 
-        OnDrawDebugInfo(c);         // draw debug info
+        OnDrawDebugInfo(c);
     }
 
-
-    /// <summary>
-    /// Draw debug information.
-    /// </summary>
     protected virtual void OnDrawDebugInfo(DrawingContext c)
     {
         if (!EnableDebug) return;
@@ -254,25 +181,17 @@ public partial class ViewerControl
             c.FillRectangle(Colors.Black.A(180).ToBrush(), lineRect);
         }
 
-        // draw text
         textLayout.Draw(c, textOrigin);
 
-        // draw image bounds
         c.DrawRectangle(new Pen(Brushes.LightGreen, 2, DashStyle.Dash, PenLineCap.Round, PenLineJoin.Round), DestRect);
 
-        // draw zoomed point
         c.DrawEllipse(Brushes.Red, new Pen(Brushes.White, 2), _zooming.ZoomedPoint, 5, 5);
     }
 
-
-    /// <summary>
-    /// Draws checkerboard.
-    /// </summary>
     protected virtual void OnDrawCheckerboard(DrawingContext c)
     {
         if (CheckerboardMode == CheckerboardType.None) return;
 
-        // region to draw
         Rect region;
         if (CheckerboardMode == CheckerboardType.Image)
         {
@@ -283,33 +202,23 @@ public partial class ViewerControl
             region = DrawingArea;
         }
 
-
-        // create empty render bitmap: [X, O]
-        //                             [O, X]
         var cellW = (int)(_checkerboard.Size.Width * Dpi);
         var cellH = (int)(_checkerboard.Size.Height * Dpi);
         var pxSize = new PixelSize(cellW * 2, cellH * 2);
         _bmpCheckerboard ??= new RenderTargetBitmap(pxSize);
 
-        // fill the bitmap with a tile
         using (var ctx = _bmpCheckerboard.CreateDrawingContext())
         {
             var brushX = new ImmutableSolidColorBrush(Colors.Black);
             var brushO = new ImmutableSolidColorBrush(Colors.White);
 
-            // draw cells: [X, ]
-            //             [ ,X]
             ctx.FillRectangle(brushX, new Rect(0, 0, cellW, cellH));
             ctx.FillRectangle(brushX, new Rect(cellW, cellH, cellW, cellH));
 
-            // draw cells: [ ,O]
-            //             [O, ]
             ctx.FillRectangle(brushO, new Rect(cellW, 0, cellW, cellH));
             ctx.FillRectangle(brushO, new Rect(0, cellH, cellW, cellH));
         }
 
-
-        // create brush for checkerboard
         var imgBrush = new ImageBrush
         {
             Source = _bmpCheckerboard,
@@ -321,21 +230,14 @@ public partial class ViewerControl
             Opacity = 0.1,
         };
 
-
-        // draw the checkerboard
         using (c.PushRenderOptions(new() { BitmapInterpolationMode = BitmapInterpolationMode.None }))
         {
             c.FillRectangle(imgBrush, region);
         }
     }
 
-
-    /// <summary>
-    /// Draws image.
-    /// </summary>
     protected virtual void OnDrawImage(DrawingContext c)
     {
-        // a mirror draws the photo of its source through its own viewport
         var renderer = MirrorSource is { } source
             ? new PhotoRenderer(this, source, EnableMirrorSync)
             : new PhotoRenderer(this, OnDrawnImageFirstTime);
@@ -343,26 +245,19 @@ public partial class ViewerControl
         c.Custom(renderer);
     }
 
-
-    /// <summary>
-    /// Occurs when the source image drawn for the first time.
-    /// </summary>
     protected void OnDrawnImageFirstTime(SKImage? img)
     {
         Size? refitSize = null;
 
         lock (_lock)
         {
-            // a source swapped in since the draw (e.g. an HDR pass) may already have freed img
             var isCurrent = img is not null && ReferenceEquals(img, _imgSource?.Image);
             var imgSize = isCurrent && !img.IsDisposed() ? $"{img.Width}x{img.Height}" : "0x0";
             PhotoTrace.Mark("render:first-draw", Photo?.FilePath,
                 $"{imgSize}, vector={IsVectorSource()}");
 
-            // the photo is now on screen; release anyone waiting on the first paint
             _firstDrawTcs?.TrySetResult();
 
-            // vector images don't need raster caching; a stale img would get a second owner
             if (IsVectorSource() || !isCurrent)
             {
                 InvalidateVisual();
@@ -370,7 +265,6 @@ public partial class ViewerControl
                 return;
             }
 
-            // a frame prepared with its edits keeps them; otherwise share the source and apply the edits now
             if (_imgRender is null)
             {
                 SKImageRef.Set(ref _imgRender, img, _imgSource);
@@ -380,28 +274,20 @@ public partial class ViewerControl
                 }
             }
 
-            // build mipmap tile cache for non-animated photos
             CreateMipmapTileCache();
 
-            // draw again
             InvalidateVisual();
             OnRenderStateChanged();
         }
 
-        // outside the lock, as a refit raises ZoomChanged
         if (refitSize is { } size) RefitForFrameSize(size);
     }
 
-
-    /// <summary>
-    /// Draws animation source.
-    /// </summary>
     protected virtual void OnDrawAnimationSource(double eslapseDelta)
     {
         var panDelta = eslapseDelta * 30;
         var zoomDelta = eslapseDelta * 1000;
 
-        // Panning
         if (AnimationSource.HasFlag(AnimationSources.PanLeft))
         {
             PanLeft(panDelta, requestRerender: false);
@@ -420,8 +306,6 @@ public partial class ViewerControl
             PanDown(panDelta, requestRerender: false);
         }
 
-
-        // Zooming
         if (AnimationSource.HasFlag(AnimationSources.ZoomIn))
         {
             if (_zooming.ZoomedPoint.X == 0 && _zooming.ZoomedPoint.Y == 0)
@@ -441,17 +325,6 @@ public partial class ViewerControl
 
     }
 
-
-    #endregion // Override / Virtual Methods
-
-
-
-    #region Control Methods
-
-
-    /// <summary>
-    /// Calculates FPS in debug mode.
-    /// </summary>
     private void CalculateFps()
     {
         if (!EnableDebug) return;
@@ -468,41 +341,23 @@ public partial class ViewerControl
         _lastFpsTime = now;
     }
 
-
-    /// <summary>
-    /// Creates the mipmap tile cache from the current render image.
-    /// Must be called inside <see cref="_lock"/>.
-    /// Skips animated photos (they update frames too frequently for tiling).
-    /// </summary>
     private void CreateMipmapTileCache()
     {
-        // dispose previous mipmap tile cache
         _mipmapCache?.Dispose();
         _mipmapCache = null;
 
-        // skip for animated photos
         if (_animator is not null) return;
 
-        // use the processed (color-managed) image if available, otherwise the source
         _mipmapCache = MipmapTileCache.Create(_imgRender ?? _imgSource, InvalidateTiledFrame);
 
         PhotoTrace.Mark("render:mipmap-cache", Photo?.FilePath,
             _mipmapCache is null ? "not created (image too small)" : "created");
     }
 
-
-    /// <summary>
-    /// Redraws a tile that landed, here and in the mirrors that share the tiles.
-    /// </summary>
     private void InvalidateTiledFrame()
     {
         InvalidateVisual();
         OnRenderStateChanged();
     }
-
-
-    #endregion // Control Methods
-
-
 
 }

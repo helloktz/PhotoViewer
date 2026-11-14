@@ -4,13 +4,8 @@ using Avalonia.Interactivity;
 using global::Avalonia;
 using System;
 
-
 namespace PhotoViewer.UI.Viewer.ZoomAndPan;
 
-
-/// <summary>
-/// Indicates pan gesture status
-/// </summary>
 public enum PanGestureStatus
 {
     Started,
@@ -18,39 +13,21 @@ public enum PanGestureStatus
     Completed,
 }
 
-/// <summary>
-/// Sets the pan directions
-/// </summary>
 [Flags]
 public enum PanDirection
 {
-    /// <summary>
-    /// Disables the pan
-    /// </summary>
+
     None = 0,
-    /// <summary>
-    /// Allows pan to left
-    /// </summary>
+
     Left = 1,
-    /// <summary>
-    /// Allows pan to right
-    /// </summary>
+
     Right = 2,
-    /// <summary>
-    /// Allows pan up
-    /// </summary>
+
     Up = 4,
-    /// <summary>
-    /// Allows pan down
-    /// </summary>
+
     Down = 8,
 }
 
-
-
-/// <summary>
-/// The gesture recognizer for pan gesture 
-/// </summary>
 public class PhPanGestureRecognizer : GestureRecognizer
 {
     private IInputElement? _inputElement;
@@ -67,8 +44,6 @@ public class PhPanGestureRecognizer : GestureRecognizer
 
     public float Threshold { get; set; } = 5;
 
-
-    /// <inheritdoc />
     protected override void PointerPressed(PointerPressedEventArgs e)
     {
         if (e.Pointer.Type == PointerType.Mouse) return;
@@ -81,8 +56,6 @@ public class PhPanGestureRecognizer : GestureRecognizer
         _state = PanGestureStatus.Started;
     }
 
-
-    /// <inheritdoc />
     protected override void PointerMoved(PointerEventArgs e)
     {
         if (e.Pointer != _tracking) return;
@@ -127,7 +100,6 @@ public class PhPanGestureRecognizer : GestureRecognizer
             if (e.Handled) Capture(e.Pointer);
         }
 
-
         var args2 = new PanUpdatedEventArgs(PanGestureStatus.Running, _delta.X, _delta.Y, currentPosition);
         Panning?.Invoke(_inputElement, args2);
         _state = PanGestureStatus.Running;
@@ -136,8 +108,6 @@ public class PhPanGestureRecognizer : GestureRecognizer
         if (e.Handled) e.PreventGestureRecognition();
     }
 
-
-    /// <inheritdoc />
     protected override void PointerReleased(PointerReleasedEventArgs e)
     {
         if (e.Pointer != _tracking) return;
@@ -154,8 +124,6 @@ public class PhPanGestureRecognizer : GestureRecognizer
         e.Handled = args.Handled;
     }
 
-
-    /// <inheritdoc />
     protected override void PointerCaptureLost(IPointer pointer)
     {
         var delta = _delta;
@@ -169,18 +137,12 @@ public class PhPanGestureRecognizer : GestureRecognizer
     }
 }
 
-
-
-/// <summary>
-/// Contains the pan updates event data 
-/// </summary>
 public class PanUpdatedEventArgs : RoutedEventArgs
 {
     public PanGestureStatus StatusType { get; set; }
     public double TotalX { get; set; }
     public double TotalY { get; set; }
     public Point? Position { get; set; }
-
 
     public PanUpdatedEventArgs(PanGestureStatus statusType, double totalX, double totalY, Point? position)
     {

@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
@@ -36,18 +18,13 @@ using System.Linq;
 
 namespace PhotoViewer.UI;
 
-/// <summary>
-/// Shows the image info in a floating bar on the viewer, where <see cref="Config.ImageInfoOverlayMode"/> allows it.
-/// </summary>
 public class ImageInfoOverlayControl : PhOverlay
 {
-    // auto-hide shows it while the pointer is within this distance of the bar, more once shown so it cannot flicker
     private const double REVEAL_ZONE_EXTRA = 10;
     private const double KEEP_ZONE_EXTRA = 48;
     private static readonly TimeSpan HIDE_DELAY = TimeSpan.FromMilliseconds(450);
     private static readonly TimeSpan PEEK_DURATION = TimeSpan.FromMilliseconds(2200);
 
-    // tabular digits keep the bar from twitching while the zoom level or the frame number counts
     private static readonly FontFeatureCollection TABULAR_DIGITS = new() { new FontFeature { Tag = "tnum" } };
 
     private readonly TextBlock _textBlock;
@@ -61,20 +38,16 @@ public class ImageInfoOverlayControl : PhOverlay
     private bool _isPeeking;
     private double _coveredHeight;
 
-
     static ImageInfoOverlayControl()
     {
-        // a bar a little below the top edge, centered and clear of the sides
         HorizontalAlignmentProperty.OverrideDefaultValue<ImageInfoOverlayControl>(HorizontalAlignment.Center);
         VerticalAlignmentProperty.OverrideDefaultValue<ImageInfoOverlayControl>(VerticalAlignment.Top);
         MarginProperty.OverrideDefaultValue<ImageInfoOverlayControl>(new Thickness(20, 8, 20, 0));
         PaddingProperty.OverrideDefaultValue<ImageInfoOverlayControl>(new Thickness(12, 4));
         TransitionDirectionProperty.OverrideDefaultValue<ImageInfoOverlayControl>(PhOverlayDirection.Top);
 
-        // never in the way of the viewer's own input
         IsHitTestVisibleProperty.OverrideDefaultValue<ImageInfoOverlayControl>(false);
     }
-
 
     public ImageInfoOverlayControl()
     {
@@ -91,13 +64,6 @@ public class ImageInfoOverlayControl : PhOverlay
         _peekTimer.Tick += PeekTimer_Tick;
     }
 
-
-
-    #region Public Properties & Methods
-
-    /// <summary>
-    /// Gets whether the window hides its title bar, so the image info shows nowhere else.
-    /// </summary>
     public static bool IsTitleBarHidden
     {
         get
@@ -110,10 +76,6 @@ public class ImageInfoOverlayControl : PhOverlay
         }
     }
 
-
-    /// <summary>
-    /// Gets how far into the viewer the bar may reach from the edge it sits on, which other overlays keep clear of; 0 while it cannot show.
-    /// </summary>
     public double CoveredHeight
     {
         get => _coveredHeight;
@@ -122,13 +84,8 @@ public class ImageInfoOverlayControl : PhOverlay
     public static readonly DirectProperty<ImageInfoOverlayControl, double> CoveredHeightProperty =
         AvaloniaProperty.RegisterDirect<ImageInfoOverlayControl, double>(nameof(CoveredHeight), o => o.CoveredHeight);
 
-
-    /// <summary>
-    /// Sets the image info to show, in the order of <see cref="Config.ImageInfoTags"/>.
-    /// </summary>
     public void SetItems(IReadOnlyList<ImageInfoItem> items)
     {
-        // the bar is about the image, while the app name only tells the window apart
         var imageItems = items.Where(item => item.Tag != nameof(AppStatusInfo.AppName)).ToList();
 
         var isSame = imageItems.SequenceEqual(_items);
@@ -141,17 +98,10 @@ public class ImageInfoOverlayControl : PhOverlay
         UpdateVisibility();
     }
 
-    #endregion // Public Properties & Methods
-
-
-
-    #region Control Events
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
 
-        // the window sees the pointer everywhere, also beside the viewer, e.g. on a toolbar at the top
         _topLevel = TopLevel.GetTopLevel(this);
         _topLevel?.AddHandler(PointerMovedEvent, TopLevel_PointerMoved, RoutingStrategies.Tunnel, true);
         _topLevel?.AddHandler(PointerPressedEvent, TopLevel_PointerPressed, RoutingStrategies.Tunnel, true);
@@ -161,7 +111,6 @@ public class ImageInfoOverlayControl : PhOverlay
 
         UpdateVisibility();
     }
-
 
     protected override void OnUnloaded(RoutedEventArgs e)
     {
@@ -178,25 +127,20 @@ public class ImageInfoOverlayControl : PhOverlay
         _peekTimer.Stop();
     }
 
-
     protected override void OnIgThemeChanged(ThemePackChangedEventArgs e)
     {
         base.OnIgThemeChanged(e);
 
-        // the text is colored by the theme too
         _isTextDirty = true;
         RefreshText();
     }
-
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {
         base.OnSizeChanged(e);
 
-        // the estimated height gives way to the laid out one
         if (e.HeightChanged) UpdateCoveredHeight();
     }
-
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -208,7 +152,6 @@ public class ImageInfoOverlayControl : PhOverlay
         if (isPlacementChanged) UpdateCoveredHeight();
     }
 
-
     private void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         var isRelevant = e.PropertyName is nameof(Config.ImageInfoOverlayMode)
@@ -217,7 +160,6 @@ public class ImageInfoOverlayControl : PhOverlay
             or nameof(Config.EnableSlideshow);
         if (!isRelevant) return;
 
-        // a mode switch starts over, so a stale hover cannot keep the bar up
         var isModeChanged = e.PropertyName is nameof(Config.ImageInfoOverlayMode)
             or nameof(Config.EnableSlideshow);
 
@@ -233,10 +175,8 @@ public class ImageInfoOverlayControl : PhOverlay
         });
     }
 
-
     private void TopLevel_PointerMoved(object? sender, PointerEventArgs e)
     {
-        // a finger has no hover to end, so its taps peek instead
         var isTouch = e.Pointer.Type == PointerType.Touch;
         if (isTouch) return;
 
@@ -254,26 +194,21 @@ public class ImageInfoOverlayControl : PhOverlay
             return;
         }
 
-        // leaving the zone hides it a moment later, so a brief slip does not flicker it
         if (!_isHovered) return;
         if (_hideTimer.IsEnabled) return;
 
         _hideTimer.Start();
     }
 
-
     private void TopLevel_PointerExited(object? sender, PointerEventArgs e)
     {
-        // e.g. leaving a frameless window over its top edge
         if (!_isHovered) return;
 
         _hideTimer.Start();
     }
 
-
     private void TopLevel_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        // a touch has no hover, so a tap near the bar shows it for a moment
         var isTouch = e.Pointer.Type == PointerType.Touch;
         if (!isTouch) return;
 
@@ -286,7 +221,6 @@ public class ImageInfoOverlayControl : PhOverlay
         Peek();
     }
 
-
     private void HideTimer_Tick(object? sender, EventArgs e)
     {
         _hideTimer.Stop();
@@ -294,7 +228,6 @@ public class ImageInfoOverlayControl : PhOverlay
 
         UpdateVisibility();
     }
-
 
     private void PeekTimer_Tick(object? sender, EventArgs e)
     {
@@ -304,15 +237,6 @@ public class ImageInfoOverlayControl : PhOverlay
         UpdateVisibility();
     }
 
-    #endregion // Control Events
-
-
-
-    #region Visibility
-
-    /// <summary>
-    /// Gets whether the overlay mode lets the bar show in the window as it is now.
-    /// </summary>
     private static bool IsModeActive
     {
         get
@@ -328,10 +252,6 @@ public class ImageInfoOverlayControl : PhOverlay
         }
     }
 
-
-    /// <summary>
-    /// Gets whether the bar waits for the pointer to show, which every mode does during a slideshow.
-    /// </summary>
     private static bool IsAutoHideMode
     {
         get
@@ -346,10 +266,6 @@ public class ImageInfoOverlayControl : PhOverlay
         }
     }
 
-
-    /// <summary>
-    /// Checks if the bar has something to show, in a window its mode lets it show in.
-    /// </summary>
     private bool IsAvailable()
     {
         var hasItems = _items.Count > 0;
@@ -359,10 +275,6 @@ public class ImageInfoOverlayControl : PhOverlay
         return isModeActive;
     }
 
-
-    /// <summary>
-    /// Checks if the bar waits for the pointer to show.
-    /// </summary>
     private bool IsAutoHideActive()
     {
         var isAutoHide = IsAutoHideMode;
@@ -372,10 +284,6 @@ public class ImageInfoOverlayControl : PhOverlay
         return isAvailable;
     }
 
-
-    /// <summary>
-    /// Checks if the bar should be on screen now.
-    /// </summary>
     private bool ShouldShow()
     {
         var isAvailable = IsAvailable();
@@ -388,13 +296,8 @@ public class ImageInfoOverlayControl : PhOverlay
         return _isPeeking;
     }
 
-
-    /// <summary>
-    /// Works out whether the bar should show, and animates toward it.
-    /// </summary>
     private void UpdateVisibility()
     {
-        // with nothing to reveal, a pending reveal must not show the bar later
         var isAvailable = IsAvailable();
         if (!isAvailable) ResetReveal();
 
@@ -407,10 +310,6 @@ public class ImageInfoOverlayControl : PhOverlay
         RefreshText();
     }
 
-
-    /// <summary>
-    /// Shows the bar for a moment in auto-hide mode, e.g. after a tap near it.
-    /// </summary>
     private void Peek()
     {
         var isAutoHide = IsAutoHideMode;
@@ -423,10 +322,6 @@ public class ImageInfoOverlayControl : PhOverlay
         UpdateVisibility();
     }
 
-
-    /// <summary>
-    /// Forgets the pointer hover and any peek, with their timers.
-    /// </summary>
     private void ResetReveal()
     {
         _isHovered = false;
@@ -435,16 +330,11 @@ public class ImageInfoOverlayControl : PhOverlay
         _peekTimer.Stop();
     }
 
-
-    /// <summary>
-    /// Checks if the pointer is at the edge of the viewer the bar sits on, where it shows in auto-hide mode.
-    /// </summary>
     private bool IsInRevealZone(PointerEventArgs e)
     {
         if (this.GetVisualParent() is not Visual host) return false;
         var point = e.GetPosition(host);
 
-        // a gallery on the side is not the edge of the viewer
         var isLeftOfViewer = point.X < 0;
         if (isLeftOfViewer) return false;
 
@@ -454,7 +344,6 @@ public class ImageInfoOverlayControl : PhOverlay
         var zoneExtra = _isHovered ? KEEP_ZONE_EXTRA : REVEAL_ZONE_EXTRA;
         var zoneDepth = GetBarHeight() + zoneExtra;
 
-        // the bar may be placed at the bottom instead
         var isAtBottom = VerticalAlignment == VerticalAlignment.Bottom;
         if (isAtBottom)
         {
@@ -468,13 +357,8 @@ public class ImageInfoOverlayControl : PhOverlay
         return isAboveZoneBottom;
     }
 
-
-    /// <summary>
-    /// Works out how far into the viewer the bar may reach, whether or not it shows right now.
-    /// </summary>
     private void UpdateCoveredHeight()
     {
-        // kept while the bar only waits for the pointer, so a hover does not push other overlays around
         var isAvailable = IsAvailable();
         if (!isAvailable)
         {
@@ -487,10 +371,6 @@ public class ImageInfoOverlayControl : PhOverlay
         CoveredHeight = edgeMargin + GetBarHeight();
     }
 
-
-    /// <summary>
-    /// Gets the bar's height, estimated from the font size until it is first laid out.
-    /// </summary>
     private double GetBarHeight()
     {
         var isLaidOut = Bounds.Height > 0;
@@ -499,33 +379,18 @@ public class ImageInfoOverlayControl : PhOverlay
         return Const.FONT_SIZE_BODY * 1.4 + Padding.Top + Padding.Bottom;
     }
 
-    #endregion // Visibility
-
-
-
-    #region Text
-
-    /// <summary>
-    /// Rebuilds a changed text while the bar is on screen.
-    /// </summary>
     private void RefreshText()
     {
         if (!_isTextDirty) return;
 
-        // a hidden bar catches up when it shows, so the updates of a playing animation cost nothing meanwhile
         if (!IsOnScreen) return;
 
-        // with nothing left to show, the last text stays for the bar to fade out with
         if (_items.Count == 0) return;
 
         _isTextDirty = false;
         _textBlock.Inlines = BuildInlines();
     }
 
-
-    /// <summary>
-    /// Lays out the items in one line, the titles in bold, with accent separators.
-    /// </summary>
     private InlineCollection BuildInlines()
     {
         var textBrush = new ImmutableSolidColorBrush(AppThemeColors.TextColorBrush.Color);
@@ -550,10 +415,6 @@ public class ImageInfoOverlayControl : PhOverlay
         return inlines;
     }
 
-
-    /// <summary>
-    /// Checks if the item names what is shown, e.g. the file name the details are about.
-    /// </summary>
     private static bool IsTitleItem(ImageInfoItem item)
     {
         var isTitle = item.Tag is nameof(AppStatusInfo.Name)
@@ -563,10 +424,6 @@ public class ImageInfoOverlayControl : PhOverlay
         return isTitle;
     }
 
-
-    /// <summary>
-    /// Gets the accent tuned for text on the current theme, which the separators are drawn in.
-    /// </summary>
     private static Color GetSeparatorColor()
     {
         var textAccent = Resx.Get<object?>(ResxId.IG_TextAccentColor);
@@ -574,7 +431,5 @@ public class ImageInfoOverlayControl : PhOverlay
 
         return Core.AccentColor;
     }
-
-    #endregion // Text
 
 }

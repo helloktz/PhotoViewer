@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -32,27 +14,17 @@ using System.Threading.Tasks;
 
 namespace PhotoViewer.Common.Windows;
 
-/// <summary>
-/// The searchable hotkeys table used by the Keyboard settings page.
-/// </summary>
 public partial class MenuHotkeysEditorControl : PhControl
 {
     private const double MinTableHeight = 220;
     private const double BottomGap = 40;
     private ScrollViewer? _pageScroll;
 
-    // user overrides (clone of the staged config): absent key = default, empty array = no hotkey
     private Dictionary<LangId, Hotkey[]> _working = [];
 
-    // every row in menu order; the table shows a (possibly search-filtered) subset
     private readonly List<MenuHotkeyRowModel> _allRows = [];
 
-
-    /// <summary>
-    /// Raised after any edit (single row or reset all) so the host can re-stage the hotkeys.
-    /// </summary>
     public event EventHandler? HotkeysChanged;
-
 
     public MenuHotkeysEditorControl()
     {
@@ -64,12 +36,6 @@ public partial class MenuHotkeysEditorControl : PhControl
         PART_Reset.Click += (_, _) => ResetAll();
     }
 
-
-    #region Public API
-
-    /// <summary>
-    /// Loads the user's menu-hotkey overrides (cloned into a working copy) and builds the table.
-    /// </summary>
     public void LoadHotkeys(IReadOnlyDictionary<LangId, Hotkey[]> current)
     {
         _working = new Dictionary<LangId, Hotkey[]>(current);
@@ -77,16 +43,7 @@ public partial class MenuHotkeysEditorControl : PhControl
         RebuildTable();
     }
 
-
-    /// <summary>
-    /// Gets a clone of the current menu-hotkey overrides to stage into the config.
-    /// </summary>
     public Dictionary<LangId, Hotkey[]> CurrentHotkeys => new(_working);
-
-    #endregion // Public API
-
-
-    #region Control events
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -95,10 +52,8 @@ public partial class MenuHotkeysEditorControl : PhControl
         _pageScroll = this.FindAncestorOfType<ScrollViewer>();
         if (_pageScroll is not null) _pageScroll.PropertyChanged += PageScroll_PropertyChanged;
 
-        // bounds are usually 0 at attach; size once layout settles
         Dispatcher.UIThread.Post(UpdateTableMaxHeight, DispatcherPriority.Background);
     }
-
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -107,15 +62,11 @@ public partial class MenuHotkeysEditorControl : PhControl
         base.OnDetachedFromVisualTree(e);
     }
 
-
     private void PageScroll_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property == BoundsProperty) UpdateTableMaxHeight();
     }
 
-
-    // Cap the table at the page viewport's remaining height (below the search chrome),
-    // never below the floor; so it grows/shrinks with the window instead of a fixed height.
     private void UpdateTableMaxHeight()
     {
         if (_pageScroll is null) return;
@@ -129,7 +80,6 @@ public partial class MenuHotkeysEditorControl : PhControl
         PART_Table.MaxHeight = Math.Max(MinTableHeight, viewport - tableTop - BottomGap);
     }
 
-
     protected override void OnIgLanguageChanged()
     {
         base.OnIgLanguageChanged();
@@ -137,20 +87,10 @@ public partial class MenuHotkeysEditorControl : PhControl
         PART_Reset.Text = Core.Lang[LangId._ResetToDefault];
         PART_Search.PlaceholderText = Core.Lang[LangId._TypeToFilter];
 
-        // re-localize paths in place, then rebuild so the table reflects the new language
         RelocalizeRows();
         RebuildTable();
     }
 
-    #endregion // Control events
-
-
-    #region Rows
-
-    /// <summary>
-    /// Builds <see cref="_allRows"/> from the default menu actions, applying any working overrides.
-    /// Paths/visibility come from the live main menu, so the menu tree isn't duplicated here.
-    /// </summary>
     private void BuildRows()
     {
         _allRows.Clear();
@@ -163,9 +103,9 @@ public partial class MenuHotkeysEditorControl : PhControl
             if (key is null) continue;
 
             string path;
-            if (paths.TryGetValue(key.Value, out var p)) path = p;  // visible menu item
-            else if (allKeys.Contains(key.Value)) continue;         // in the menu but hidden -> skip
-            else path = Core.Lang[key.Value];                       // not a menu item (e.g. the menu button)
+            if (paths.TryGetValue(key.Value, out var p)) path = p;
+            else if (allKeys.Contains(key.Value)) continue;
+            else path = Core.Lang[key.Value];
 
             var effective = _working.TryGetValue(key.Value, out var v) ? v : def.Hotkeys;
             _allRows.Add(new MenuHotkeyRowModel(key.Value, path, def.Hotkeys, effective));
@@ -174,10 +114,6 @@ public partial class MenuHotkeysEditorControl : PhControl
         UpdateConflicts();
     }
 
-
-    /// <summary>
-    /// Re-localizes the action paths of the existing rows in place.
-    /// </summary>
     private void RelocalizeRows()
     {
         if (_allRows.Count == 0) return;
@@ -189,15 +125,10 @@ public partial class MenuHotkeysEditorControl : PhControl
         }
     }
 
-
     private static (Dictionary<LangId, string> Paths, HashSet<LangId> AllKeys) MenuMap()
         => App.MainWindow?.PART_MainView?.PART_Toolbar?.GetMenuActionMap()
             ?? ([], []);
 
-
-    /// <summary>
-    /// Flags every row whose effective hotkeys are shared with another row (duplicated assignment).
-    /// </summary>
     private void UpdateConflicts()
     {
         var counts = new Dictionary<string, int>();
@@ -213,15 +144,8 @@ public partial class MenuHotkeysEditorControl : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Rebuilds the table (action path + hotkeys + an Edit action) with the rows matching the
-    /// search query (action path or hotkey text).
-    /// </summary>
     private void RebuildTable()
     {
-        // Action auto-fits its text; Hotkeys is the star column so it sits left-aligned right
-        // after the action name (not pushed to the far right) while Edit stays at the right edge.
         PhTableColumn[] columns =
         [
             new() { Header = Core.Lang[LangId.Settings_Keyboard_Action], MinWidth = 200 },
@@ -237,7 +161,7 @@ public partial class MenuHotkeysEditorControl : PhControl
 
         var rows = filtered.Select(row =>
         {
-            var model = row; // capture for the action closure
+            var model = row;
             return new PhTableRow
             {
                 Key = row.MenuKey.ToString(),
@@ -262,11 +186,6 @@ public partial class MenuHotkeysEditorControl : PhControl
         PART_Table.Build(columns, rows);
     }
 
-
-    /// <summary>
-    /// Builds the hotkeys cell: one keycap chip per hotkey, tinted danger when duplicated,
-    /// accent when customized, normal otherwise.
-    /// </summary>
     private static Border BuildHotkeysCell(MenuHotkeyRowModel row)
     {
         var tone = row.HotkeysShowDanger ? PhHotkeyChipTone.Danger
@@ -288,15 +207,6 @@ public partial class MenuHotkeysEditorControl : PhControl
         return cell;
     }
 
-    #endregion // Rows
-
-
-    #region Edit operations
-
-    /// <summary>
-    /// Opens the editor for a row; on success records the override (or removes it when the result
-    /// matches the default), refreshes the table and notifies the host.
-    /// </summary>
     private async Task EditRowAsync(MenuHotkeyRowModel row)
     {
         var win = new MenuHotkeyEditWindow(row.ActionPath, row.Hotkeys, row.DefaultHotkeys);
@@ -319,10 +229,6 @@ public partial class MenuHotkeysEditorControl : PhControl
         HotkeysChanged?.Invoke(this, EventArgs.Empty);
     }
 
-
-    /// <summary>
-    /// Clears all overrides, reverting every row to its default hotkeys.
-    /// </summary>
     private void ResetAll()
     {
         _working.Clear();
@@ -331,7 +237,5 @@ public partial class MenuHotkeysEditorControl : PhControl
         RebuildTable();
         HotkeysChanged?.Invoke(this, EventArgs.Empty);
     }
-
-    #endregion // Edit operations
 
 }

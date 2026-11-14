@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -44,10 +26,6 @@ using System.Threading.Tasks;
 
 namespace PhotoViewer.Common.Windows;
 
-
-/// <summary>
-/// The content of the Print window: the settings, the live preview, and the job it starts.
-/// </summary>
 public partial class PrintWindowView : PhControl
 {
     private const int RENDER_DEBOUNCE_MS = 80;
@@ -75,44 +53,22 @@ public partial class PrintWindowView : PhControl
     private bool _refreshPrintersOnActivate;
     private WindowBase? _window;
 
-
-    /// <summary>
-    /// Occurs when what can be printed changes, or a job starts or ends.
-    /// </summary>
     public event Action? StateChanged;
 
-
-    /// <summary>
-    /// Gets whether a job is running.
-    /// </summary>
     public bool IsPrinting => _printCancel is not null;
 
-
-    /// <summary>
-    /// Gets whether there is something to print and somewhere to print it.
-    /// </summary>
     public bool CanPrint => _doc is { Pages.Count: > 0 } && _printer is not null && !IsPrinting;
 
-
-    /// <summary>
-    /// Gets the destination chosen.
-    /// </summary>
     public PrinterInfo? Printer => _printer;
 
-
-    /// <summary>
-    /// Gets the number of pages and prints, as the footer shows them.
-    /// </summary>
     public string SummaryText => _doc is null
         ? string.Empty
         : Core.Lang[LangId.Print_Summary, _doc.Pages.Count, _doc.PrintCount];
-
 
     public PrintWindowView()
     {
         InitializeComponent();
     }
-
 
     public PrintWindowView(PrintSession session, PrintRegion region = PrintRegion.WholeImage) : this()
     {
@@ -128,9 +84,6 @@ public partial class PrintWindowView : PhControl
         _session.ImageReady += Session_ImageReady;
     }
 
-
-    #region Lifecycle
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
@@ -141,7 +94,6 @@ public partial class PrintWindowView : PhControl
         _ = LoadPrintersAsync();
     }
 
-
     protected override void OnUnloaded(RoutedEventArgs e)
     {
         base.OnUnloaded(e);
@@ -150,20 +102,16 @@ public partial class PrintWindowView : PhControl
         _window = null;
     }
 
-
     private void Window_Activated(object? sender, EventArgs e)
     {
-        // back from the system's printer settings: a printer added there is listed and chosen
         if (_refreshPrintersOnActivate && !IsPrinting) _ = LoadPrintersAsync(true);
     }
-
 
     protected override void OnIgThemeChanged(ThemePackChangedEventArgs e)
     {
         base.OnIgThemeChanged(e);
         PART_PreviewPane.Background = new SolidColorBrush(PrintPreviewControl.GetDeskColor());
     }
-
 
     protected override void OnIgLanguageChanged()
     {
@@ -185,10 +133,6 @@ public partial class PrintWindowView : PhControl
         Relayout();
     }
 
-
-    /// <summary>
-    /// Stops the preview and any job; the session stays its owner's to dispose.
-    /// </summary>
     public void Close()
     {
         _session.ImageReady -= Session_ImageReady;
@@ -198,14 +142,6 @@ public partial class PrintWindowView : PhControl
         PART_Preview.SetPage(null, default);
     }
 
-    #endregion // Lifecycle
-
-
-    #region Controls
-
-    /// <summary>
-    /// Fills the choices and sets them from the saved settings, with the part to print preselected when it is offered.
-    /// </summary>
     private void InitializeControls(PrintRegion region)
     {
         _isUpdatingControls = true;
@@ -223,12 +159,10 @@ public partial class PrintWindowView : PhControl
         PART_FillPage.IsChecked = _config.FillPage;
         PART_Collate.IsChecked = _config.Collate;
 
-        // a document prints all its pages, an animation the frame on screen
         var state = _session.State;
         PART_PagesRow.IsVisible = _session.FrameCount > 1;
         SelectTag(PART_PageScope, _session.FrameCount > 1 && !state.IsAnimated ? PrintPageScope.All : PrintPageScope.Current);
 
-        // the part to print: offered with a selection, or a view zoomed into the photo
         var whole = state.GetRegionRect(ViewerImageRegion.WholeImage);
         var visible = state.GetRegionRect(ViewerImageRegion.VisibleArea);
         var hasSelection = !state.GetRegionRect(ViewerImageRegion.Selection).IsEmpty;
@@ -236,7 +170,6 @@ public partial class PrintWindowView : PhControl
         PART_RegionRow.IsVisible = hasSelection || hasVisibleArea;
         FillRegionItems(hasSelection, hasVisibleArea, region);
 
-        // Save as PDF until the printers arrive, so the preview shows at once
         _printer = PrintProviderBase.SaveAsPdfPrinter;
         PART_Printer.Items.Add(new ComboBoxItem { Content = Core.Lang[LangId.Print_LoadingPrinters], IsEnabled = false });
         PART_Printer.SelectedIndex = 0;
@@ -251,7 +184,6 @@ public partial class PrintWindowView : PhControl
         Relayout();
     }
 
-
     private void WireEvents()
     {
         PART_Printer.SelectionChanged += async (_, _) =>
@@ -265,7 +197,6 @@ public partial class PrintWindowView : PhControl
             box.SelectionChanged += (_, _) => OnSettingChanged();
         }
 
-        // a paper chosen in code is measured too, so this runs while the controls update
         PART_Paper.SelectionChanged += (_, _) => _ = MeasureSelectedPaperAsync();
 
         foreach (var check in new[] { PART_AutoRotate, PART_Captions, PART_FillPage, PART_Collate })
@@ -288,10 +219,6 @@ public partial class PrintWindowView : PhControl
         PART_Preview.SizeChanged += (_, _) => RequestRender();
     }
 
-
-    /// <summary>
-    /// Fills the choices of every enum, keeping what is selected across a language change.
-    /// </summary>
     private void FillEnumItems()
     {
         FillItems(PART_Orientation, Enum.GetValues<PrintOrientation>());
@@ -310,22 +237,16 @@ public partial class PrintWindowView : PhControl
         }
     }
 
-
     private void FillRegionItems(bool hasSelection, bool hasVisibleArea, PrintRegion region)
     {
         var values = new List<PrintRegion> { PrintRegion.WholeImage };
         if (hasSelection) values.Add(PrintRegion.Selection);
         if (hasVisibleArea) values.Add(PrintRegion.VisibleArea);
 
-        // a region not offered leaves the whole image chosen
         FillItems(PART_Region, values);
         SelectTag(PART_Region, region);
     }
 
-
-    /// <summary>
-    /// Fills a combo box with enum values named by their language keys, keeping the selection.
-    /// </summary>
     private static void FillItems<T>(ComboBox box, IEnumerable<T> values, params object?[] args) where T : struct, Enum
     {
         var selected = box.SelectedItem is ComboBoxItem { Tag: T current } ? current : (T?)null;
@@ -341,12 +262,10 @@ public partial class PrintWindowView : PhControl
         else if (box.Items.Count > 0) box.SelectedIndex = 0;
     }
 
-
     private static T GetTag<T>(ComboBox box, T fallback)
     {
         return box.SelectedItem is ComboBoxItem { Tag: T value } ? value : fallback;
     }
-
 
     private static void SelectTag<T>(ComboBox box, T value) where T : notnull
     {
@@ -360,10 +279,6 @@ public partial class PrintWindowView : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Builds a drawn tile for every layout of the user's region, plus a saved one from another region.
-    /// </summary>
     private void BuildLayoutOptions()
     {
         var layouts = PrintLayouts.GetAll(PrintUnits.IsMetricRegion).ToList();
@@ -372,7 +287,6 @@ public partial class PrintWindowView : PhControl
         foreach (var layout in layouts)
         {
             var tile = new PrintLayoutTile(layout);
-            // the button does not bound its content's width, so the label carries its own
             var label = new TextBlock
             {
                 MaxWidth = 88,
@@ -393,10 +307,6 @@ public partial class PrintWindowView : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Redraws every layout tile for the paper and names it with its count on that paper.
-    /// </summary>
     private void UpdateLayoutOptions(PaperInfo paper, PrintLayoutInput input)
     {
         foreach (var option in _layoutOptions)
@@ -412,7 +322,6 @@ public partial class PrintWindowView : PhControl
         }
     }
 
-
     private static string GetLayoutName(PrintLayout layout) => layout.Kind switch
     {
         PrintLayoutKind.Grid => Core.Lang[LangId.Print_Layout_Grid, layout.CellCount],
@@ -423,13 +332,11 @@ public partial class PrintWindowView : PhControl
         _ => Core.Lang[LangId.Print_Layout_FullPage],
     };
 
-
     private void SelectLayout(PrintLayout layout)
     {
         _layout = layout;
         Relayout();
     }
-
 
     private void ToggleMore()
     {
@@ -438,14 +345,6 @@ public partial class PrintWindowView : PhControl
         PART_BtnMore.IconData = Resx.GetIcon(_isMoreVisible ? ResxIconId.IconChevronDown : ResxIconId.IconChevronRight);
     }
 
-    #endregion // Controls
-
-
-    #region Printers
-
-    /// <summary>
-    /// Lists the printers, a slow network printer bounded by a timeout; a refresh keeps the chosen one unless a printer was just added.
-    /// </summary>
     private async Task LoadPrintersAsync(bool isRefresh = false)
     {
         if (_isLoadingPrinters) return;
@@ -462,7 +361,6 @@ public partial class PrintWindowView : PhControl
         {
             Debug.WriteLine($"❌❌❌ {nameof(PrintWindowView)}.{nameof(LoadPrintersAsync)}: {ex.Message}");
 
-            // a failed refresh keeps the list there is
             if (isRefresh) return;
             printers = [PrintProviderBase.SaveAsPdfPrinter];
         }
@@ -477,7 +375,6 @@ public partial class PrintWindowView : PhControl
 
         if (_closing.IsCancellationRequested) return;
 
-        // the chosen printer keeps its instance, so the requests in flight for it still match
         var listed = PART_Printer.Items.OfType<ComboBoxItem>().Select(i => i.Tag).OfType<PrinterInfo>().ToList();
         printers = printers.Select(i => _printer is { } chosen && i.Id == chosen.Id ? chosen : i).ToList();
 
@@ -499,12 +396,10 @@ public partial class PrintWindowView : PhControl
         PART_Printer.IsEnabled = true;
         _isUpdatingControls = false;
 
-        // only the app's own destination: say why, under it
         _noPrintersText = printers.All(i => i.IsVirtual)
             ? Core.PrintProvider.SystemPrintersUnavailableReason ?? Core.Lang[LangId.Print_NoPrinters]
             : null;
 
-        // the same printer keeps its settings, the driver's included; only its state is read again
         if (ReferenceEquals(choice, current))
         {
             _ = ShowPrinterStateAsync(choice);
@@ -514,10 +409,6 @@ public partial class PrintWindowView : PhControl
         await SelectPrinterAsync(choice);
     }
 
-
-    /// <summary>
-    /// Opens the system's settings to add a printer; from then on, the printers are listed again whenever the window is activated.
-    /// </summary>
     private async Task OpenAddPrinterSettingsAsync()
     {
         if (TopLevel.GetTopLevel(this) is not PhWindow owner) return;
@@ -533,10 +424,6 @@ public partial class PrintWindowView : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Switches to a printer: reads what it can do, refills the papers and resolutions, and keeps the preview in step.
-    /// </summary>
     private async Task SelectPrinterAsync(PrinterInfo printer)
     {
         _printer = printer;
@@ -556,7 +443,6 @@ public partial class PrintWindowView : PhControl
         }
         catch (Exception) when (!ReferenceEquals(_capsCancel, cancel) || _closing.IsCancellationRequested)
         {
-            // another printer was picked meanwhile, or the window closed
             return;
         }
         catch (Exception ex)
@@ -580,10 +466,6 @@ public partial class PrintWindowView : PhControl
         _ = ShowPrinterStateAsync(printer, isUnavailable);
     }
 
-
-    /// <summary>
-    /// Shows the state of the printer under its name, when the printer reports one; otherwise a notice to keep stays.
-    /// </summary>
     private async Task ShowPrinterStateAsync(PrinterInfo printer, bool keepNotice = false)
     {
         try
@@ -613,10 +495,6 @@ public partial class PrintWindowView : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Shows a printer's state or a notice right of the Printer label, behind a dot in the given color.
-    /// </summary>
     private void ShowPrinterStatus(string text, ResxId dotBrush)
     {
         PART_PrinterStatus.Text = text;
@@ -624,10 +502,6 @@ public partial class PrintWindowView : PhControl
         PART_PrinterStatusRow.IsVisible = !string.IsNullOrWhiteSpace(text);
     }
 
-
-    /// <summary>
-    /// Fills the papers of the printer: the one used last on it, else its default.
-    /// </summary>
     private void FillPaperItems()
     {
         PART_Paper.Items.Clear();
@@ -644,10 +518,6 @@ public partial class PrintWindowView : PhControl
         if (choice is not null) SelectTag(PART_Paper, choice);
     }
 
-
-    /// <summary>
-    /// Measures the printable area of the chosen paper when the printer only estimated it, then lays the pages out on it.
-    /// </summary>
     private async Task MeasureSelectedPaperAsync()
     {
         if (_printer is not { } printer) return;
@@ -661,7 +531,6 @@ public partial class PrintWindowView : PhControl
             var measured = await Core.PrintProvider.MeasurePaperAsync(printer, paper, timeout.Token);
             if (!ReferenceEquals(_printer, printer)) return;
 
-            // the measured paper replaces its estimate for good; the layout follows only while it is still chosen
             item.Tag = measured;
             _caps = _caps with { Papers = _caps.Papers.Select(i => i.Id == measured.Id ? measured : i).ToList() };
             if (ReferenceEquals(PART_Paper.SelectedItem, item)) Relayout();
@@ -672,10 +541,6 @@ public partial class PrintWindowView : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Fills the resolutions of the printer: the one used last on it, else its default; a language change keeps the choice.
-    /// </summary>
     private void FillQualityItems(bool keepSelection = false)
     {
         var selected = keepSelection ? GetTag(PART_Quality, 0) : 0;
@@ -693,10 +558,6 @@ public partial class PrintWindowView : PhControl
         if (choice > 0) SelectTag(PART_Quality, choice);
     }
 
-
-    /// <summary>
-    /// Shows only the rows the printer supports.
-    /// </summary>
     private void UpdateCapabilityRows()
     {
         var printsOnPaper = _printer?.OutputFileExtension is null;
@@ -712,16 +573,11 @@ public partial class PrintWindowView : PhControl
         UpdateCollateRow();
     }
 
-
     private void UpdateCollateRow()
     {
         PART_Collate.IsVisible = (PART_Copies.Value ?? 1) > 1 && _doc is { Pages.Count: > 1 };
     }
 
-
-    /// <summary>
-    /// Shows the printer's own settings dialog and takes its choices back.
-    /// </summary>
     private async Task ShowPropertiesAsync()
     {
         if (TopLevel.GetTopLevel(this) is not PhWindow owner) return;
@@ -732,7 +588,6 @@ public partial class PrintWindowView : PhControl
         _platformState = settings.PlatformState;
         _isUpdatingControls = true;
 
-        // the driver's choices win
         var paper = _caps.Papers.FirstOrDefault(i => i.Id == settings.Paper.Id);
         if (paper is not null) SelectTag(PART_Paper, paper);
         SelectTag(PART_Orientation, settings.IsLandscape ? PrintOrientation.Landscape : PrintOrientation.Portrait);
@@ -746,17 +601,11 @@ public partial class PrintWindowView : PhControl
         Relayout();
     }
 
-    #endregion // Printers
-
-
-    #region Layout & Preview
-
     private void OnSettingChanged()
     {
         if (_isUpdatingControls) return;
         Relayout();
     }
-
 
     private void OnItemsChanged()
     {
@@ -766,10 +615,6 @@ public partial class PrintWindowView : PhControl
         Relayout();
     }
 
-
-    /// <summary>
-    /// Sets the prints from the pages and the part to print.
-    /// </summary>
     private void ApplyItems()
     {
         var region = GetTag(PART_Region, PrintRegion.WholeImage);
@@ -786,17 +631,12 @@ public partial class PrintWindowView : PhControl
         PART_PageRangeHint.IsVisible = scope == PrintPageScope.Range && pages.Count == 0;
         PART_PageRangeHint.Text = Core.Lang[LangId.Print_RangeInvalid];
 
-        // a part of the image prints the page on screen only
         PART_PageScope.IsEnabled = region == PrintRegion.WholeImage;
         PART_PageRange.IsEnabled = region == PrintRegion.WholeImage;
 
         _session.SetItems(pages, region);
     }
 
-
-    /// <summary>
-    /// Lays the prints out again and redraws the preview.
-    /// </summary>
     private void Relayout()
     {
         if (_isUpdatingControls) return;
@@ -829,10 +669,6 @@ public partial class PrintWindowView : PhControl
         RequestRender();
     }
 
-
-    /// <summary>
-    /// Moves to the next or previous page of the preview.
-    /// </summary>
     public void GoToPage(int delta)
     {
         if (_doc is null) return;
@@ -845,35 +681,27 @@ public partial class PrintWindowView : PhControl
         RequestRender();
     }
 
-
     private void UpdatePageNav()
     {
         var count = _doc?.Pages.Count ?? 0;
         PART_PageText.Text = count == 0 ? string.Empty : Core.Lang[LangId.Print_PageOf, _pageIndex + 1, count];
 
-        // a single page has nowhere to go
         PART_BtnPrevPage.IsVisible = count > 1;
         PART_BtnNextPage.IsVisible = count > 1;
         PART_BtnPrevPage.IsEnabled = _pageIndex > 0;
         PART_BtnNextPage.IsEnabled = _pageIndex < count - 1;
     }
 
-
     private void Session_ImageReady()
     {
         Dispatcher.UIThread.Post(RequestRender);
     }
-
 
     private void RequestRender()
     {
         _ = RenderPreviewAsync();
     }
 
-
-    /// <summary>
-    /// Renders the shown page at the size the preview draws it, off the UI thread; a newer request drops this one.
-    /// </summary>
     private async Task RenderPreviewAsync()
     {
         var version = Interlocked.Increment(ref _renderVersion);
@@ -887,7 +715,6 @@ public partial class PrintWindowView : PhControl
             return;
         }
 
-        // device pixels, so the preview is sharp at any scaling
         var paperRect = PART_Preview.GetPaperRect(doc.PageSizePt);
         var scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
         var w = (int)Math.Round(paperRect.Width * scaling);
@@ -919,10 +746,6 @@ public partial class PrintWindowView : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Draws one page of the preview, then turns it into the display's colors as the viewer does.
-    /// </summary>
     private SKImage? RenderPage(PrintDocumentLayout doc, int pageIndex, int w, int h, PrintRenderOptions options, SKColorSpace? destProfile)
     {
         var info = new SKImageInfo(w, h, SKColorType.Rgba8888, SKAlphaType.Premul, SKColorSpace.CreateSrgb());
@@ -931,7 +754,6 @@ public partial class PrintWindowView : PhControl
 
         surface.Canvas.Scale(w / doc.PageSizePt.Width, h / doc.PageSizePt.Height);
 
-        // a preview never waits: what is not decoded yet draws as a placeholder
         PrintPageRenderer.DrawPageAsync(surface.Canvas, doc, pageIndex, _session, options, CancellationToken.None)
             .GetAwaiter().GetResult();
 
@@ -945,19 +767,10 @@ public partial class PrintWindowView : PhControl
         return snapshot;
     }
 
-    #endregion // Layout & Preview
-
-
-    #region Print
-
-    /// <summary>
-    /// Prints, or writes the file of a destination that writes one; returns whether the job finished.
-    /// </summary>
     public async Task<bool> PrintAsync(PhWindow owner)
     {
         if (!CanPrint || _doc is null || _printer is null) return false;
 
-        // a long job asks first
         var copies = (int)(PART_Copies.Value ?? 1);
         var sheets = _doc.Pages.Count * copies;
         if (sheets > MANY_PAGES)
@@ -973,7 +786,6 @@ public partial class PrintWindowView : PhControl
         var settings = BuildSettings();
         if (settings is null) return false;
 
-        // a destination that writes a file asks where
         if (_printer.OutputFileExtension is { } extension)
         {
             var path = await PickOutputFileAsync(extension);
@@ -1017,25 +829,16 @@ public partial class PrintWindowView : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Cancels the running job.
-    /// </summary>
     public void CancelPrinting()
     {
         _printCancel?.Cancel();
     }
 
-
-    /// <summary>
-    /// Hands the job to the platform's own print dialog; returns whether it took the job, so a cancelled one keeps this window.
-    /// </summary>
     public async Task<bool> ShowSystemDialogAsync(PhWindow owner)
     {
         var settings = BuildSettings();
         if (settings is null || IsPrinting) return false;
 
-        // that dialog may stay open a while: it counts as a job, so nothing else starts and Esc closes it first
         var cancel = CancellationTokenSource.CreateLinkedTokenSource(_closing.Token);
         _printCancel = cancel;
         SetSettingsEnabled(false);
@@ -1072,10 +875,6 @@ public partial class PrintWindowView : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Saves the choices, so the next Print window starts from them.
-    /// </summary>
     public void SaveConfig()
     {
         if (_printer is not null)
@@ -1098,7 +897,6 @@ public partial class PrintWindowView : PhControl
         _config.Save();
     }
 
-
     private PrintJobSettings? BuildSettings()
     {
         if (_printer is null || GetTag<PaperInfo?>(PART_Paper, null) is not { } paper) return null;
@@ -1117,7 +915,6 @@ public partial class PrintWindowView : PhControl
         };
     }
 
-
     private PrintJob BuildJob(PrintJobSettings settings)
     {
         return new PrintJob
@@ -1130,10 +927,8 @@ public partial class PrintWindowView : PhControl
         };
     }
 
-
     private PrintRenderOptions BuildRenderOptions()
     {
-        // the resolution the file declares, for actual size; a missing or odd value reads as the screen's 96
         var dpi = _session.State.Photo.Metadata?.DpiX ?? 0;
 
         return new PrintRenderOptions
@@ -1145,10 +940,6 @@ public partial class PrintWindowView : PhControl
         };
     }
 
-
-    /// <summary>
-    /// Asks where to write the file of a destination that writes one, next to the photo by default.
-    /// </summary>
     private async Task<string?> PickOutputFileAsync(string extension)
     {
         if (TopLevel.GetTopLevel(this) is not { } top) return null;
@@ -1170,7 +961,6 @@ public partial class PrintWindowView : PhControl
         return file?.TryGetLocalPath();
     }
 
-
     private void SetPrinting(bool isPrinting)
     {
         PART_Progress.IsVisible = isPrinting;
@@ -1180,14 +970,12 @@ public partial class PrintWindowView : PhControl
         StateChanged?.Invoke();
     }
 
-
     private void SetSettingsEnabled(bool isEnabled)
     {
         PART_Settings.IsEnabled = isEnabled;
         PART_BtnPrevPage.IsEnabled = isEnabled && _pageIndex > 0;
         PART_BtnNextPage.IsEnabled = isEnabled && _pageIndex < (_doc?.Pages.Count ?? 0) - 1;
     }
-
 
     private void ShowProgress(PrintProgress progress)
     {
@@ -1196,9 +984,6 @@ public partial class PrintWindowView : PhControl
         PART_ProgressBar.Value = progress.PageIndex / (double)progress.PageCount;
         PART_ProgressText.Text = Core.Lang[LangId.Print_Printing, Math.Min(progress.PageIndex + 1, progress.PageCount), progress.PageCount];
     }
-
-    #endregion // Print
-
 
     private sealed record LayoutOption(PrintLayout Layout, PhToolButton Button, PrintLayoutTile Tile, TextBlock Label);
 }

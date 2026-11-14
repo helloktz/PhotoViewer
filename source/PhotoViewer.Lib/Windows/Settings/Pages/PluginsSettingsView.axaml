@@ -12,7 +12,6 @@
 
     <StackPanel Orientation="Vertical" Spacing="10">
 
-        <!--  Add + Open folder + Get more plugins  -->
         <StackPanel Orientation="Horizontal" Spacing="8">
             <ui:PhButton
                 x:Name="PART_AddPlugin"
@@ -22,7 +21,6 @@
             <ui:PhButton x:Name="PART_OpenFolder" />
         </StackPanel>
 
-        <!--  Hint  -->
         <Border
             x:Name="PART_HintContainer"
             Padding="12,8"
@@ -33,8 +31,6 @@
             <ui:PhTextBlock x:Name="PART_InstallHint" TextWrapping="Wrap" />
         </Border>
 
-
-        <!--  Plugins table (rows built in code-behind)  -->
         <ui:PhTableControl x:Name="PART_Table" HorizontalAlignment="Stretch" />
 
     </StackPanel>

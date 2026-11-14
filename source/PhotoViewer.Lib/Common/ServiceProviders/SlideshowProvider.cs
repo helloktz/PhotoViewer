@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Threading;
 using PhotoViewer.Common.Types;
 using System;
@@ -24,21 +6,13 @@ using System.Threading.Tasks;
 
 namespace PhotoViewer.Common.ServiceProviders;
 
-/// <summary>
-/// Manages the slideshow timer and countdown state.
-/// </summary>
 public sealed class SlideshowProvider : PhDisposable
 {
-    /// <summary>
-    /// Interval floor. A configured <c>0</c> (or invalid value) must still wait once per cycle,
-    /// otherwise the loop spins without yielding and floods the UI thread with advance requests.
-    /// </summary>
+
     public const double MIN_INTERVAL_MS = 50;
 
-    // longest transition plus the viewer's hold for a decoding photo, with room to spare
     private const int MAX_ADVANCE_WAIT_MS = 20_000;
 
-    // owner key of the slideshow's request in SleepGuard
     private const string SLEEP_GUARD_OWNER = "slideshow";
 
     private CancellationTokenSource? _cts;
@@ -46,53 +20,22 @@ public sealed class SlideshowProvider : PhDisposable
     private SemaphoreSlim? _pauseGate;
     private readonly Lock _lock = new();
 
-    // countdown state — read from UI thread for rendering
     private long _countdownSecondsBits;
     private volatile bool _isRunning;
     private volatile bool _isPaused;
 
-    // remaining milliseconds saved when paused, so resume continues the countdown
     private double _remainingMsOnPause;
 
-    // beep notification counter
     private int _beepImageCount;
 
-
-    /// <summary>
-    /// Raised on the UI thread to advance to the next photo; the next interval starts once the returned task (its transition) completes.
-    /// </summary>
     public event Func<Task>? NextPhotoRequested;
 
-
-
-    #region Public Properties
-
-    /// <summary>
-    /// Gets whether the slideshow is currently running (may be paused).
-    /// </summary>
     public bool IsRunning => _isRunning;
 
-
-    /// <summary>
-    /// Gets whether the slideshow is currently paused.
-    /// </summary>
     public bool IsPaused => _isPaused;
 
-
-    /// <summary>
-    /// Gets the remaining countdown seconds for the current interval.
-    /// </summary>
     public double CountdownSeconds => BitConverter.Int64BitsToDouble(Interlocked.Read(ref _countdownSecondsBits));
 
-    #endregion // Public Properties
-
-
-
-    #region Public Methods
-
-    /// <summary>
-    /// Starts the slideshow loop.
-    /// </summary>
     public void Start()
     {
         lock (_lock)
@@ -103,10 +46,9 @@ public sealed class SlideshowProvider : PhDisposable
             _pauseGate = new SemaphoreSlim(0, 1);
             _isRunning = true;
             _isPaused = false;
-            _beepImageCount = 1; // the initial image counts as #1
+            _beepImageCount = 1;
             SetCountdown(0);
 
-            // playback is hands-off, so the OS must not blank the screen or suspend
             SleepGuard.Acquire(SLEEP_GUARD_OWNER, $"{BHelper.AppDisplayName} slideshow");
 
             var token = _cts.Token;
@@ -114,10 +56,6 @@ public sealed class SlideshowProvider : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// Stops the slideshow loop completely.
-    /// </summary>
     public void Stop()
     {
         lock (_lock)
@@ -126,28 +64,18 @@ public sealed class SlideshowProvider : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// Pauses the slideshow. The countdown freezes and no photos advance
-    /// until <see cref="Resume"/> is called.
-    /// </summary>
     public void Pause()
     {
         lock (_lock)
         {
             if (!_isRunning || _isPaused) return;
 
-            // save the remaining countdown so Resume can continue from it
             _remainingMsOnPause = CountdownSeconds * 1000.0;
             _isPaused = true;
             _intervalCts?.Cancel();
         }
     }
 
-
-    /// <summary>
-    /// Resumes the slideshow from a paused state, starting a new countdown.
-    /// </summary>
     public void Resume()
     {
         lock (_lock)
@@ -156,7 +84,6 @@ public sealed class SlideshowProvider : PhDisposable
 
             _isPaused = false;
 
-            // release the gate if the loop is waiting
             if (_pauseGate is { CurrentCount: 0 })
             {
                 _pauseGate.Release();
@@ -164,27 +91,15 @@ public sealed class SlideshowProvider : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// Resets the current interval countdown so a new cycle starts immediately.
-    /// Also resets the beep notification counter.
-    /// Called when the user manually navigates to another photo.
-    /// </summary>
     public void ResetInterval()
     {
         lock (_lock)
         {
-            _beepImageCount = 1; // the navigated-to image counts as #1
-            _remainingMsOnPause = 0; // force a fresh interval
+            _beepImageCount = 1;
+            _remainingMsOnPause = 0;
             _intervalCts?.Cancel();
         }
     }
-
-    #endregion // Public Methods
-
-
-
-    #region Private Methods
 
     protected override void OnDisposing()
     {
@@ -195,7 +110,6 @@ public sealed class SlideshowProvider : PhDisposable
             Stop_Locked();
         }
     }
-
 
     private void Stop_Locked()
     {
@@ -222,19 +136,16 @@ public sealed class SlideshowProvider : PhDisposable
         _pauseGate = null;
     }
 
-
     private async Task RunLoopAsync(CancellationToken token)
     {
-        const int tickMs = 50; // update countdown ~20 times/sec
+        const int tickMs = 50;
 
-        // an interval picked while the previous advance was still transitioning
         var nextIntervalMs = 0d;
 
         try
         {
             while (!token.IsCancellationRequested)
             {
-                // 0. if paused, wait until resumed
                 if (_isPaused)
                 {
                     if (_pauseGate is not null)
@@ -244,9 +155,6 @@ public sealed class SlideshowProvider : PhDisposable
                     continue;
                 }
 
-
-                // 1. compute interval for this cycle
-                // use remaining time from pause if available, otherwise a fresh interval
                 double intervalMs;
                 lock (_lock)
                 {
@@ -267,8 +175,6 @@ public sealed class SlideshowProvider : PhDisposable
                 }
                 SetCountdown(intervalMs / 1000.0);
 
-
-                // 2. create a linked CTS for this interval (allows ResetInterval/Pause to cancel it)
                 CancellationTokenSource intervalCts;
                 lock (_lock)
                 {
@@ -278,8 +184,6 @@ public sealed class SlideshowProvider : PhDisposable
                 }
                 var intervalToken = intervalCts.Token;
 
-
-                // 3. count down in small ticks; always wait at least once so the loop cannot spin
                 try
                 {
                     var remaining = intervalMs;
@@ -295,30 +199,23 @@ public sealed class SlideshowProvider : PhDisposable
                 }
                 catch (OperationCanceledException) when (!token.IsCancellationRequested)
                 {
-                    // interval was cancelled by ResetInterval or Pause, restart loop
                     continue;
                 }
 
                 if (token.IsCancellationRequested) break;
 
-
-                // 4. check end of list without loop -> auto-pause
                 var isLastPhoto = Core.Photos.CurrentIndex >= (int)Core.Photos.Count - 1;
                 if (isLastPhoto && !Core.Config.EnableLoopSlideshow)
                 {
                     _isPaused = true;
                     SetCountdown(0);
-                    continue; // will wait on pause gate at top of loop
+                    continue;
                 }
 
-
-                // 5. advance to next photo and update beep counter
                 _beepImageCount++;
                 var advanceTask = await Dispatcher.UIThread.InvokeAsync<Task>(
                     () => NextPhotoRequested?.Invoke() ?? Task.CompletedTask);
 
-
-                // 6. check beep notification
                 var notifyCount = (int)Core.Config.SlideshowImagesToNotifySound;
                 if (notifyCount > 0 && _beepImageCount >= notifyCount)
                 {
@@ -326,8 +223,6 @@ public sealed class SlideshowProvider : PhDisposable
                     _ = Task.Run(BHelper.PlayNotificationSoundAsync, token);
                 }
 
-
-                // 7. the next interval counts only once the transition is done; show it in full meanwhile
                 nextIntervalMs = GetNextIntervalMs();
                 SetCountdown(nextIntervalMs / 1000.0);
                 await WaitForAdvanceAsync(advanceTask, token).ConfigureAwait(false);
@@ -335,7 +230,6 @@ public sealed class SlideshowProvider : PhDisposable
         }
         catch (OperationCanceledException)
         {
-            // expected on stop
         }
         finally
         {
@@ -345,10 +239,6 @@ public sealed class SlideshowProvider : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// Waits for an advance to finish its transition, bounded so a stalled render loop cannot stop the slideshow.
-    /// </summary>
     private static async Task WaitForAdvanceAsync(Task advanceTask, CancellationToken token)
     {
         try
@@ -357,21 +247,14 @@ public sealed class SlideshowProvider : PhDisposable
         }
         catch (TimeoutException)
         {
-            // continue with the next interval
         }
     }
-
 
     private void SetCountdown(double value)
     {
         Interlocked.Exchange(ref _countdownSecondsBits, BitConverter.DoubleToInt64Bits(value));
     }
 
-
-    /// <summary>
-    /// Computes the next interval in milliseconds,
-    /// respecting random interval and config boundaries.
-    /// </summary>
     private static double GetNextIntervalMs()
     {
         var intervalFrom = Core.Config.SlideshowInterval;
@@ -380,20 +263,15 @@ public sealed class SlideshowProvider : PhDisposable
 
         if (Core.Config.EnableSlideshowRandomInterval && intervalTo > intervalFrom)
         {
-            // Random.Shared is thread-safe
             var range = intervalTo - intervalFrom;
             var randomOffset = Random.Shared.NextDouble() * range;
 
             intervalMs = (intervalFrom + randomOffset) * 1000.0;
         }
 
-        // Math.Max would propagate NaN, so reject it explicitly
         if (double.IsNaN(intervalMs)) return MIN_INTERVAL_MS;
 
         return Math.Max(MIN_INTERVAL_MS, intervalMs);
     }
-
-    #endregion // Private Methods
-
 
 }

@@ -1,22 +1,4 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-namespace PhotoViewer.Common.ServiceProviders;
+﻿namespace PhotoViewer.Common.ServiceProviders;
 
 public enum API
 {
@@ -29,8 +11,6 @@ public enum API
     IG_OpenSettings,
     IG_ApplySettings,
 
-
-    // Menu > File
     IG_OpenFile,
     IG_NewWindow,
     IG_Save,
@@ -43,8 +23,6 @@ public enum API
     IG_Delete,
     IG_OpenProperties,
 
-
-    // Menu > Navigation
     IG_ViewNext,
     IG_ViewPrevious,
     IG_Goto,
@@ -56,7 +34,6 @@ public enum API
     IG_ViewFirstFrame,
     IG_ViewLastFrame,
 
-    // Menu > Zoom
     IG_CustomZoom,
     IG_SetZoom,
     IG_SetZoomForMouseClick,
@@ -64,7 +41,6 @@ public enum API
     IG_ZoomOut,
     IG_SetZoomMode,
 
-    // Menu > Panning
     IG_PanLeft,
     IG_PanRight,
     IG_PanUp,
@@ -74,7 +50,6 @@ public enum API
     IG_PanToTop,
     IG_PanToBottom,
 
-    // Menu > Image
     IG_Refresh,
     IG_Reload,
     IG_ReloadList,
@@ -91,7 +66,6 @@ public enum API
     IG_SetDesktopBackground,
     IG_SetLockScreenImage,
 
-    // Menu > Clipboard
     IG_PasteImage,
     IG_CopyImagePixels,
     IG_CopyImagePath,
@@ -99,7 +73,6 @@ public enum API
     IG_CutFiles,
     IG_ClearClipboard,
 
-    // Menu > Window mode
     IG_ToggleWindowFit,
     IG_ToggleFrameless,
     IG_ToggleFullScreen,
@@ -107,34 +80,25 @@ public enum API
     IG_ToggleSlideshowPlayback,
     IG_ToggleSlideshowCountdown,
 
-    // Menu > Layout
     IG_ToggleToolbar,
     IG_ToggleGallery,
     IG_ToggleCheckerboard,
     IG_ToggleWindowTopMost,
     IG_SetBackgroundColor,
 
-    // Menu > Tools
     IG_CloseCurrentTool,
     IG_ToggleTool,
     IG_OpenTool,
     IG_CloseTool,
 
-    // Menu > Settings
-
-    // Menu > Help
     IG_OpenAboutWindow,
     IG_QuickSetup,
     IG_SetDefaultPhotoViewer,
     IG_RemoveDefaultPhotoViewer,
 
-    // Menu > Exit
     IG_Exit,
 
-
-    // Other APIs,
     IG_SetFileWatcher,
     IG_OpenContextMenu,
 
 }
-

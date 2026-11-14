@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -26,18 +8,11 @@ using System.Collections.Generic;
 
 namespace PhotoViewer.UI.Windowing;
 
-/// <summary>
-/// Hides the mouse cursor of a window after a period of pointer inactivity,
-/// and shows it again on the next pointer input. Used by the slideshow.
-/// </summary>
 public sealed class IdleCursorHider : PhDisposable
 {
-    /// <summary>
-    /// Pointer idle time before the cursor is hidden.
-    /// </summary>
+
     public static readonly TimeSpan DefaultIdleTimeout = TimeSpan.FromSeconds(3);
 
-    // the Win32, X11 and macOS backends all map None to a hidden cursor
     private static readonly Cursor _hiddenCursor = new(StandardCursorType.None);
 
     private readonly TopLevel _topLevel;
@@ -47,20 +22,10 @@ public sealed class IdleCursorHider : PhDisposable
     private bool _isRunning;
     private bool _isHidden;
 
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="IdleCursorHider"/>.
-    /// </summary>
-    /// <param name="topLevel">The window to listen to pointer input on.</param>
-    /// <param name="cursorOwners">Controls whose own <see cref="InputElement.Cursor"/> shadows the inherited one.</param>
     public IdleCursorHider(TopLevel topLevel, params InputElement[] cursorOwners)
         : this(topLevel, DefaultIdleTimeout, cursorOwners)
     { }
 
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="IdleCursorHider"/>.
-    /// </summary>
     public IdleCursorHider(TopLevel topLevel, TimeSpan idleTimeout, params InputElement[] cursorOwners)
     {
         _topLevel = topLevel;
@@ -72,12 +37,6 @@ public sealed class IdleCursorHider : PhDisposable
         _timer = new DispatcherTimer(idleTimeout, DispatcherPriority.Background, (_, _) => HideCursor());
     }
 
-
-    #region Public Methods
-
-    /// <summary>
-    /// Starts watching for pointer inactivity.
-    /// </summary>
     public void Start()
     {
         if (IsDisposed || _isRunning) return;
@@ -91,10 +50,6 @@ public sealed class IdleCursorHider : PhDisposable
         RestartTimer();
     }
 
-
-    /// <summary>
-    /// Stops watching for pointer inactivity and shows the cursor again.
-    /// </summary>
     public void Stop()
     {
         if (!_isRunning) return;
@@ -110,18 +65,12 @@ public sealed class IdleCursorHider : PhDisposable
         ShowCursor();
     }
 
-
-    /// <summary>
-    /// Hides the cursor immediately.
-    /// </summary>
     public void HideCursor()
     {
-        _timer.Stop(); // one-shot: the next pointer input restarts it
+        _timer.Stop();
         if (_isHidden) return;
         _isHidden = true;
 
-        // read every target before writing any, else a target that inherits
-        // from an already-hidden ancestor saves the hidden cursor as its own
         _savedCursors.Clear();
         foreach (var target in _targets)
         {
@@ -135,10 +84,6 @@ public sealed class IdleCursorHider : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// Shows the cursor immediately.
-    /// </summary>
     public void ShowCursor()
     {
         if (!_isHidden) return;
@@ -159,18 +104,11 @@ public sealed class IdleCursorHider : PhDisposable
         _savedCursors.Clear();
     }
 
-    #endregion // Public Methods
-
-
-
-    #region Private Methods
-
     protected override void OnDisposing()
     {
         base.OnDisposing();
         Stop();
     }
-
 
     private void OnPointerMoved(object? sender, PointerEventArgs e) => HandlePointerActivity(e);
 
@@ -180,16 +118,13 @@ public sealed class IdleCursorHider : PhDisposable
 
     private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e) => HandlePointerActivity(e);
 
-
     private void HandlePointerActivity(PointerEventArgs e)
     {
-        // a touch contact draws no cursor, so its events must not keep one visible
         if (e.Pointer.Type == PointerType.Touch) return;
 
         ShowCursor();
         RestartTimer();
     }
-
 
     private void RestartTimer()
     {
@@ -198,7 +133,5 @@ public sealed class IdleCursorHider : PhDisposable
         _timer.Stop();
         _timer.Start();
     }
-
-    #endregion // Private Methods
 
 }

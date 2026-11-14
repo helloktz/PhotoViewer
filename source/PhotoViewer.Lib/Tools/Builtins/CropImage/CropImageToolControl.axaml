@@ -19,7 +19,6 @@
         LineSpacing="8"
         Orientation="Horizontal">
 
-        <!--  Aspect ratio  -->
         <StackPanel
             MinWidth="150"
             HorizontalAlignment="Center"
@@ -44,7 +43,6 @@
                 <ComboBoxItem>16:9</ComboBoxItem>
             </ComboBox>
 
-            <!--  Custom ratio  -->
             <NumericUpDown
                 x:Name="PART_NumRatioFrom"
                 Minimum="1"
@@ -57,13 +55,10 @@
                 ShowButtonSpinner="False" />
         </StackPanel>
 
-
-        <!--  Selection rectangle  -->
         <WrapPanel
             ItemSpacing="24"
             LineSpacing="8"
             Orientation="Horizontal">
-            <!--  Location  -->
             <StackPanel
                 HorizontalAlignment="Center"
                 Orientation="Horizontal"
@@ -87,7 +82,6 @@
                     ShowButtonSpinner="False" />
             </StackPanel>
 
-            <!--  Size  -->
             <StackPanel
                 HorizontalAlignment="Center"
                 Orientation="Horizontal"
@@ -112,8 +106,6 @@
             </StackPanel>
         </WrapPanel>
 
-
-        <!--  Action buttons  -->
         <WrapPanel
             HorizontalAlignment="Center"
             ItemSpacing="6"

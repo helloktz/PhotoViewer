@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using PhotoViewer.Common.Extensions;
 using PhotoViewer.Common.Photoing;
 using PhotoViewer.Common.Types;
@@ -32,48 +14,22 @@ using System.Threading.Tasks;
 
 namespace PhotoViewer.Common.Printing;
 
-
-/// <summary>
-/// Supplies the image of each print to the renderer.
-/// </summary>
 public interface IPrintImageSource
 {
-    /// <summary>
-    /// Gets the number of prints.
-    /// </summary>
+
     int Count { get; }
 
-    /// <summary>
-    /// Gets the caption of a print.
-    /// </summary>
     PrintCaption GetCaption(int index);
 
-    /// <summary>
-    /// Gets the picture of a vector print, drawn as vectors; <c>null</c> for a raster print.
-    /// </summary>
     SKPicture? GetPicture(int index);
 
-    /// <summary>
-    /// Gets a ready image of a print at least <paramref name="longSide"/> pixels long, or <c>null</c> when none is ready yet; never waits.
-    /// </summary>
     SKImageRef.ImageLease? TryGetImage(int index, int longSide);
 
-    /// <summary>
-    /// Gets an image of a print about <paramref name="longSide"/> pixels long, decoding it when needed.
-    /// </summary>
     Task<SKImageRef.ImageLease?> GetImageAsync(int index, int longSide, CancellationToken token);
 }
 
-
-/// <summary>
-/// One print of the session: a frame, and the part of it printed.
-/// </summary>
 public sealed record PrintItem(int FrameIndex, PrintRegion Region, PrintCaption Caption);
 
-
-/// <summary>
-/// The caption under a print: the file name, which an ellipsis may shorten, and the page it shows, such as "(3/61)", which stays whole.
-/// </summary>
 public readonly record struct PrintCaption(string Name, string Page)
 {
     public static PrintCaption Empty { get; } = new(string.Empty, string.Empty);
@@ -81,13 +37,8 @@ public readonly record struct PrintCaption(string Name, string Page)
     public override string ToString() => string.IsNullOrEmpty(Page) ? Name : $"{Name} {Page}";
 }
 
-
-/// <summary>
-/// The images of one Print window: the captured viewer state, the frames decoded apart from the viewer, and a bounded cache of sizes.
-/// </summary>
 public sealed class PrintSession : PhDisposable, IPrintImageSource
 {
-    // a bucket per power of two, so nearby sizes share one image
     private static readonly int[] _buckets = [256, 512, 1024, 2048, 4096, 8192, 16384];
     private const int FULL_SIZE = int.MaxValue;
     private const long CACHE_BUDGET_BYTES = 256L * 1024 * 1024;
@@ -105,38 +56,16 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
     private SKSvg? _svg;
     private IReadOnlyList<PrintItem> _items = [];
 
-
-    /// <summary>
-    /// Occurs on a worker thread when an image requested by <see cref="TryGetImage"/> is ready.
-    /// </summary>
     public event Action? ImageReady;
 
-
-    /// <summary>
-    /// Gets the captured viewer state the session prints.
-    /// </summary>
     public ViewerImageState State => _state;
 
-
-    /// <summary>
-    /// Gets the number of frames or pages of the photo.
-    /// </summary>
     public int FrameCount { get; }
 
-
-    /// <summary>
-    /// Gets the prints, in order.
-    /// </summary>
     public IReadOnlyList<PrintItem> Items => _items;
 
-
-    /// <inheritdoc/>
     public int Count => _items.Count;
 
-
-    /// <summary>
-    /// Starts a session over a captured viewer state, which it then owns.
-    /// </summary>
     public PrintSession(ViewerImageState state)
     {
         _state = state;
@@ -146,10 +75,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         SetItems([state.FrameIndex], PrintRegion.WholeImage);
     }
 
-
-    /// <summary>
-    /// Sets the frames to print and the part of them printed; a region other than the whole image prints the current frame only.
-    /// </summary>
     public void SetItems(IReadOnlyList<int> frameIndexes, PrintRegion region)
     {
         var frames = region == PrintRegion.WholeImage ? frameIndexes : [_state.FrameIndex];
@@ -161,16 +86,11 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
             .ToList();
     }
 
-
-    /// <summary>
-    /// Gets the width over height of a print as far as it is known, for the page orientation.
-    /// </summary>
     public float GetAspect(int index)
     {
         if (index < 0 || index >= _items.Count) return 1;
         var item = _items[index];
 
-        // the shown frame is the one whose size is known before any decode
         var shown = _state.Image;
         if (item.FrameIndex == _state.FrameIndex && !shown.IsDisposed())
         {
@@ -191,12 +111,8 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         return meta is { Width: > 0, Height: > 0 } ? meta.Width / (float)meta.Height : 1;
     }
 
-
-    /// <inheritdoc/>
     public PrintCaption GetCaption(int index) => index >= 0 && index < _items.Count ? _items[index].Caption : PrintCaption.Empty;
 
-
-    /// <inheritdoc/>
     public SKPicture? GetPicture(int index)
     {
         if (!_state.IsVector || index < 0 || index >= _items.Count) return null;
@@ -219,8 +135,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         }
     }
 
-
-    /// <inheritdoc/>
     public SKImageRef.ImageLease? TryGetImage(int index, int longSide)
     {
         if (index < 0 || index >= _items.Count || IsDisposed) return null;
@@ -230,7 +144,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
 
         lock (_lock)
         {
-            // the requested size, else any larger one, else a smaller stand-in while the right one decodes
             var exact = Acquire((item.FrameIndex, item.Region, bucket));
             if (exact is not null) return exact;
 
@@ -246,8 +159,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         return null;
     }
 
-
-    /// <inheritdoc/>
     public async Task<SKImageRef.ImageLease?> GetImageAsync(int index, int longSide, CancellationToken token)
     {
         if (index < 0 || index >= _items.Count || IsDisposed) return null;
@@ -271,20 +182,12 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         }
     }
 
-
-    /// <summary>
-    /// Builds the image of a frame at full resolution with every viewer edit, cropped to the printed part; the caller owns it.
-    /// </summary>
     public async Task<SKImage?> BuildFullImageAsync(int frameIndex, PrintRegion region, CancellationToken token)
     {
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, _cancel.Token);
         return await BuildSourceImageAsync(new PrintItem(frameIndex, region, PrintCaption.Empty), FULL_SIZE, linked.Token).ConfigureAwait(false);
     }
 
-
-    /// <summary>
-    /// Takes a lease on a cached image and marks it recently used; the caller holds <see cref="_lock"/>.
-    /// </summary>
     private SKImageRef.ImageLease? Acquire((int, PrintRegion, int) key)
     {
         if (!_cache.TryGetValue(key, out var imgRef)) return null;
@@ -297,10 +200,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         return lease;
     }
 
-
-    /// <summary>
-    /// Queues a background decode of an image a preview asked for; the caller holds <see cref="_lock"/>.
-    /// </summary>
     private void RequestLoad(PrintItem item, int bucket)
     {
         if (!_pending.Add((item.FrameIndex, item.Region, bucket))) return;
@@ -324,10 +223,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         });
     }
 
-
-    /// <summary>
-    /// Decodes an image at a size bucket into the cache, unless it is already there.
-    /// </summary>
     private async Task LoadAsync(PrintItem item, int bucket, CancellationToken token)
     {
         var key = (item.FrameIndex, item.Region, bucket);
@@ -363,10 +258,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         }
     }
 
-
-    /// <summary>
-    /// Evicts the least recently used images over the budget, never the one just added; the caller holds <see cref="_lock"/>.
-    /// </summary>
     private void TrimCache((int, PrintRegion, int) keep)
     {
         while (_cacheBytes > CACHE_BUDGET_BYTES && _lru.Last is { } node && !node.Value.Equals(keep))
@@ -376,26 +267,19 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
 
             _cacheBytes -= imgRef.Image?.Info.BytesSize64 ?? 0;
 
-            // a lease still drawing keeps the image alive until it is done
             imgRef.RequestDispose();
         }
     }
 
-
-    /// <summary>
-    /// Builds the sRGB image of a print no longer than the bucket: the captured pixels when they are exact, else a fresh decode.
-    /// </summary>
     private async Task<SKImage?> BuildSourceImageAsync(PrintItem item, int bucket, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
 
-        // 1. the shown frame, already edited, when its pixels say what color space they are in
         if (CanUseShownImage(item))
         {
             return await Task.Run(() => ScaleShownImage(item, bucket), token).ConfigureAwait(false);
         }
 
-        // 2. any other frame, decoded apart from the viewer with true colors
         var reader = await GetReaderAsync(token).ConfigureAwait(false);
         if (reader is null) return null;
 
@@ -406,10 +290,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         return await Task.Run(() => EditDecodedFrame(frame, reader.Metadata, item, bucket), token).ConfigureAwait(false);
     }
 
-
-    /// <summary>
-    /// Checks whether a print can use the captured image instead of a decode.
-    /// </summary>
     private bool CanUseShownImage(PrintItem item)
     {
         if (_state.Image.IsDisposed() || _state.IsVector) return false;
@@ -418,10 +298,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         return item.FrameIndex == _state.FrameIndex && !_state.IsPreview && _state.HasExactColorTag;
     }
 
-
-    /// <summary>
-    /// Crops the captured image to the printed part and scales it into sRGB within the bucket.
-    /// </summary>
     private SKImage? ScaleShownImage(PrintItem item, int bucket)
     {
         var shown = _state.Image;
@@ -433,13 +309,8 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         return Resample(shown, rect, bucket);
     }
 
-
-    /// <summary>
-    /// Applies the captured tone mapping and edits to a decoded frame, crops it like the shown one, and scales it into sRGB.
-    /// </summary>
     private SKImage? EditDecodedFrame(SKImage frame, PhotoMetadata meta, PrintItem item, int bucket)
     {
-        // HDR is shown tone-mapped, so it prints tone-mapped
         SKImage? toneMapped = null;
         if (_state.HdrToneMapping is { } options && meta.IsHdr)
         {
@@ -452,7 +323,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
             using var edited = SkiaCodec.ApplyImageEdits(source, _state.Channels, _state.IsColorInverted, _state.Orientation);
             var shownFrame = edited ?? source;
 
-            // the region was drawn on the shown image, so scale it to this decode's size
             var rect = SKRectI.Create(shownFrame.Width, shownFrame.Height);
             if (item.Region != PrintRegion.WholeImage && _state.Image is { } shown && !shown.IsDisposed())
             {
@@ -471,10 +341,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         }
     }
 
-
-    /// <summary>
-    /// Draws part of an image into a new sRGB image no longer than the bucket, which converts its color space on the way.
-    /// </summary>
     private static SKImage? Resample(SKImage src, SKRectI rect, int bucket)
     {
         var longSide = Math.Max(rect.Width, rect.Height);
@@ -482,7 +348,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         var w = Math.Max(1, (int)Math.Round(rect.Width * scale));
         var h = Math.Max(1, (int)Math.Round(rect.Height * scale));
 
-        // 8-bit sRGB, opaque on the white of the paper so a PDF may store it as JPEG; int.MaxValue bytes caps any surface
         var info = new SKImageInfo(w, h, SKColorType.Rgba8888, SKAlphaType.Opaque, SKColorSpace.CreateSrgb());
         if (info.BytesSize64 > int.MaxValue) return null;
 
@@ -496,10 +361,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         return surface.Snapshot();
     }
 
-
-    /// <summary>
-    /// Opens the frame reader once, on first need.
-    /// </summary>
     private Task<PhotoFrameReader?> GetReaderAsync(CancellationToken token)
     {
         lock (_lock)
@@ -509,7 +370,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         }
     }
 
-
     private async Task<PhotoFrameReader?> OpenReaderAsync()
     {
         var path = _state.Photo.FilePath;
@@ -517,7 +377,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
 
         try
         {
-            // the viewer's own read settings, such as a RAW preview, so a print matches what is shown
             var options = PhotoReadOptions.FromConfig() with { SkipDisplayProfile = true };
             return await PhotoFrameReader.OpenAsync(path, options, _cancel.Token).ConfigureAwait(false);
         }
@@ -528,7 +387,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
             return null;
         }
     }
-
 
     private static int GetBucket(int longSide)
     {
@@ -542,7 +400,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         return FULL_SIZE;
     }
 
-
     private static ViewerImageRegion ToViewerRegion(PrintRegion region) => region switch
     {
         PrintRegion.Selection => ViewerImageRegion.Selection,
@@ -550,17 +407,12 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
         _ => ViewerImageRegion.WholeImage,
     };
 
-
     private string GetPhotoName()
     {
         var path = _state.Photo.FilePath;
         return string.IsNullOrEmpty(path) ? "Photo Viewer" : Path.GetFileName(path);
     }
 
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
     protected override void OnDisposing()
     {
         base.OnDisposing();
@@ -577,7 +429,6 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
             _svg = null;
         }
 
-        // a reader still opening disposes itself once it lands
         _ = _readerTask?.ContinueWith(t => t.Result?.Dispose(), TaskContinuationOptions.OnlyOnRanToCompletion);
         _state.Dispose();
     }

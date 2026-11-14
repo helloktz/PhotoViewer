@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using PhotoViewer.Common;
 using PhotoViewer.Common.Types;
 using ImageGlass.SDK.Plugins;
@@ -29,11 +11,6 @@ using System.Threading;
 
 namespace PhotoViewer.Plugins;
 
-
-/// <summary>
-/// Loads native (in-process) codec plugins, validates their ABI surface,
-/// and produces <see cref="NativeCodecProxy"/> instances ready to register in the codec registry.
-/// </summary>
 public sealed unsafe class PluginRegistry : PhDisposable
 {
     private readonly Lock _lock = new();
@@ -41,52 +18,31 @@ public sealed unsafe class PluginRegistry : PhDisposable
 
     private static int DecodeMajor(int abiVersion) => abiVersion / 1_000_000;
 
-    /// <summary>
-    /// Subfolder under <c>_plugins</c> where a reinstall stashes the previous install for later reaping.
-    /// </summary>
     internal const string TRASH_DIR_NAME = "_trash";
 
-    // Derived from real field offsets: counting fields gets it wrong (a leading int pads to 8).
     private static readonly int MIN_CAPABILITY_SIZE = MeasureCapabilityDecodeFields();
     private static readonly int CAPABILITY_ENCODE_FIELDS_END = MeasureCapabilityEncodeFields();
 
-
-    /// <summary>
-    /// Offset past <c>DecodeExtensions</c>: the smallest capability carrying the decode fields.
-    /// </summary>
     private static int MeasureCapabilityDecodeFields()
     {
         IGCodecCapability probe = default;
         return (int)((byte*)&probe.DecodeExtensions - (byte*)&probe) + sizeof(nint);
     }
 
-
-    /// <summary>
-    /// Offset just past <c>EncodeExtensions</c>; below this the encode fields are absent.
-    /// </summary>
     private static int MeasureCapabilityEncodeFields()
     {
         IGCodecCapability probe = default;
         return (int)((byte*)&probe.EncodeExtensions - (byte*)&probe) + sizeof(nint);
     }
 
-
-    /// <summary>
-    /// Validates a manifest <c>Executable</c> and resolves it to a full path inside
-    /// <paramref name="pluginDir"/>. Rejects absolute paths, directory separators,
-    /// <c>..</c> traversal, escapes outside the plugin folder, and any file whose
-    /// extension is not the platform's native shared-library extension.
-    /// </summary>
     internal static bool TryResolvePluginLibraryPath(string executable, string pluginDir, out string libraryPath)
     {
         libraryPath = string.Empty;
 
-        // Must be a bare filename: no rooting, no directory separators, no traversal.
         if (Path.IsPathRooted(executable)) return false;
         if (executable.Contains('/') || executable.Contains('\\')) return false;
         if (executable.Contains("..")) return false;
 
-        // Must carry the platform's native shared-library extension.
         var expectedExt = OperatingSystem.IsWindows() ? ".dll"
             : OperatingSystem.IsMacOS() ? ".dylib"
             : ".so";
@@ -95,35 +51,18 @@ public sealed unsafe class PluginRegistry : PhDisposable
 
         var candidate = Path.Combine(pluginDir, executable);
 
-        // Belt-and-suspenders: the resolved path must stay inside the plugin folder.
         if (!BHelper.IsPathContainedIn(candidate, pluginDir)) return false;
 
         libraryPath = candidate;
         return true;
     }
 
-
-    /// <summary>
-    /// Tracks per-plugin crash markers and session-disabled state.
-    /// Owned by this registry so that quarantine policy and the loaded plugin
-    /// table share the same lifetime.
-    /// </summary>
     public PluginFailureManager FailureManager { get; } = new();
 
-
-    // last load failure per plugin id; the settings UI shows it (Debug output is invisible in a normal run)
     private readonly ConcurrentDictionary<string, string> _loadErrors = new(StringComparer.Ordinal);
 
-
-    /// <summary>
-    /// The untranslated reason the plugin's last load attempt failed, else <c>null</c>.
-    /// </summary>
     public string? GetLoadError(string pluginId) => _loadErrors.GetValueOrDefault(pluginId);
 
-
-    /// <summary>
-    /// Records why a load failed and returns null, so every bail-out leaves a message behind.
-    /// </summary>
     private NativePlugin? Fail(string pluginId, string reason)
     {
         _loadErrors[pluginId] = reason;
@@ -131,10 +70,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
         return null;
     }
 
-
-    /// <summary>
-    /// Loads the native plugin and probes its codecs. Null on failure, reason in <see cref="GetLoadError"/>.
-    /// </summary>
     internal NativePlugin? LoadAndProbe(PluginManifest manifest, string pluginDir)
     {
         if (manifest.Kind != IGPluginKind.Codec)
@@ -153,8 +88,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
                 + (quarantineReason is null ? "." : $": {quarantineReason}"));
         }
 
-        // Executable must be a plain relative filename inside the plugin folder
-        // with the platform's native-library extension; reject absolute paths and traversal.
         if (!TryResolvePluginLibraryPath(manifest.Executable, pluginDir, out var libraryPath))
         {
             return Fail(manifest.Id, $"unsafe or invalid executable '{manifest.Executable}': it must be a "
@@ -165,9 +98,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
             return Fail(manifest.Id, $"library not found: {libraryPath}");
         }
 
-        // Crash-loop guard: a leftover "loading" breadcrumb means a previous attempt to load
-        // this plugin hard-crashed the process (uncatchable native fault). Quarantine it instead
-        // of trying again and crashing on every launch.
         if (FailureManager.HasLoadingBreadcrumb(manifest.Id))
         {
             FailureManager.ClearLoadingBreadcrumb(manifest.Id);
@@ -175,8 +105,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
             return Fail(manifest.Id, "it hard-crashed the app during a previous load; now quarantined.");
         }
 
-        // Trust gate: never execute a plugin the user has not explicitly enabled and whose pinned
-        // SHA-256 still matches the on-disk library (defends against a swapped binary).
         if (!PluginTrustPolicy.IsTrusted(manifest.Id, libraryPath))
         {
             return Fail(manifest.Id, "not enabled, or the library no longer matches the approved file.");
@@ -185,15 +113,11 @@ public sealed unsafe class PluginRegistry : PhDisposable
         nint libHandle = 0;
         IGPluginApi* pluginApi = null;
 
-        // Write a breadcrumb before touching native code; it is cleared in the finally on any
-        // managed return/exception. Only a hard native crash leaves it behind for the guard above.
         FailureManager.SetLoadingBreadcrumb(manifest.Id);
         try
         {
-            // 1. Load the library
             libHandle = NativeLibrary.Load(libraryPath);
 
-            // 2. Resolve the entry point
             if (!NativeLibrary.TryGetExport(libHandle, IGNativeAbi.ENTRY_POINT_NAME, out var entryAddr))
             {
                 NativeLibrary.Free(libHandle);
@@ -203,7 +127,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
             }
             var entry = (delegate* unmanaged[Cdecl]<int, IGHostApi*, IGPluginApi*>)entryAddr;
 
-            // 3. Negotiate ABI
             var hostApi = PluginHostApiTable.Get();
             try
             {
@@ -223,7 +146,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
                     + $"refused host ABI {IGNativeAbi.IG_PLUGIN_ABI_VERSION}.");
             }
 
-            // 4. Validate plugin ABI
             if (pluginApi->StructSize != sizeof(IGPluginApi))
             {
                 NativeLibrary.Free(libHandle);
@@ -237,7 +159,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
                     + $"host {IGNativeAbi.IG_PLUGIN_ABI_VERSION}.");
             }
 
-            // 5. Optional initialize
             if (pluginApi->Initialize != null)
             {
                 IGStatus initStatus;
@@ -257,7 +178,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
 
             var handle = new NativePlugin(manifest.Id, libraryPath, libHandle, pluginApi);
 
-            // 6. Enumerate codecs
             var codecCount = pluginApi->Info.CodecCount;
             if (codecCount < 0 || codecCount > 1024)
             {
@@ -268,7 +188,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
             }
             var capabilities = new List<CodecPluginCapability>(codecCount);
 
-            // kept so a plugin whose codecs all fail can report why, not just "no codecs"
             var codecErrors = new List<string>();
             for (var i = 0; i < codecCount; i++)
             {
@@ -287,9 +206,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
                     continue;
                 }
 
-                // First member and the only stable offset, so validate before touching anything
-                // else; a stale library has a function pointer here and gets refused. A LONGER
-                // table is fine: it was built against a newer SDK whose extra fields we ignore.
                 if (codecApi->StructSize < PluginAbi.MinCodecApiSize)
                 {
                     codecErrors.Add($"codec[{i}]: IGCodecApi.StructSize is {codecApi->StructSize}, expected "
@@ -302,8 +218,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
                     continue;
                 }
 
-
-                // The plugin owns the capability struct and returns a pointer to it.
                 IGCodecCapability* cap = null;
                 try { status = codecApi->GetCapability(&cap); }
                 catch (Exception ex)
@@ -337,8 +251,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
                 handle.Codecs.Add(new NativeCodecEntry((nint)codecApi, managed));
             }
 
-            // A plugin whose codecs all failed to probe contributes nothing; unload it rather
-            // than caching a loaded library forever.
             if (handle.Codecs.Count == 0)
             {
                 handle.Dispose();
@@ -349,7 +261,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
 
             _loadErrors.TryRemove(manifest.Id, out _);
 
-            // 7. Register with loader
             lock (_lock)
             {
                 if (_plugins.TryGetValue(manifest.Id, out var existing))
@@ -378,16 +289,10 @@ public sealed unsafe class PluginRegistry : PhDisposable
         }
         finally
         {
-            // Cleared on any graceful return/exception; a hard native crash skips this, leaving
-            // the breadcrumb so the guard above quarantines the plugin on the next launch.
             FailureManager.ClearLoadingBreadcrumb(manifest.Id);
         }
     }
 
-
-    /// <summary>
-    /// Returns <c>true</c> if a plugin with the given id is currently loaded.
-    /// </summary>
     public bool IsLoaded(string pluginId)
     {
         lock (_lock)
@@ -396,11 +301,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// Returns the loaded plugin handle, or <c>null</c> when it is not loaded. Lets the host
-    /// rebuild a plugin's proxies without reloading the library.
-    /// </summary>
     internal NativePlugin? GetLoadedPlugin(string pluginId)
     {
         lock (_lock)
@@ -409,11 +309,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// Hot-unloads a loaded plugin (Shutdown + free library); returns <c>false</c> if not loaded.
-    /// Outstanding buffers are gated by <c>PluginLiveToken</c>, so late releases safely no-op.
-    /// </summary>
     public bool UnloadPlugin(string pluginId)
     {
         NativePlugin? handle;
@@ -426,10 +321,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
         return true;
     }
 
-
-    /// <summary>
-    /// Builds <see cref="NativeCodecProxy"/> instances for every codec advertised by the plugin.
-    /// </summary>
     internal IEnumerable<NativeCodecProxy> CreateProxies(NativePlugin handle)
     {
         var list = new List<NativeCodecProxy>(handle.Codecs.Count);
@@ -443,17 +334,10 @@ public sealed unsafe class PluginRegistry : PhDisposable
         return list;
     }
 
-
-    /// <summary>
-    /// Snapshots a capability, downgrading each flag whose entry points are missing so the host
-    /// never sees an advertised-but-unwired capability.
-    /// </summary>
     private static CodecPluginCapability MarshalCapability(IGCodecApi* codecApi, IGCodecCapability* cap)
     {
         var readable = Math.Min(cap->StructSize, sizeof(IGCodecCapability));
 
-        // A plugin built against a smaller capability struct carries no encode fields at all;
-        // reading them would be an over-read past its allocation.
         var hasEncodeFields = readable >= CAPABILITY_ENCODE_FIELDS_END;
 
         var decodeExts = MarshalExtensions(cap->DecodeExtensionCount, cap->DecodeExtensions, "DecodeExtensions");
@@ -466,7 +350,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
             && PluginAbi.HasEntryPoint(codecApi, &codecApi->FreeAnimationInfo)
             && PluginAbi.HasEntryPoint(codecApi, &codecApi->DecodeAnimationFrame);
 
-        // An empty encode list must never read as "encodes everything".
         var staticEncode = hasEncodeFields
             && cap->SupportsStaticRasterEncoding != 0
             && PluginAbi.HasEntryPoint(codecApi, &codecApi->EncodeStaticRaster)
@@ -499,11 +382,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
         };
     }
 
-
-    /// <summary>
-    /// Copies a plugin-owned extension array. A negative count means a struct layout mismatch,
-    /// so clamp and report rather than throwing from <see cref="List{T}"/>.
-    /// </summary>
     private static string[] MarshalExtensions(int count, IGStringRef* extensions, string what)
     {
         if (count < 0)
@@ -521,16 +399,11 @@ public sealed unsafe class PluginRegistry : PhDisposable
         return [.. list];
     }
 
-
-    /// <summary>
-    /// Whether a codec advertises anything the host can use.
-    /// </summary>
     private static bool HasAnyCapability(CodecPluginCapability cap)
         => cap.SupportsMetadata
         || cap.SupportsStaticRasterDecoding
         || cap.SupportsAnimationDecoding
         || cap.SupportsStaticRasterEncoding;
-
 
     protected override void OnDisposing()
     {
@@ -545,12 +418,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
         base.OnDisposing();
     }
 
-
-    /// <summary>
-    /// Returns everything the loaded plugin's codecs declare they can read and write, ignoring the
-    /// user's per-extension choices. Empty when not loaded: reading a codec's formats means running
-    /// it, which requires trust. Reads the probe-time snapshot, so it is safe on the UI thread.
-    /// </summary>
     public (string[] Decode, string[] Encode) GetDeclaredCodecExtensions(string pluginId)
     {
         var handle = GetLoadedPlugin(pluginId);
@@ -579,12 +446,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// Scans the given directory for native plugin manifests
-    /// (<c>igplugin.json</c>) and returns one entry per valid manifest found.
-    /// Does NOT load any libraries; manifest deserialization only.
-    /// </summary>
     public static List<(PluginManifest Manifest, string PluginDir)> DiscoverManifests(string pluginsDirectory)
     {
         var results = new List<(PluginManifest, string)>();
@@ -592,7 +453,6 @@ public sealed unsafe class PluginRegistry : PhDisposable
 
         foreach (var dir in Directory.EnumerateDirectories(pluginsDirectory))
         {
-            // skip the reinstall stash folder
             if (string.Equals(Path.GetFileName(dir), TRASH_DIR_NAME, StringComparison.Ordinal)) continue;
 
             var manifestPath = Path.Combine(dir, PluginManifest.FILE_NAME);
@@ -609,17 +469,12 @@ public sealed unsafe class PluginRegistry : PhDisposable
             }
             catch
             {
-                // skip malformed manifests
             }
         }
 
         return results;
     }
 
-
-    /// <summary>
-    /// Best-effort delete of stashed previous installs; skips still-locked folders. Call before any load.
-    /// </summary>
     public static void CleanupTrashDirs(string pluginsDir)
     {
         var trashRoot = Path.Combine(pluginsDir, TRASH_DIR_NAME);
@@ -629,8 +484,7 @@ public sealed unsafe class PluginRegistry : PhDisposable
         {
             try { Directory.Delete(dir, recursive: true); } catch { }
         }
-        try { Directory.Delete(trashRoot, recursive: false); } catch { } // drop the root once empty
+        try { Directory.Delete(trashRoot, recursive: false); } catch { }
     }
 
 }
-

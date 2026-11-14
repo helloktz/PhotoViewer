@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Controls;
 using Avalonia.Media;
 using PhotoViewer.Common.Extensions;
@@ -31,43 +13,19 @@ using System.Linq;
 
 namespace PhotoViewer.Common.Windows;
 
-/// <summary>
-/// Base class for every settings page view.
-/// </summary>
 public abstract class SettingsPageView : PhControl
 {
 
-
-    /// <summary>
-    /// Gets the staging working-copy view model the page binds to.
-    /// </summary>
     protected SettingsViewModel VM { get; private set; } = null!;
 
-    /// <summary>
-    /// Gets the nav id of the hosting page.
-    /// </summary>
     protected SettingsNavId NavId { get; private set; }
 
-    /// <summary>
-    /// Gets the localized label key of the hosting page (used for search breadcrumbs).
-    /// </summary>
     protected LangId? PageLabel { get; private set; }
 
-    /// <summary>
-    /// Re-applies localized text to controls that don't self-refresh (buttons, combo items)
-    /// </summary>
     private readonly List<Action> _langRefreshers = [];
 
-    /// <summary>
-    /// Guards a programmatic color-picker resync from staging a phantom edit.
-    /// </summary>
     private bool _suppressColorStaging;
 
-
-    /// <summary>
-    /// Wires the page to its working copy and builds the rows. Call from the derived
-    /// <c>(vm, navId, pageLabel)</c> constructor right after <c>InitializeComponent()</c>.
-    /// </summary>
     protected void Initialize(SettingsViewModel vm, SettingsNavId navId, LangId? pageLabel)
     {
         VM = vm;
@@ -76,48 +34,24 @@ public abstract class SettingsPageView : PhControl
         Build();
     }
 
-
-    /// <summary>
-    /// Creates and binds the page's setting rows, using the <c>Bind*</c> helpers below.
-    /// </summary>
     protected abstract void Build();
-
 
     protected override void OnIgLanguageChanged()
     {
         base.OnIgLanguageChanged();
 
-        // PhTextBlock labels refresh themselves; controls registered below need a nudge
         foreach (var refresh in _langRefreshers) refresh();
     }
 
-
-
-    #region Binding helpers
-
-    /// <summary>
-    /// Registers a callback that re-applies localized text on language change, and runs it once now.
-    /// </summary>
     protected void AddLangRefresher(Action refresh)
     {
         _langRefreshers.Add(refresh);
         refresh();
     }
 
-
-    /// <summary>
-    /// Sets a button's text to a localized string and keeps it refreshed on language change.
-    /// </summary>
     protected void SetLocalizedText(PhButton btn, LangId key)
         => AddLangRefresher(() => btn.Text = Core.Lang[key]);
 
-
-    /// <summary>
-    /// Disables the given composite/custom editor controls when <paramref name="id"/> is
-    /// admin-locked. Use for editors that don't bind through a single <c>Bind*</c> helper
-    /// (tables, pickers, list editors), which the registry's
-    /// <see cref="SettingsRegistry.DisableLockedControls"/> pass cannot reach.
-    /// </summary>
     protected static void DisableIfLocked(ConfigId id, params Control?[] targets)
     {
         if (!Config.IsConfigLocked(id)) return;
@@ -128,10 +62,6 @@ public abstract class SettingsPageView : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Registers a setting row into the shared search index.
-    /// </summary>
     protected void RegisterSearchKey(Control target, LangId label, ConfigId? id, LangId? section)
     {
         VM.Registry.Register(new SettingItem
@@ -145,10 +75,6 @@ public abstract class SettingsPageView : PhControl
         });
     }
 
-
-    /// <summary>
-    /// Binds a checkbox to a boolean config id (staged on change).
-    /// </summary>
     protected void BindToggle(CheckBox chk, ConfigId id, LangId label, LangId? section, bool defaultValue = false)
     {
         chk.IsChecked = VM.GetValue(id, defaultValue);
@@ -157,10 +83,6 @@ public abstract class SettingsPageView : PhControl
         RegisterSearchKey(chk, label, id, section);
     }
 
-
-    /// <summary>
-    /// Binds a text box to an integer config id (staged on valid change).
-    /// </summary>
     protected void BindIntInput(PhTextBox box, ConfigId id, LangId label, LangId? section, int defaultValue = 0)
     {
         box.Text = VM.GetValue(id, defaultValue).ToString(CultureInfo.InvariantCulture);
@@ -172,10 +94,6 @@ public abstract class SettingsPageView : PhControl
         RegisterSearchKey(box, label, id, section);
     }
 
-
-    /// <summary>
-    /// Binds a text box to an unsigned-integer config id (staged on valid change).
-    /// </summary>
     protected void BindUIntInput(PhTextBox box, ConfigId id, LangId label, LangId? section, uint defaultValue = 0)
     {
         box.Text = VM.GetValue(id, defaultValue).ToString(CultureInfo.InvariantCulture);
@@ -187,10 +105,6 @@ public abstract class SettingsPageView : PhControl
         RegisterSearchKey(box, label, id, section);
     }
 
-
-    /// <summary>
-    /// Binds a text box to a double config id (staged on valid change).
-    /// </summary>
     protected void BindDoubleInput(PhTextBox box, ConfigId id, LangId label, LangId? section,
         double defaultValue = 0, double minValue = double.NegativeInfinity)
     {
@@ -209,7 +123,6 @@ public abstract class SettingsPageView : PhControl
             return;
         }
 
-        // show the clamped value instead of leaving the box reading something that won't be used
         box.LostFocus += (_, _) =>
         {
             var isValid = double.TryParse(box.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out var v);
@@ -221,13 +134,6 @@ public abstract class SettingsPageView : PhControl
         RegisterSearchKey(box, label, id, section);
     }
 
-
-    /// <summary>
-    /// Binds a slider to a double config id (staged on change). The slider's <c>Minimum</c>/<c>Maximum</c>
-    /// are expected to be set in XAML. When <paramref name="valueLabel"/> is supplied, its
-    /// <c>{0}</c> placeholder receives the live value, formatted by <paramref name="format"/>
-    /// (a whole number by default), so the label reads e.g. "Zoom speed: 200".
-    /// </summary>
     protected void BindSlider(Slider slider, ConfigId id, LangId label, LangId? section,
         double defaultValue = 0, PhTextBlock? valueLabel = null, Func<double, string>? format = null)
     {
@@ -245,12 +151,6 @@ public abstract class SettingsPageView : PhControl
         RegisterSearchKey(slider, label, id, section);
     }
 
-
-    /// <summary>
-    /// Binds a slider to a <c>uint</c> config id (staged on change). Behaves like
-    /// <see cref="BindSlider(Slider, ConfigId, LangId, LangId?, double, PhTextBlock?, Func{double, string})"/>
-    /// but stages a rounded <c>uint</c> so the value round-trips through the integer config getter.
-    /// </summary>
     protected void BindUIntSlider(Slider slider, ConfigId id, LangId label, LangId? section,
         uint defaultValue = 0, PhTextBlock? valueLabel = null)
     {
@@ -268,11 +168,6 @@ public abstract class SettingsPageView : PhControl
         RegisterSearchKey(slider, label, id, section);
     }
 
-
-    /// <summary>
-    /// Populates an enum dropdown with localized labels (from the <c>{EnumType}_{Value}</c>
-    /// language key, falling back to the raw name) and binds the selection to a config id.
-    /// </summary>
     protected void BindEnumDropdown<TEnum>(ComboBox combo, ConfigId id, TEnum defaultValue,
         LangId label, LangId? section) where TEnum : struct, Enum
     {
@@ -300,18 +195,9 @@ public abstract class SettingsPageView : PhControl
         RegisterSearchKey(combo, label, id, section);
     }
 
-
-    /// <summary>
-    /// Sets a combo item's display text to a localized string (falling back to
-    /// <paramref name="fallback"/> when there's no key) and keeps it refreshed on language change.
-    /// </summary>
     protected void BindComboItemText(ComboBoxItem item, LangId? key, string fallback)
         => AddLangRefresher(() => item.Content = key is { } k ? Core.Lang[k] : fallback);
 
-
-    /// <summary>
-    /// Configures a link-style button: localized text (kept refreshed) and a click action.
-    /// </summary>
     protected void BindLink(PhButton btn, LangId label, Action onClick)
     {
         SetLocalizedText(btn, label);
@@ -320,28 +206,18 @@ public abstract class SettingsPageView : PhControl
         RegisterSearchKey(btn, label, null, null);
     }
 
-
-    /// <summary>
-    /// Configures a link-style button: localized text (kept refreshed), full-path tooltip, click action.
-    /// </summary>
     protected void BindLink(PhButton btn, LangId label, string tooltip, Action onClick)
     {
         BindLink(btn, label, onClick);
         ToolTip.SetTip(btn, tooltip);
     }
 
-
-    /// <summary>
-    /// Binds a <see cref="PhColorPickerControl"/> to a hex-string config id (staged on change).
-    /// The reset link restores <paramref name="defaultHex"/>.
-    /// </summary>
     protected void BindColorPicker(PhColorPickerControl picker, ConfigId id, string defaultHex,
         LangId label, LangId? section)
     {
         picker.DefaultColor = BHelper.ColorFromHex(defaultHex);
         picker.SelectedColor = BHelper.ColorFromHex(VM.GetValue(id, defaultHex));
 
-        // subscribe AFTER seeding the value, so opening the page (or a resync) doesn't stage a phantom change
         picker.ColorChanged += (_, _) =>
         {
             if (!_suppressColorStaging) VM.SetValue(id, picker.SelectedColor.ToHex());
@@ -351,12 +227,6 @@ public abstract class SettingsPageView : PhControl
         RegisterSearchKey(picker, label, id, section);
     }
 
-
-    /// <summary>
-    /// Re-seeds a color picker's selected color and reset target (from the current config and the
-    /// given default) without staging a phantom edit. Use when the value changed outside the page,
-    /// e.g. the background color now follows a newly applied theme.
-    /// </summary>
     protected void ResyncColorPicker(PhColorPickerControl picker, ConfigId id, string defaultHex)
     {
         _suppressColorStaging = true;
@@ -365,15 +235,10 @@ public abstract class SettingsPageView : PhControl
         _suppressColorStaging = false;
     }
 
-
-    /// <summary>
-    /// Binds a transition effect dropdown (the effect files, re-read now) and its duration box.
-    /// </summary>
     protected void BindTransitionEditor(ComboBox combo, PhTextBox durationBox, PhTextBlock errorText,
         PhButton openFolderBtn,
         ConfigId effectId, ConfigId durationId, uint defaultDuration, LangId section)
     {
-        // picks up effect files added since the last time settings were opened
         TransitionEffects.Reload();
 
         var current = VM.GetValue(effectId, TransitionEffects.NONE);
@@ -383,7 +248,6 @@ public abstract class SettingsPageView : PhControl
             .Select(e => TransitionEffectOption.FromFile(e.Id, e.FilePath!))
             .ToList();
 
-        // keep a saved id whose file is gone, rather than silently switching it to None
         var isKnown = IsCurrent(TransitionEffects.NONE)
             || IsCurrent(TransitionEffects.RANDOM)
             || effectOptions.Any(o => IsCurrent(o.Id));
@@ -391,7 +255,6 @@ public abstract class SettingsPageView : PhControl
 
         var options = new List<TransitionEffectOption> { TransitionEffectOption.FromId(TransitionEffects.NONE) };
 
-        // picking at random needs at least two effects to pick from
         if (TransitionEffects.All.Count >= 2 || IsCurrent(TransitionEffects.RANDOM))
         {
             options.Add(TransitionEffectOption.FromId(TransitionEffects.RANDOM));
@@ -406,7 +269,6 @@ public abstract class SettingsPageView : PhControl
         combo.ItemsSource = options;
         combo.SelectedItem = options.Find(o => IsCurrent(o.Id)) ?? options[0];
 
-        // shows why the selected effect cannot play, and disables the duration of None
         void UpdateEffectState()
         {
             var id = (combo.SelectedItem as TransitionEffectOption)?.Id ?? TransitionEffects.NONE;
@@ -439,8 +301,5 @@ public abstract class SettingsPageView : PhControl
         BindLink(openFolderBtn, LangId.Settings_OpenTransitionsFolder,
             () => BHelper.OpenFolderPath(BHelper.GetRealPlatformConfigDir(Dir.Transitions)));
     }
-
-
-    #endregion // Binding helpers
 
 }

@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Controls;
 using PhotoViewer.Common.Localization;
 using PhotoViewer.Common.Photoing;
@@ -32,19 +14,13 @@ public partial class GallerySettingsView : SettingsPageView
         InitializeComponent();
     }
 
-
-    /// <summary>
-    /// Creates the page bound to the given working-copy view model.
-    /// </summary>
     public GallerySettingsView(SettingsViewModel vm, SettingsNavId navId, LangId? pageLabel = null) : this()
     {
         Initialize(vm, navId, pageLabel);
     }
 
-
     protected override void Build()
     {
-        // Appearance
         BindToggle(PART_ShowGalleryInFullscreen, ConfigId.ShowGalleryInFullscreen,
             LangId.Settings_ShowGalleryInFullscreen, LangId.Settings_Appearance);
         BindToggle(PART_ShowGalleryFileName, ConfigId.ShowGalleryFileName,
@@ -65,16 +41,11 @@ public partial class GallerySettingsView : SettingsPageView
         RegisterSearchKey(PART_ClearCache, LangId._ClearCache, null, LangId.Settings_Appearance);
     }
 
-
-    /// <summary>
-    /// Deletes every cached thumbnail from disk and reports the outcome.
-    /// </summary>
     private async Task ClearThumbnailCacheAsync()
     {
         var owner = TopLevel.GetTopLevel(this) as PhWindow;
         Exception? error;
 
-        // the cache folder can hold thousands of files, so delete it off the UI thread
         PART_ClearCache.IsEnabled = false;
         try
         {

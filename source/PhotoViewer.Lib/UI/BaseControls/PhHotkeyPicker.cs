@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -26,19 +8,12 @@ using System.Linq;
 
 namespace PhotoViewer.UI;
 
-/// <summary>
-/// Records and lists keyboard shortcuts.
-/// </summary>
 public class PhHotkeyPicker : PhControl
 {
     private readonly List<Hotkey> _hotkeys = [];
     private readonly WrapPanel _chips;
     private readonly PhTextBox _recorder;
 
-
-    /// <summary>
-    /// Gets a copy of the recorded hotkeys, or replaces the whole set.
-    /// </summary>
     public IReadOnlyList<Hotkey> Hotkeys
     {
         get => [.. _hotkeys];
@@ -50,16 +25,11 @@ public class PhHotkeyPicker : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Gets, sets the placeholder shown in the recorder box.
-    /// </summary>
     public string? PlaceholderText
     {
         get => _recorder.PlaceholderText;
         set => _recorder.PlaceholderText = value;
     }
-
 
     public PhHotkeyPicker()
     {
@@ -69,7 +39,6 @@ public class PhHotkeyPicker : PhControl
             ValidateByPressingEnter = false,
         };
 
-        // tunnel + handledEventsToo so we capture the chord before the (read-only) TextBox does
         _recorder.AddHandler(KeyDownEvent, OnRecorderKeyDown,
             RoutingStrategies.Tunnel, handledEventsToo: true);
 
@@ -85,13 +54,6 @@ public class PhHotkeyPicker : PhControl
         };
     }
 
-
-    #region Recording
-
-    /// <summary>
-    /// Records a shortcut from a key press: ignores lone modifiers (and leaves Tab/Escape/Enter for
-    /// normal navigation/close/submit), otherwise adds the chord.
-    /// </summary>
     private void OnRecorderKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key is Key.Tab or Key.Escape or Key.Enter) return;
@@ -102,13 +64,11 @@ public class PhHotkeyPicker : PhControl
         e.Handled = true;
     }
 
-
     private static bool IsModifierKey(Key key) => key
         is Key.LeftCtrl or Key.RightCtrl
         or Key.LeftShift or Key.RightShift
         or Key.LeftAlt or Key.RightAlt
         or Key.LWin or Key.RWin;
-
 
     private void AddHotkey(Hotkey hk)
     {
@@ -119,11 +79,6 @@ public class PhHotkeyPicker : PhControl
         RenderChips();
     }
 
-    #endregion // Recording
-
-
-    #region Chips
-
     private void RenderChips()
     {
         _chips.Children.Clear();
@@ -133,7 +88,6 @@ public class PhHotkeyPicker : PhControl
         }
         _chips.IsVisible = _hotkeys.Count > 0;
     }
-
 
     private PhHotkeyChip BuildChip(Hotkey hk)
     {
@@ -148,7 +102,5 @@ public class PhHotkeyPicker : PhControl
         };
         return chip;
     }
-
-    #endregion // Chips
 
 }

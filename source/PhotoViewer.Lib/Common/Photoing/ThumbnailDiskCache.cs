@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using PhotoViewer.Common.Extensions;
 using PhotoViewer.Common.Types;
 using SkiaSharp;
@@ -28,29 +10,14 @@ using System.Threading.Tasks;
 
 namespace PhotoViewer.Common.Photoing;
 
-
-/// <summary>
-/// Manages a persistent disk cache for gallery thumbnails.
-/// </summary>
 internal static class ThumbnailDiskCache
 {
     private static string? _cacheDir;
     private static InterlockedBool _cleanupScheduled = new(false);
     private static readonly Lock _evictionLock = new();
 
-
-    /// <summary>
-    /// Gets the cache directory path, creating it on first access.
-    /// </summary>
     private static string CacheDir => _cacheDir ??= BHelper.ConfigDir(Dir.Cache, Dir.Cache_Thumbnails);
 
-
-
-    #region Public Methods
-
-    /// <summary>
-    /// Tries to load a cached thumbnail from disk.
-    /// </summary>
     public static async Task<SKImage?> TryGetAsync(string filePath, int thumbSize, DateTime sourceLastWriteTimeUtc, CancellationToken token = default)
     {
         if (Core.Config.GalleryCacheSizeInMb == 0)
@@ -68,12 +35,9 @@ internal static class ThumbnailDiskCache
             {
                 if (!File.Exists(cachePath)) return null;
 
-                // validate: cache must be newer than source file
                 var cacheTime = File.GetLastWriteTimeUtc(cachePath);
                 if (cacheTime < sourceLastWriteTimeUtc) return null;
 
-                // decode: force immediate rasterization so the image
-                // does not depend on the file-mapped data after this block
                 using var data = SKData.Create(cachePath);
                 if (data is null) return null;
 
@@ -83,7 +47,6 @@ internal static class ThumbnailDiskCache
                 var image = SKImage.FromBitmap(bmp);
                 if (image.IsDisposed()) return null;
 
-                // touch last access time for LRU eviction
                 try
                 {
                     File.SetLastAccessTimeUtc(cachePath, DateTime.UtcNow);
@@ -99,16 +62,6 @@ internal static class ThumbnailDiskCache
         }, token).ConfigureAwait(false);
     }
 
-
-    /// <summary>
-    /// Encodes and writes a thumbnail to the disk cache. Triggers async eviction if over budget.
-    /// No-op if disk caching is disabled.
-    /// </summary>
-    /// <remarks>
-    /// The caller must keep <paramref name="image"/> alive until this completes: encoding runs on a
-    /// background thread so it never blocks the gallery pipeline, so this must be awaited rather
-    /// than fired and forgotten.
-    /// </remarks>
     public static async Task PutAsync(string filePath,
         int thumbSize, SKImage image, CancellationToken token = default)
     {
@@ -122,7 +75,6 @@ internal static class ThumbnailDiskCache
 
         var cachePath = GetCacheFilePath(filePath, thumbSize);
 
-        // encode + write off the calling thread
         await Task.Run(() =>
         {
             try
@@ -140,14 +92,9 @@ internal static class ThumbnailDiskCache
             catch { }
         }, token).ConfigureAwait(false);
 
-        // fire-and-forget eviction check
         _ = Task.Run(TryEvict, CancellationToken.None);
     }
 
-
-    /// <summary>
-    /// Removes all cached thumbnails for a specific file (all sizes).
-    /// </summary>
     public static void Invalidate(string filePath)
     {
         if (Core.Config.GalleryCacheSizeInMb == 0) return;
@@ -171,11 +118,6 @@ internal static class ThumbnailDiskCache
         catch { }
     }
 
-
-    /// <summary>
-    /// Clears the entire disk cache. Returns the failure, or <c>null</c> when the cache is gone
-    /// (a thumbnail being written concurrently can keep the folder locked).
-    /// </summary>
     public static Exception? Clear()
     {
         try
@@ -195,15 +137,6 @@ internal static class ThumbnailDiskCache
         }
     }
 
-    #endregion // Public Methods
-
-
-
-    #region Private Methods
-
-    /// <summary>
-    /// Computes a hex hash of the file path for the cache key prefix.
-    /// </summary>
     private static string ComputePathHash(string filePath)
     {
         Span<byte> hashBytes = stackalloc byte[16];
@@ -212,21 +145,12 @@ internal static class ThumbnailDiskCache
         return Convert.ToHexStringLower(hashBytes);
     }
 
-
-    /// <summary>
-    /// Gets the full cache file path for a given source file and thumbnail size.
-    /// </summary>
     private static string GetCacheFilePath(string filePath, int thumbSize)
     {
         var pathHash = ComputePathHash(filePath);
         return Path.Combine(CacheDir, $"{pathHash}_{thumbSize}.webp");
     }
 
-
-    /// <summary>
-    /// Evicts oldest-accessed cache files if total size exceeds budget.
-    /// Uses <see cref="Lock.TryEnter()"/> to ensure only one eviction runs at a time.
-    /// </summary>
     private static void TryEvict()
     {
         if (!_evictionLock.TryEnter()) return;
@@ -248,7 +172,6 @@ internal static class ThumbnailDiskCache
 
             if (totalSize <= maxBytes) return;
 
-            // sort by last access time ascending (oldest first)
             Array.Sort(files, static (a, b) => a.LastAccessTimeUtc.CompareTo(b.LastAccessTimeUtc));
 
             for (var i = 0; i < files.Length && totalSize > maxBytes; i++)
@@ -268,10 +191,6 @@ internal static class ThumbnailDiskCache
         }
     }
 
-
-    /// <summary>
-    /// Schedules a one-time cleanup of old cache files when caching is disabled.
-    /// </summary>
     private static void ScheduleCleanupOnce()
     {
         if (_cleanupScheduled.SetTrue())
@@ -279,8 +198,5 @@ internal static class ThumbnailDiskCache
             _ = Task.Run(Clear, CancellationToken.None);
         }
     }
-
-    #endregion // Private Methods
-
 
 }

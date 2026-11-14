@@ -2,7 +2,6 @@
 
     <Style Selector="ToggleSwitch">
 
-        <!--  rounded focus ring  -->
         <Setter Property="FocusAdorner">
             <FocusAdornerTemplate>
                 <Border
@@ -17,13 +16,11 @@
             </FocusAdornerTemplate>
         </Setter>
 
-        <!--  pin focus target to the 40px switch so the ring isn't clipped  -->
         <Style Selector="^ /template/ Grid#SwitchAreaGrid">
             <Setter Property="Width" Value="40" />
             <Setter Property="HorizontalAlignment" Value="Left" />
         </Style>
 
-        <!--  transitions  -->
         <Style Selector="^ /template/ Border#OuterBorder, ^ /template/ Border#SwitchKnobBounds">
             <Setter Property="Transitions">
                 <Transitions>
@@ -42,7 +39,6 @@
             </Setter>
         </Style>
 
-        <!--  knob size: rest / hover / pressed (hover+pressed last to win the tie)  -->
         <Style Selector="^:not(:checked) /template/ Ellipse#SwitchKnobOff">
             <Setter Property="Width" Value="12" />
             <Setter Property="Height" Value="12" />
@@ -60,7 +56,6 @@
             <Setter Property="Height" Value="10" />
         </Style>
 
-        <!--  ON pill: accent fills; disabled = dimmed accent  -->
         <Style Selector="^:checked /template/ Border#SwitchKnobBounds">
             <Setter Property="Background" Value="{DynamicResource PhAccentFill}" />
         </Style>
@@ -75,7 +70,6 @@
             <Setter Property="Opacity" Value="0.5" />
         </Style>
 
-        <!--  ON knob: accent-button foreground  -->
         <Style Selector="^:checked /template/ Ellipse#SwitchKnobOn">
             <Setter Property="Fill" Value="{DynamicResource AccentButtonForeground}" />
         </Style>

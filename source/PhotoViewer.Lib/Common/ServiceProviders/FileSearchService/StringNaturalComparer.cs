@@ -1,75 +1,27 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 
 namespace PhotoViewer.Common.ServiceProviders.FileSearchService;
 
-
-/// <summary>
-/// Defines a method to combine strings naturally.
-/// <para>
-/// This class is based on: <see href="https://github.com/GihanSoft/NaturalStringComparer"/>.
-/// MIT license. Copyright(c) 2018 Mohammad Babayi.
-/// </para>
-/// </summary>
-/// <param name="orderByAsc">String order mode</param>
-/// <param name="compareMode">String comparison mode</param>
-/// <param name="compareExtensionLast">Whether the inputs are file names whose extension is only a tie-breaker</param>
-/// <param name="collation">The culture to collate the inputs by, or <c>null</c> to compare them by character code</param>
 public sealed class StringNaturalComparer(
     bool orderByAsc = true,
     StringComparison compareMode = StringComparison.Ordinal,
     bool compareExtensionLast = false,
     CompareInfo? collation = null) : IComparer<string?>, IComparer<ReadOnlyMemory<char>>
 {
-    // invariant globalization (no ICU) silently ignores NumericOrdering, so "a2" would sort after "a10"
     private static readonly bool _isNumericCollationSupported =
         CultureInfo.InvariantCulture.CompareInfo.Compare("a2", "a10", CompareOptions.NumericOrdering) < 0;
 
-
-    /// <summary>
-    /// Indicates whether the ordering should be in ascending order.
-    /// </summary>
     public bool OrderByAsc { get; set; } = orderByAsc;
 
-    /// <summary>
-    /// Defines the mode of string comparison used.
-    /// </summary>
     public StringComparison CompareMode { get; set; } = compareMode;
 
-    /// <summary>
-    /// Compares the inputs as file names, where the extension only breaks a tie on the base name.
-    /// </summary>
     public bool CompareExtensionLast { get; set; } = compareExtensionLast;
 
-    /// <summary>
-    /// The culture to collate the inputs by, with numbers by value and symbols before letters like the OS file managers.
-    /// </summary>
     public CompareInfo? Collation { get; set; } = collation;
 
-
-    /// <summary>
-    /// Compares two strings based on a <see cref="OrderByAsc"/> and <see cref="CompareMode"/>.
-    /// </summary>
     public int Compare(string? x, string? y)
     {
         if (ReferenceEquals(x, y)) return 0;
@@ -88,10 +40,6 @@ public sealed class StringNaturalComparer(
         return Compare__(y.AsSpan(), x.AsSpan());
     }
 
-
-    /// <summary>
-    /// Compares two character spans based on a <see cref="OrderByAsc"/> and <see cref="CompareMode"/>.
-    /// </summary>
     public int Compare(ReadOnlySpan<char> x, ReadOnlySpan<char> y)
     {
         if (OrderByAsc)
@@ -102,10 +50,6 @@ public sealed class StringNaturalComparer(
         return Compare__(y, x);
     }
 
-
-    /// <summary>
-    /// Compares two character spans based on a <see cref="OrderByAsc"/> and <see cref="CompareMode"/>.
-    /// </summary>
     public int Compare(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y)
     {
         if (OrderByAsc)
@@ -116,14 +60,12 @@ public sealed class StringNaturalComparer(
         return Compare__(y.Span, x.Span);
     }
 
-
     private int Compare__(ReadOnlySpan<char> x, ReadOnlySpan<char> y)
     {
         var compareResult = CompareExtensionLast
             ? CompareFileName(x, y, CompareMode, Collation)
             : Compare(x, y, CompareMode, Collation);
 
-        // collation ties "ABC" with "abc" and "01" with "1"; ordinal keeps the order stable
         if (compareResult == 0 && Collation is not null)
         {
             compareResult = Compare(x, y, StringComparison.Ordinal);
@@ -132,10 +74,6 @@ public sealed class StringNaturalComparer(
         return compareResult;
     }
 
-
-    /// <summary>
-    /// Compares two character spans, by <paramref name="collation"/> when it is given.
-    /// </summary>
     public static int Compare(ReadOnlySpan<char> x, ReadOnlySpan<char> y, StringComparison stringComparison, CompareInfo? collation = null)
     {
         if (collation is not null && _isNumericCollationSupported)
@@ -182,10 +120,6 @@ public sealed class StringNaturalComparer(
         return x.Length.CompareTo(y.Length);
     }
 
-
-    /// <summary>
-    /// Compares two file names, using the extension only to break a tie on the base name.
-    /// </summary>
     public static int CompareFileName(ReadOnlySpan<char> x, ReadOnlySpan<char> y, StringComparison stringComparison, CompareInfo? collation = null)
     {
         var xDotIndex = FindExtensionSeparator(x);
@@ -202,18 +136,12 @@ public sealed class StringNaturalComparer(
         return Compare(x.Slice(xBaseLength), y.Slice(yBaseLength), stringComparison, collation);
     }
 
-
-    /// <summary>
-    /// Finds the index of the dot that starts the extension, or <c>-1</c> if there is none.
-    /// </summary>
     private static int FindExtensionSeparator(ReadOnlySpan<char> fileName)
     {
-        // index 0 is excluded so a leading dot stays part of the name of a hidden file
         for (var i = fileName.Length - 1; i > 0; i--)
         {
             if (fileName[i] != '.') continue;
 
-            // a dot between two digits belongs to a decimal number, not to the extension
             if (char.IsAsciiDigit(fileName[i - 1])
                 && i + 1 < fileName.Length
                 && char.IsAsciiDigit(fileName[i + 1])) continue;
@@ -223,7 +151,6 @@ public sealed class StringNaturalComparer(
 
         return -1;
     }
-
 
     private static ReadOnlySpan<char> GetNumber(ReadOnlySpan<char> span, out ReadOnlySpan<char> number)
     {
@@ -236,7 +163,6 @@ public sealed class StringNaturalComparer(
         number = span.Slice(0, i);
         return span.Slice(i);
     }
-
 
     private static int CompareNumValues(ReadOnlySpan<char> numValue1, ReadOnlySpan<char> numValue2)
     {
@@ -265,7 +191,7 @@ public sealed class StringNaturalComparer(
             return compareResult;
         }
 
-        return numValue2.Length < numValue1.Length ? -1 : 1; // "033" < "33" === true
+        return numValue2.Length < numValue1.Length ? -1 : 1;
     }
 
 }

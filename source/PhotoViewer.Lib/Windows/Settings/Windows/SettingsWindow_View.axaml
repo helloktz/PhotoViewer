@@ -15,30 +15,22 @@
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch">
 
-    <!--  Shared values reused across all settings pages  -->
     <ui:PhControl.Resources>
-        <!--  Left indentation of the content under a group/sub-group heading  -->
         <Thickness x:Key="SettingsGroupIndent">20,0,0,0</Thickness>
-        <!--  Vertical gap between a setting's label and its input control  -->
         <x:Double x:Key="SettingsLabelInputGap">5</x:Double>
     </ui:PhControl.Resources>
 
-
-    <!--  Shared styles for all settings pages (cascade to the hosted page content)  -->
     <ui:PhControl.Styles>
-        <!--  Setting group heading: semibold, subtitle size  -->
         <Style Selector="TextBlock.group">
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="FontSize" Value="{x:Static types:Const.FONT_SIZE_SUBTITLE}" />
             <Setter Property="Margin" Value="0,20,0,8" />
         </Style>
 
-        <!--  First group heading on a page: no top margin (the page already has top padding)  -->
         <Style Selector="TextBlock.group:nth-child(1)">
             <Setter Property="Margin" Value="0,0,0,8" />
         </Style>
 
-        <!--  Setting sub-group heading: semibold, body size  -->
         <Style Selector="TextBlock.subgroup">
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Margin" Value="0,10,0,4" />
@@ -46,15 +38,12 @@
 
     </ui:PhControl.Styles>
 
-
-    <!--  sidebar | content  -->
     <Grid ClipToBounds="True">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" MinWidth="200" />
             <ColumnDefinition Width="*" MinWidth="400" />
         </Grid.ColumnDefinitions>
 
-        <!--  Sidebar  -->
         <ListBox
             x:Name="PART_Sidebar"
             Grid.Column="0"
@@ -87,14 +76,11 @@
             </ListBox.ItemTemplate>
         </ListBox>
 
-
-        <!--  Content area: warning bar + header (title + search) over the scrollable page  -->
         <Grid
             Grid.Column="1"
             RowDefinitions="Auto, Auto, *"
             Margin="28,0,0,0">
 
-            <!--  Admin-managed settings warning (shown when >=1 setting is locked by igconfig.admin.json)  -->
             <Border
                 x:Name="PART_LockWarning"
                 Grid.Row="0"
@@ -110,7 +96,6 @@
                     TextWrapping="Wrap" />
             </Border>
 
-            <!--  Header  -->
             <Grid
                 Grid.Row="1"
                 ColumnDefinitions="*, Auto, Auto"
@@ -123,7 +108,6 @@
                     FontSize="{x:Static types:Const.FONT_SIZE_TITLE}"
                     FontWeight="SemiBold"
                     TextTrimming="CharacterEllipsis" />
-
 
                 <Panel Grid.Column="2">
                     <ui:PhSearchBoxControl x:Name="PART_Search" Width="200" />
@@ -166,8 +150,6 @@
                 </Panel>
             </Grid>
 
-
-            <!--  Scrollable page content  -->
             <ScrollViewer
                 Grid.Row="2"
                 HorizontalScrollBarVisibility="Disabled"

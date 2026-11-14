@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -24,16 +6,9 @@ using System.Collections.Generic;
 
 namespace PhotoViewer.UI;
 
-
 partial class PhTableControl
 {
 
-    #region Row model
-
-    /// <summary>
-    /// The visuals and layout metrics of one data row. Kept for every row, realized or not: the
-    /// cells are supplied by the caller and carry their own state, so they are never rebuilt.
-    /// </summary>
     private sealed class RowSlot(int index, string? key, Border highlight, Border flash,
         Border actions, List<PhToolButton> buttons)
     {
@@ -44,30 +19,17 @@ partial class PhTableControl
         public Border Actions { get; } = actions;
         public List<PhToolButton> Buttons { get; } = buttons;
 
-        // full-row layers: hover tint, accent flash, top separator
         public Control[] Layers { get; init; } = [];
 
-        // one entry per column with the actions cell last; null where the row supplied no cell
         public Control?[] Cells { get; init; } = [];
 
-        // last measured height, NaN until the row has been measured once
         public double Height = double.NaN;
 
-        // vertical offset below the header
         public double Y;
 
         public bool IsRealized;
     }
 
-    #endregion // Row model
-
-
-    #region Column layout
-
-    /// <summary>
-    /// Resolved column geometry shared by the header and every row: Auto columns fit the widest
-    /// cell measured so far, Star columns split the width the Auto columns left over.
-    /// </summary>
     private sealed class ColumnLayout
     {
         private bool[] _isStar = [];
@@ -77,19 +39,12 @@ partial class PhTableControl
         public double[] Widths { get; private set; } = [];
         public double[] Offsets { get; private set; } = [];
 
-        /// <summary>
-        /// Gets whether a cell measured wider than its Auto column, so the widths need re-resolving.
-        /// </summary>
         public bool Dirty { get; private set; }
 
         public int Count => Widths.Length;
 
         public bool IsStar(int col) => _isStar[col];
 
-
-        /// <summary>
-        /// Re-seeds the layout for a new set of columns; the implicit trailing actions column is Auto.
-        /// </summary>
         public void Reset(IReadOnlyList<PhTableColumn> columns, int totalCols)
         {
             _isStar = new bool[totalCols];
@@ -107,11 +62,6 @@ partial class PhTableControl
             Dirty = false;
         }
 
-
-        /// <summary>
-        /// Grows an Auto column to fit a cell. The maximum is sticky, so columns don't jitter as
-        /// rows are realized and dropped again while scrolling.
-        /// </summary>
         public void Observe(int col, double width)
         {
             if (_isStar[col] || width <= _autoMax[col]) return;
@@ -120,10 +70,6 @@ partial class PhTableControl
             Dirty = true;
         }
 
-
-        /// <summary>
-        /// Recomputes the column widths and x offsets for the given content width.
-        /// </summary>
         public void Resolve(double availableWidth)
         {
             var used = 0d;
@@ -141,8 +87,6 @@ partial class PhTableControl
                 used += Widths[c];
             }
 
-            // like Grid, leftover width is only reclaimed by Star columns: with none, the trailing
-            // actions column stays right after the last content column instead of moving to the edge
             if (stars > 0)
             {
                 var share = (availableWidth - used) / stars;
@@ -163,27 +107,16 @@ partial class PhTableControl
         }
     }
 
-    #endregion // Column layout
-
-
-    #region Virtualizing rows panel
-
-    /// <summary>
-    /// Lays out the header and the data rows, keeping only the rows that intersect the viewport
-    /// (plus a buffer) in the visual tree. The panel always reports the full extent height, so the
-    /// scrollbar is correct even though most rows are not realized.
-    /// </summary>
     private sealed class RowsPanel(PhTableControl owner) : Panel
     {
-        private const double REALIZE_BUFFER = 120; // extra px realized above and below the viewport
-        private const double FALLBACK_VIEWPORT = 600; // before the ScrollViewer reports a viewport
+        private const double REALIZE_BUFFER = 120;
+        private const double FALLBACK_VIEWPORT = 600;
         private const double FALLBACK_WIDTH = 600;
-        private const double DEFAULT_ROW_HEIGHT = 34; // seeds the extent until a row is measured
+        private const double DEFAULT_ROW_HEIGHT = 34;
         private const int MAX_WIDTH_PASSES = 3;
 
         private readonly ColumnLayout _layout = new();
 
-        // the realized window is always contiguous
         private int _firstRealized = -1;
         private int _lastRealized = -1;
 
@@ -191,33 +124,16 @@ partial class PhTableControl
         private int _measuredCount;
         private double _bodyHeight;
 
-        // the visible band in panel coordinates, from EffectiveViewportChanged
         private Rect _viewport;
 
-
-        /// <summary>
-        /// Gets the measured height of the pinned header row.
-        /// </summary>
         public double HeaderHeight { get; private set; }
 
-
-        /// <summary>
-        /// Gets the mean measured row height, used for the rows not measured yet.
-        /// </summary>
         public double EstimatedRowHeight
             => _measuredCount > 0 ? _measuredSum / _measuredCount : DEFAULT_ROW_HEIGHT;
 
-
-        /// <summary>
-        /// Gets a row's measured height, falling back to the estimate while it is unmeasured.
-        /// </summary>
         public double RowHeightOf(RowSlot slot)
             => double.IsNaN(slot.Height) ? EstimatedRowHeight : slot.Height;
 
-
-        /// <summary>
-        /// Drops every realized row and re-seeds the layout for a freshly built table.
-        /// </summary>
         public void Reset(IReadOnlyList<PhTableColumn> columns, int totalCols)
         {
             Children.Clear();
@@ -229,8 +145,6 @@ partial class PhTableControl
             _bodyHeight = 0;
             HeaderHeight = 0;
 
-            // the old band would realize the wrong rows; Build just reset the offset, so fall back
-            // to a top-anchored band until the first EffectiveViewportChanged reports the real one
             _viewport = default;
             _layout.Reset(columns, totalCols);
 
@@ -242,7 +156,6 @@ partial class PhTableControl
                     if (cell is not null) Children.Add(cell);
                 }
 
-                // offsets must exist before the first realization, or every row looks visible at y=0
                 ResolveRowOffsets();
                 EnsureRealized();
             }
@@ -250,13 +163,11 @@ partial class PhTableControl
             InvalidateMeasure();
         }
 
-
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
             EffectiveViewportChanged += Panel_EffectiveViewportChanged;
         }
-
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -264,22 +175,12 @@ partial class PhTableControl
             base.OnDetachedFromVisualTree(e);
         }
 
-
-        /// <summary>
-        /// The realization trigger. This fires inside the layout pass (unlike ScrollViewer's
-        /// ScrollChanged, which fires after the pass is already closed), so rows realized here are
-        /// measured and arranged in the same frame instead of flashing empty for one frame.
-        /// </summary>
         private void Panel_EffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
         {
             _viewport = e.EffectiveViewport;
             EnsureRealized();
         }
 
-
-        /// <summary>
-        /// Realizes the rows intersecting the viewport and drops the rest.
-        /// </summary>
         public void EnsureRealized()
         {
             if (owner._rows.Count == 0) return;
@@ -298,17 +199,11 @@ partial class PhTableControl
             _firstRealized = first;
             _lastRealized = last;
 
-            // realize in row order so Children order (= tab order) matches the visual order
             for (var i = first; i <= last; i++) Realize(owner._rows[i], i);
 
             InvalidateMeasure();
         }
 
-
-        /// <summary>
-        /// Returns the data-row index whose vertical band contains <paramref name="y"/>
-        /// (panel space), or -1. Works for unrealized rows too.
-        /// </summary>
         public int RowAt(double y)
         {
             var rows = owner._rows;
@@ -325,20 +220,14 @@ partial class PhTableControl
             return -1;
         }
 
-
-        #region Layout
-
         protected override Size MeasureOverride(Size availableSize)
         {
             if (owner._rows.Count == 0) return default;
 
             var width = ResolveWidth(availableSize);
 
-            // the header labels seed every Auto column before the rows are measured
             MeasureHeader();
 
-            // a row can widen an Auto column, which shrinks the Star columns and may re-wrap
-            // their cells, so keep measuring until the widths settle
             var pass = 0;
             for (; pass < MAX_WIDTH_PASSES; pass++)
             {
@@ -355,16 +244,12 @@ partial class PhTableControl
             return new Size(width, HeaderHeight + _bodyHeight);
         }
 
-
         protected override Size ArrangeOverride(Size finalSize)
         {
             if (owner._rows.Count == 0) return finalSize;
 
-            // reuse the frozen measure-time widths rather than re-resolving
             var offsetY = owner._scroll.Offset.Y;
 
-            // the header is pinned by arranging it at the scroll offset: an Offset change re-runs
-            // arrange (the presenter arranges us at -Offset) so it costs no measure and cannot lag
             foreach (var spanner in owner._headerSpanners)
             {
                 spanner.Arrange(new Rect(0, offsetY, finalSize.Width, HeaderHeight));
@@ -383,11 +268,8 @@ partial class PhTableControl
                 }
             }
 
-            // never report less than the viewport: the transparent background has to cover the
-            // whole frame or the empty area below a short table stops reporting row hover
             return new Size(finalSize.Width, Math.Max(finalSize.Height, HeaderHeight + _bodyHeight));
         }
-
 
         private void MeasureHeader()
         {
@@ -407,7 +289,6 @@ partial class PhTableControl
             HeaderHeight = height;
         }
 
-
         private void MeasureRows(double width)
         {
             if (_firstRealized < 0) return;
@@ -424,8 +305,6 @@ partial class PhTableControl
                     var cell = slot.Cells[c];
                     if (cell is null) continue;
 
-                    // Auto columns measure against infinity (like Grid) so the content sets the
-                    // width; a Star cell needs its real width or wrapping content mis-measures
                     var available = _layout.IsStar(c) ? _layout.Widths[c] : double.PositiveInfinity;
                     cell.Measure(new Size(available, double.PositiveInfinity));
 
@@ -439,13 +318,11 @@ partial class PhTableControl
             }
         }
 
-
         private void ArrangeRow(RowSlot slot, double width)
         {
             var top = HeaderHeight + slot.Y;
             var height = RowHeightOf(slot);
 
-            // the layers span the row; their own alignment puts the 1px separator on the top edge
             var full = new Rect(0, top, width, height);
             foreach (var layer in slot.Layers) layer.Arrange(full);
 
@@ -455,10 +332,6 @@ partial class PhTableControl
             }
         }
 
-
-        /// <summary>
-        /// Records a freshly measured row height, keeping the running mean used as the estimate.
-        /// </summary>
         private void SetRowHeight(RowSlot slot, double height)
         {
             if (!double.IsNaN(slot.Height))
@@ -474,11 +347,6 @@ partial class PhTableControl
             _measuredCount++;
         }
 
-
-        /// <summary>
-        /// Recomputes every row's vertical offset (and the total body height) from the measured
-        /// heights, using the estimate for the rows not measured yet.
-        /// </summary>
         private void ResolveRowOffsets()
         {
             var rows = owner._rows;
@@ -495,7 +363,6 @@ partial class PhTableControl
             _bodyHeight = y;
         }
 
-
         private double ResolveWidth(Size available)
         {
             if (!double.IsInfinity(available.Width) && available.Width > 0) return available.Width;
@@ -504,20 +371,10 @@ partial class PhTableControl
             return viewport > 0 ? viewport : FALLBACK_WIDTH;
         }
 
-        #endregion // Layout
-
-
-        #region Realization
-
-        /// <summary>
-        /// Returns the inclusive row range to keep realized for the current visible band.
-        /// </summary>
         private (int First, int Last) VisibleRange()
         {
             var rows = owner._rows;
 
-            // EffectiveViewportChanged already gives the band in panel coordinates, clipped by the
-            // frame; fall back to the presenter only before the first pass has reported one
             var height = _viewport.Height > 0 ? _viewport.Height : FALLBACK_VIEWPORT;
             var viewTop = _viewport.Height > 0 ? _viewport.Y : owner._scroll.Offset.Y;
 
@@ -537,15 +394,9 @@ partial class PhTableControl
                 last = i;
             }
 
-            // keep one row realized so there is always a measured height to estimate from
             return first < 0 ? (0, 0) : (first, last);
         }
 
-
-        /// <summary>
-        /// Adds a row's visuals, keeping <see cref="Panel.Children"/> in row order: that order is
-        /// also the logical/tab order, so appending would make Tab follow scroll history.
-        /// </summary>
         private void Realize(RowSlot slot, int index)
         {
             if (slot.IsRealized) return;
@@ -558,15 +409,9 @@ partial class PhTableControl
                 if (cell is not null) Children.Insert(at++, cell);
             }
 
-            // an unrealized row cannot show its hover tint or actions, so re-apply them here
             owner.RefreshRowReveal(slot);
         }
 
-
-        /// <summary>
-        /// Where a row's visuals belong in <see cref="Panel.Children"/>: after the header and after
-        /// every already-realized row that sorts before it.
-        /// </summary>
         private int ChildIndexFor(int index)
         {
             var at = owner.HeaderVisualCount;
@@ -586,7 +431,6 @@ partial class PhTableControl
             return at;
         }
 
-
         private void Unrealize(RowSlot slot)
         {
             if (!slot.IsRealized) return;
@@ -599,10 +443,6 @@ partial class PhTableControl
             }
         }
 
-        #endregion // Realization
-
     }
-
-    #endregion // Virtualizing rows panel
 
 }

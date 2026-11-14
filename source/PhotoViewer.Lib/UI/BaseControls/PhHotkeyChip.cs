@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -30,13 +12,8 @@ using System;
 
 namespace PhotoViewer.UI;
 
-
-/// <summary>
-/// Displays a single hotkey string styled as a physical keyboard keycap.
-/// </summary>
 public class PhHotkeyChip : PhControl
 {
-    // the darker base peeking below the top face gives the 3D keycap depth
     private const double KEYCAP_LIP = 2;
     private const double GLYPH_DIM_OPACITY = 0.4;
     private static readonly CornerRadius BASE_RADIUS = new(6);
@@ -50,28 +27,14 @@ public class PhHotkeyChip : PhControl
     private bool _showDelete;
     private PhHotkeyChipTone _tone;
 
-
-    /// <summary>
-    /// Raised when the delete button is clicked.
-    /// </summary>
     public event EventHandler? Deleted;
 
-
-    #region Public Properties
-
-    /// <summary>
-    /// Gets, sets the hotkey text shown on the keycap.
-    /// </summary>
     public string Text
     {
         get => _label.Text ?? string.Empty;
         set => _label.Text = value;
     }
 
-
-    /// <summary>
-    /// Gets, sets whether the delete button is shown (hidden by default for a read-only keycap).
-    /// </summary>
     public bool ShowDelete
     {
         get => _showDelete;
@@ -83,10 +46,6 @@ public class PhHotkeyChip : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Gets, sets the color tone of the key text (normal, accent, or danger).
-    /// </summary>
     public PhHotkeyChipTone Tone
     {
         get => _tone;
@@ -98,13 +57,9 @@ public class PhHotkeyChip : PhControl
         }
     }
 
-    #endregion // Public Properties
-
-
     public PhHotkeyChip() : this(string.Empty)
     {
     }
-
 
     public PhHotkeyChip(string text, bool showDelete = false)
     {
@@ -126,7 +81,6 @@ public class PhHotkeyChip : PhControl
         };
         _removeIcon[!Shape.FillProperty] = Resx.CreateBinding(ResxId.TextControlForeground);
 
-        // a PhToolButton gives the square tool-button shape with the app's hover + press feedback
         _removeBtn = new PhToolButton
         {
             Padding = new Thickness(4),
@@ -137,7 +91,6 @@ public class PhHotkeyChip : PhControl
         ToolTip.SetTip(_removeBtn, Core.Lang[LangId._Delete]);
         _removeBtn.Click += (_, _) => Deleted?.Invoke(this, EventArgs.Empty);
 
-        // dim the glyph unless the delete button itself is hovered
         _removeBtn.PointerEntered += (_, _) => _removeIcon.Opacity = 1;
         _removeBtn.PointerExited += (_, _) => _removeIcon.Opacity = GLYPH_DIM_OPACITY;
 
@@ -149,7 +102,6 @@ public class PhHotkeyChip : PhControl
             Children = { _label },
         };
 
-        // top face sits above a 1px outline + a thicker bottom lip of the darker base (the keycap edge)
         _face = new Border
         {
             CornerRadius = FACE_RADIUS,
@@ -172,10 +124,6 @@ public class PhHotkeyChip : PhControl
         ApplyTone();
     }
 
-
-    /// <summary>
-    /// Applies the current <see cref="Tone"/> to the key text (color + weight), theme-aware.
-    /// </summary>
     private void ApplyTone()
     {
         switch (_tone)
@@ -197,10 +145,6 @@ public class PhHotkeyChip : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Adds/removes the delete button and adjusts the face padding to keep the keycap balanced.
-    /// </summary>
     private void UpdateDeleteVisibility()
     {
         if (_showDelete)
@@ -217,14 +161,9 @@ public class PhHotkeyChip : PhControl
 
 }
 
-
-
-/// <summary>
-/// Color tone of a <see cref="PhHotkeyChip"/>'s key text.
-/// </summary>
 public enum PhHotkeyChipTone
 {
     Normal,
-    Accent, // customized
-    Danger, // conflicting
+    Accent,
+    Danger,
 }

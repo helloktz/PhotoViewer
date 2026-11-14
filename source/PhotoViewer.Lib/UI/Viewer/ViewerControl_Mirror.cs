@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -30,52 +12,29 @@ namespace PhotoViewer.UI.Viewer;
 
 public partial class ViewerControl
 {
-    // the source image the mirror's own tile cache was built from; the cache holds it alive
     private SKImageRef? _mirrorTileSource;
 
-    // the tile cache of the source, drawn from while both tile the same image; read by PhotoRenderer
     internal MipmapTileCache? _mirrorSharedTileCache;
 
-    // an image the source did not tile yet, which the mirror tiles itself if it still does not on the next draw
     private SKImageRef? _pendingTileSource;
 
-    // the vector document the mirror's viewport was computed for; read by PhotoRenderer
     internal SKSvg? _mirrorSvgDocument;
 
-    // the mirror pans just enough to keep the reveal point this share of its shorter side inside its edges
     private const double REVEAL_MARGIN_RATIO = 0.1;
 
-    // the pan eases this long as the reveal point shows up or goes away
     private const double REVEAL_EASE_MS = 200;
 
-    // how far the mirror is panned past the source as last drawn, as a share of the photo on each axis
     private Vector _revealOffset;
 
-    // an ease from this offset to the live one, done at 1, from which the pan follows the point exactly
     private Vector _revealEaseFrom;
     private double _revealEase = 1;
     private TimeSpan? _revealEaseStart;
     private bool _isRevealEasing;
 
-
-    /// <summary>
-    /// Occurs when what the viewer draws, or where it draws it, may have changed.
-    /// </summary>
     internal event TEventHandler<ViewerControl, EventArgs>? RenderStateChanged;
 
-
-    /// <summary>
-    /// Occurs inside the viewer lock right before its photo unloads for another, with the transition it plays or <c>null</c>.
-    /// </summary>
     internal event TEventHandler<ViewerControl, TransitionRequest?>? TransitionStarting;
 
-
-
-    #region Public Properties
-
-    /// <summary>
-    /// Gets, sets the viewer whose photo this viewer shows; while set, this viewer is a mirror with its own viewport.
-    /// </summary>
     public ViewerControl? MirrorSource
     {
         get => GetValue(MirrorSourceProperty);
@@ -84,10 +43,6 @@ public partial class ViewerControl
     public static readonly StyledProperty<ViewerControl?> MirrorSourceProperty =
         AvaloniaProperty.Register<ViewerControl, ViewerControl?>(nameof(MirrorSource));
 
-
-    /// <summary>
-    /// Gets, sets whether a mirror follows the zoom, pan and transforms of <see cref="MirrorSource"/>, else it fits the photo by its own <see cref="ZoomMode"/>.
-    /// </summary>
     public bool EnableMirrorSync
     {
         get => GetValue(EnableMirrorSyncProperty);
@@ -96,10 +51,6 @@ public partial class ViewerControl
     public static readonly StyledProperty<bool> EnableMirrorSyncProperty =
         AvaloniaProperty.Register<ViewerControl, bool>(nameof(EnableMirrorSync), true);
 
-
-    /// <summary>
-    /// Gets, sets the point a mirror pans to keep in view, where 0 to 1 spans the photo on each axis; <c>null</c> for none.
-    /// </summary>
     internal Point? MirrorRevealPoint
     {
         get;
@@ -110,7 +61,6 @@ public partial class ViewerControl
             var isToggled = field.HasValue != value.HasValue;
             field = value;
 
-            // only redrawn when the view moves: eased as the point shows up or goes away, then followed exactly
             var mustPan = MustPanForReveal(value);
             if (!mustPan) return;
 
@@ -119,24 +69,11 @@ public partial class ViewerControl
         }
     }
 
-    #endregion // Public Properties
-
-
-
-    #region Source Side
-
-    /// <summary>
-    /// Raises <see cref="RenderStateChanged"/>.
-    /// </summary>
     private void OnRenderStateChanged()
     {
         RenderStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
-
-    /// <summary>
-    /// Gets the image point in the middle of the viewport, in <see cref="BitmapSize"/> coordinates.
-    /// </summary>
     internal Point GetViewportCenter()
     {
         var imageCenter = new Point(BitmapSize.Width / 2, BitmapSize.Height / 2);
@@ -152,15 +89,6 @@ public partial class ViewerControl
             Math.Clamp(y, 0, BitmapSize.Height));
     }
 
-    #endregion // Source Side
-
-
-
-    #region Mirror Side
-
-    /// <summary>
-    /// Swaps the source the mirror listens to.
-    /// </summary>
     private void OnMirrorSourceChanged(ViewerControl? oldSource, ViewerControl? newSource)
     {
         if (IsLoaded)
@@ -172,10 +100,6 @@ public partial class ViewerControl
         InvalidateVisual();
     }
 
-
-    /// <summary>
-    /// Starts redrawing whenever the source changes.
-    /// </summary>
     private void AttachMirrorSource(ViewerControl? source)
     {
         if (source is null) return;
@@ -186,16 +110,11 @@ public partial class ViewerControl
         source.TransitionStarting += MirrorSource_TransitionStarting;
     }
 
-
-    /// <summary>
-    /// Stops listening to the source and drops what was built from it.
-    /// </summary>
     private void DetachMirrorSource(ViewerControl? source)
     {
         source?.RenderStateChanged -= MirrorSource_RenderStateChanged;
         source?.TransitionStarting -= MirrorSource_TransitionStarting;
 
-        // under the lock of that source, which the renderer read it with, not of a new one
         CompleteTransition(source?._lock ?? _lock);
 
         SetSharedTileCache(null);
@@ -204,10 +123,8 @@ public partial class ViewerControl
         _mirrorSvgDocument = null;
     }
 
-
     private void MirrorSource_RenderStateChanged(ViewerControl sender, EventArgs e)
     {
-        // the viewport is taken from the source on render, so a redraw is the whole sync
         if (Dispatcher.UIThread.CheckAccess())
         {
             InvalidateVisual();
@@ -218,10 +135,8 @@ public partial class ViewerControl
         }
     }
 
-
     private void MirrorSource_TransitionStarting(ViewerControl sender, TransitionRequest? request)
     {
-        // a copy, as only the request of the source tells the slideshow when its effect ended
         var ownRequest = request is null
             ? null
             : new TransitionRequest(request.Effect, request.DurationMs, request.Direction);
@@ -229,13 +144,8 @@ public partial class ViewerControl
         BeginTransition(ownRequest);
     }
 
-
-    /// <summary>
-    /// Records the photo of <paramref name="source"/> as the mirror shows it now; <c>null</c> if there is nothing to transition from.
-    /// </summary>
     private SKPicture? CaptureMirrorFrame(ViewerControl source)
     {
-        // the last draw may have taken its viewport from an image the source replaced since
         SyncFromMirrorSource();
 
         lock (source._lock)
@@ -250,10 +160,6 @@ public partial class ViewerControl
         }
     }
 
-
-    /// <summary>
-    /// Takes the viewport from <see cref="MirrorSource"/>; runs right before each draw, so it always matches what is drawn.
-    /// </summary>
     private void SyncFromMirrorSource()
     {
         var source = MirrorSource;
@@ -262,8 +168,6 @@ public partial class ViewerControl
         DrawingArea = Bounds.Deflate(Padding);
         var showTransforms = EnableMirrorSync;
 
-
-        // 1. snapshot what the source shows; the image is only read while the source cannot free it
         SKSvg? svgDocument;
         Size bitmapSize;
         lock (source._lock)
@@ -288,7 +192,6 @@ public partial class ViewerControl
                 bitmapSize = new Size();
             }
 
-            // vector and animated photos are never tiled
             var canTile = svgDocument is null && source._animator is null;
             UpdateMirrorTileCache(source, canTile ? drawnImage : null);
         }
@@ -302,15 +205,11 @@ public partial class ViewerControl
             return;
         }
 
-
-        // 2. a preview is drawn over the footprint of the full image, same as in the source
         var meta = source.Photo?.Metadata;
         var isPreviewing = source._isPreviewing && meta is not null && meta.Width > 0 && meta.Height > 0;
         var fullSize = isPreviewing ? new Size(meta!.Width, meta.Height) : bitmapSize;
         var previewScale = isPreviewing ? GetPreviewToSourceScale(bitmapSize, meta!) : 1d;
 
-
-        // 3. not following the source: fit the photo by the mirror's own zoom mode
         var canFollowSource = showTransforms && !source.DrawingArea.IsEmpty && !source.BitmapSize.IsEmpty;
         if (!canFollowSource)
         {
@@ -321,8 +220,6 @@ public partial class ViewerControl
             return;
         }
 
-
-        // 4. following the source: an auto mode zooms on the mirror's own size, a manual zoom keeps its ratio to the fit zoom
         var sourceMode = source.ZoomMode;
         var isSourceZoomFixed = source.IsManualZoom || sourceMode == ZoomMode.LockZoom;
         double fullZoom;
@@ -346,13 +243,8 @@ public partial class ViewerControl
         SetMirrorViewport(fullZoom * previewScale, sourceCenter, isSourceZoomFixed);
     }
 
-
-    /// <summary>
-    /// Picks the tiles the mirror draws: those of the source when it tiles the same image, else its own; the caller holds the source lock.
-    /// </summary>
     private void UpdateMirrorTileCache(ViewerControl source, SKImageRef? tileSource)
     {
-        // 1. nothing to tile: no photo, or one too small to need tiles
         var needsTiles = MipmapTileCache.NeedsTiles(tileSource?.Image);
         if (!needsTiles)
         {
@@ -362,8 +254,6 @@ public partial class ViewerControl
             return;
         }
 
-
-        // 2. one proxy, one set of tiles and of their GPU textures for both viewers
         var sourceCache = source._mipmapCache;
         var isSourceTilingIt = ReferenceEquals(sourceCache?.SourceRef, tileSource);
         if (isSourceTilingIt)
@@ -379,8 +269,6 @@ public partial class ViewerControl
         var hasOwnTiles = ReferenceEquals(_mirrorTileSource, tileSource);
         if (hasOwnTiles) return;
 
-
-        // 3. the source tiles a new image right after its first draw, so give it a moment rather than tile twice
         var isFirstSeen = !ReferenceEquals(_pendingTileSource, tileSource);
         if (isFirstSeen)
         {
@@ -390,32 +278,21 @@ public partial class ViewerControl
             return;
         }
 
-
-        // 4. its own tiles, e.g. of the decoded image while the source shows a rotated one, or is minimized
         _pendingTileSource = null;
         _mirrorTileSource = tileSource;
         _mipmapCache = MipmapTileCache.Create(tileSource, InvalidateVisual);
     }
 
-
-    /// <summary>
-    /// Starts or stops drawing from the tile cache of the source.
-    /// </summary>
     private void SetSharedTileCache(MipmapTileCache? cache)
     {
         var isSameCache = ReferenceEquals(_mirrorSharedTileCache, cache);
         if (isSameCache) return;
 
-        // the source disposes its cache by itself; a disposed one just ignores this
         _mirrorSharedTileCache?.RemoveViewer();
         cache?.AddViewer();
         _mirrorSharedTileCache = cache;
     }
 
-
-    /// <summary>
-    /// Disposes the tile cache the mirror built for itself.
-    /// </summary>
     private void DisposeOwnTileCache()
     {
         _mipmapCache?.Dispose();
@@ -423,10 +300,6 @@ public partial class ViewerControl
         _mirrorTileSource = null;
     }
 
-
-    /// <summary>
-    /// Zooms to <paramref name="factor"/> with <paramref name="imageCenter"/> in the middle of the viewport.
-    /// </summary>
     private void SetMirrorViewport(double factor, Point imageCenter, bool isManualZoom)
     {
         var isValidFactor = double.IsFinite(factor) && factor > 0;
@@ -435,12 +308,10 @@ public partial class ViewerControl
             _zooming.Factor = Math.Clamp(factor, MinZoom, MaxZoom);
         }
 
-        // no anchor: the region is placed by the pan state below
         _zooming.OldFactor = _zooming.Factor;
         _zooming.ZoomedPoint = new();
         _zooming.IsManual = isManualZoom;
 
-        // CalculateDrawingRegion centers an axis that fits, and keeps an overflowing one inside the photo
         var zoomFactor = _zooming.Factor / Dpi;
         var viewport = DrawingArea.Size / zoomFactor;
         var center = GetRevealedCenter(imageCenter, viewport);
@@ -451,25 +322,13 @@ public partial class ViewerControl
         CalculateDrawingRegion();
     }
 
-    #endregion // Mirror Side
-
-
-
-    #region Reveal Pan
-
-    /// <summary>
-    /// Gets <paramref name="center"/> moved just enough for a viewport of <paramref name="viewport"/> to show <see cref="MirrorRevealPoint"/>.
-    /// </summary>
     private Point GetRevealedCenter(Point center, Size viewport)
     {
-        // 1. the center as drawn, as CalculateDrawingRegion keeps the viewport inside the photo
         var bitmapSize = BitmapSize;
         var drawnCenter = new Point(
             GetDrawnCenter(center.X, viewport.Width, bitmapSize.Width),
             GetDrawnCenter(center.Y, viewport.Height, bitmapSize.Height));
 
-
-        // 2. eased toward the pan that shows the point
         var targetOffset = MirrorRevealPoint is { } point
             ? GetRevealOffset(drawnCenter, viewport, point)
             : new Vector();
@@ -480,10 +339,6 @@ public partial class ViewerControl
             drawnCenter.Y + _revealOffset.Y * bitmapSize.Height);
     }
 
-
-    /// <summary>
-    /// Gets the least pan of a viewport of <paramref name="viewport"/> around <paramref name="center"/> that shows <paramref name="relativePoint"/> inside its margins.
-    /// </summary>
     private Vector GetRevealOffset(Point center, Size viewport, Point relativePoint)
     {
         var bitmapSize = BitmapSize;
@@ -491,17 +346,11 @@ public partial class ViewerControl
         var shiftX = GetRevealShift(center.X, viewport.Width, bitmapSize.Width, relativePoint.X * bitmapSize.Width, margin);
         var shiftY = GetRevealShift(center.Y, viewport.Height, bitmapSize.Height, relativePoint.Y * bitmapSize.Height, margin);
 
-        // as a share of the photo, so it holds when the full image replaces its preview
         return new Vector(shiftX / bitmapSize.Width, shiftY / bitmapSize.Height);
     }
 
-
-    /// <summary>
-    /// Checks whether the view must move for <paramref name="relativePoint"/>: it is panned past the source, or the point is out of view.
-    /// </summary>
     private bool MustPanForReveal(Point? relativePoint)
     {
-        // a pan past the source shrinks or grows as the point moves
         var isPanned = _revealOffset != default;
         if (isPanned) return true;
         if (relativePoint is not { } point) return false;
@@ -516,13 +365,8 @@ public partial class ViewerControl
         return offset != default;
     }
 
-
-    /// <summary>
-    /// Gets the center of a viewport of <paramref name="viewportLength"/> around <paramref name="center"/> once kept inside an image of <paramref name="imageLength"/>, on one axis.
-    /// </summary>
     private static double GetDrawnCenter(double center, double viewportLength, double imageLength)
     {
-        // the whole axis is in view, and centered
         var maxStart = imageLength - viewportLength;
         if (maxStart <= 0) return imageLength / 2;
 
@@ -530,17 +374,11 @@ public partial class ViewerControl
         return start + viewportLength / 2;
     }
 
-
-    /// <summary>
-    /// Gets the least pan of a viewport around <paramref name="center"/> that puts <paramref name="point"/> at least <paramref name="margin"/> inside it, on one axis.
-    /// </summary>
     private static double GetRevealShift(double center, double viewportLength, double imageLength, double point, double margin)
     {
-        // the whole axis is in view, so there is nowhere to pan
         var maxStart = imageLength - viewportLength;
         if (maxStart <= 0) return 0;
 
-        // the starts that keep the point inside the margins, then those that keep the viewport inside the photo
         var start = center - viewportLength / 2;
         var revealedStart = Math.Clamp(start, point + margin - viewportLength, point - margin);
         revealedStart = Math.Clamp(revealedStart, 0, maxStart);
@@ -548,10 +386,6 @@ public partial class ViewerControl
         return revealedStart - start;
     }
 
-
-    /// <summary>
-    /// Eases the pan from where it is drawn to where <see cref="MirrorRevealPoint"/> wants it.
-    /// </summary>
     private void StartRevealEase()
     {
         _revealEaseFrom = _revealOffset;
@@ -559,7 +393,6 @@ public partial class ViewerControl
         _revealEaseStart = null;
         if (_isRevealEasing) return;
 
-        // off screen there is nothing to see move, so it lands at once
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
         {
@@ -571,7 +404,6 @@ public partial class ViewerControl
         topLevel.RequestAnimationFrame(OnRevealEaseFrame);
     }
 
-
     private void OnRevealEaseFrame(TimeSpan time)
     {
         _revealEaseStart ??= time;
@@ -580,7 +412,6 @@ public partial class ViewerControl
         _revealEase = 1 - Math.Pow(1 - progress, 3);
         InvalidateVisual();
 
-        // on to the next frame until it lands
         var isLanded = progress >= 1;
         if (isLanded)
         {
@@ -588,7 +419,6 @@ public partial class ViewerControl
             return;
         }
 
-        // taken off screen while easing, so it lands at once
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null)
         {
@@ -599,7 +429,5 @@ public partial class ViewerControl
 
         topLevel.RequestAnimationFrame(OnRevealEaseFrame);
     }
-
-    #endregion // Reveal Pan
 
 }

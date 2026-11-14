@@ -14,7 +14,6 @@
     VerticalAlignment="Stretch">
 
     <ui:PhControl.Styles>
-        <!--  A label above its input  -->
         <Style Selector="StackPanel.row">
             <Setter Property="Spacing" Value="5" />
         </Style>
@@ -39,18 +38,14 @@
         </Style>
     </ui:PhControl.Styles>
 
-
-    <!--  settings | preview  -->
     <Grid ColumnDefinitions="340,*">
 
-        <!--  Settings  -->
         <ScrollViewer
             x:Name="PART_Settings"
             Grid.Column="0"
             HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="24,16,24,24" Spacing="14">
 
-                <!--  Printer  -->
                 <StackPanel Classes="row">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                         <ui:PhTextBlock VerticalAlignment="Bottom" LangKey="Print_LblPrinter" />
@@ -83,13 +78,11 @@
                         Variant="Link" />
                 </StackPanel>
 
-                <!--  Paper  -->
                 <StackPanel Classes="row">
                     <ui:PhTextBlock LangKey="Print_LblPaper" />
                     <ComboBox x:Name="PART_Paper" />
                 </StackPanel>
 
-                <!--  Copies  -->
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Classes="row">
                         <ui:PhTextBlock LangKey="Print_LblCopies" />
@@ -131,7 +124,6 @@
                     </CheckBox>
                 </Grid>
 
-                <!--  What to print  -->
                 <StackPanel x:Name="PART_PagesRow" Classes="row">
                     <ui:PhTextBlock LangKey="Print_LblPages" />
                     <ComboBox x:Name="PART_PageScope" />
@@ -146,7 +138,6 @@
                     <ComboBox x:Name="PART_Region" />
                 </StackPanel>
 
-                <!--  Orientation and layout  -->
                 <StackPanel Classes="row">
                     <ui:PhTextBlock LangKey="Print_LblOrientation" />
                     <ComboBox x:Name="PART_Orientation" />
@@ -170,7 +161,6 @@
                     <ComboBox x:Name="PART_Margins" />
                 </StackPanel>
 
-                <!--  More settings  -->
                 <ui:PhButton
                     x:Name="PART_BtnMore"
                     Padding="0"
@@ -206,8 +196,6 @@
             </StackPanel>
         </ScrollViewer>
 
-
-        <!--  Preview  -->
         <Grid
             x:Name="PART_PreviewPane"
             Grid.Column="1"
@@ -249,7 +237,6 @@
                 Foreground="{DynamicResource IG_TextWarningBrush}"
                 IsVisible="False" />
 
-            <!--  Printing progress overlay  -->
             <Border
                 x:Name="PART_Progress"
                 Grid.Row="1"

@@ -12,10 +12,8 @@
     x:Name="Root"
     Padding="6,12,36,12">
 
-    <!--  Right padding keeps the content clear of the tool host's floating close button  -->
     <Panel>
 
-        <!--  Empty state: only the button to open the first projector  -->
         <ui:PhButton
             x:Name="PART_BtnAddFirst"
             HorizontalAlignment="Center"
@@ -23,8 +21,6 @@
             HorizontalContentAlignment="Center"
             IconData="{StaticResource IconAdd}" />
 
-
-        <!--  Open projectors: the monitors, a divider, then a row per projector  -->
         <Grid
             x:Name="PART_Projectors"
             RowDefinitions="Auto, Auto, Auto"
@@ -32,7 +28,6 @@
             HorizontalAlignment="Center"
             IsVisible="False">
 
-            <!--  screen map  -->
             <tool:ScreenMapControl
                 x:Name="PART_ScreenMap"
                 Grid.Row="0"
@@ -54,7 +49,6 @@
                 Grid.Column="2"
                 VerticalAlignment="Center"
                 Spacing="8">
-                <!--  A grid row per projector  -->
                 <ScrollViewer
                     x:Name="PART_ProjectorScroller"
                     MaxHeight="115"
@@ -89,8 +83,6 @@
             </StackPanel>
         </Grid>
 
-
-        <!--  Screen layout dropdown  -->
         <Popup
             x:Name="PART_LayoutPopup"
             IsLightDismissEnabled="True"
@@ -116,8 +108,6 @@
             </Border>
         </Popup>
 
-
-        <!--  The projector being dragged onto a monitor  -->
         <Canvas x:Name="PART_DragLayer" IsHitTestVisible="False">
             <Border
                 x:Name="PART_DragGhost"

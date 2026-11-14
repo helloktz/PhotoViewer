@@ -1,13 +1,9 @@
 <Project>
-  <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <!-- SkiaSharp arrives transitively (via Avalonia.Skia), so only a transitive pin can raise it -->
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Avalonia packages -->
-    <!-- Important: keep version in sync! -->
     <PackageVersion Include="Avalonia" Version="12.1.6" />
     <PackageVersion Include="Avalonia.Controls.ColorPicker" Version="12.1.6" />
     <PackageVersion Include="Avalonia.HarfBuzz" Version="12.1.6" />
@@ -24,11 +20,9 @@
     <PackageVersion Include="NativeMemoryArray" Version="1.2.2" />
     <PackageVersion Include="NetCoreAudio" Version="2.0.1" />
     <PackageVersion Include="SkiaSharp" Version="4.152.0" />
-    <!-- Native assets are NOT all dependencies of SkiaSharp (Linux is not), and Skia hard-fails on a managed/native milestone mismatch -->
     <PackageVersion Include="SkiaSharp.NativeAssets.Win32" Version="4.152.0" />
     <PackageVersion Include="Svg.Controls.Skia.Avalonia" Version="12.0.0.17" />
     <PackageVersion Include="System.IO.Hashing" Version="11.0.0" />
-    <!-- the version Avalonia.FreeDesktop brings, so the Linux print portal shares its D-Bus library -->
     <PackageVersion Include="Tmds.DBus.Protocol" Version="0.95.2" />
   </ItemGroup>
 </Project>

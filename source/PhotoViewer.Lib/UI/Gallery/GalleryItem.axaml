@@ -18,7 +18,6 @@
         VerticalAlignment="Stretch"
         IsHitTestVisible="False">
 
-        <!--  Gallery Item: Thumbnail Skeleton  -->
         <Border
             Grid.Row="0"
             Margin="2"
@@ -44,16 +43,12 @@
             </Border.Styles>
         </Border>
 
-
-        <!--  Gallery Item: Thumbnail Image  -->
         <Image
             Grid.Row="0"
             RenderOptions.BitmapInterpolationMode="LowQuality"
             Source="{CompiledBinding GalleryThumbnail}"
             Stretch="Uniform" />
 
-
-        <!--  Gallery Item: File name  -->
         <Grid
             Grid.Row="1"
             ColumnDefinitions="*, Auto"

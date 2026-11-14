@@ -1,22 +1,4 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
@@ -30,37 +12,22 @@ using System.ComponentModel;
 
 namespace PhotoViewer.UI;
 
-
 public class PhButton : Button
 {
     protected override Type StyleKeyOverride => typeof(Button);
 
-    // gap between the icon and the text of the default content
     private static readonly Thickness ICON_GAP = new(0, 0, 4, 0);
 
-    // elements of the default content, kept to toggle the link underline and repaint the icon
     private TextBlock? _textEl;
     private Path? _iconEl;
 
-
-    // events
     public event TEventHandler<ContextMenu, CancelEventArgs>? DropdownOpening;
     public event TEventHandler<ContextMenu, RoutedEventArgs>? DropdownOpened;
     public event TEventHandler<ContextMenu, CancelEventArgs>? DropdownClosing;
     public event TEventHandler<ContextMenu, RoutedEventArgs>? DropdownClosed;
 
-
-    #region Public Properties
-
-    /// <summary>
-    /// Gets the DPI scale value.
-    /// </summary>
     public double Dpi => TopLevel.GetTopLevel(this)?.RenderScaling ?? 1d;
 
-
-    /// <summary>
-    /// Gets, sets the icon geometry data.
-    /// </summary>
     public Geometry? IconData
     {
         get => GetValue(IconDataProperty);
@@ -69,10 +36,6 @@ public class PhButton : Button
     public static readonly StyledProperty<Geometry?> IconDataProperty =
         AvaloniaProperty.Register<PhButton, Geometry?>(nameof(IconData));
 
-
-    /// <summary>
-    /// Gets, sets the stroke width for an outline icon; <c>0</c> (default) fills the icon instead.
-    /// </summary>
     public double IconStrokeThickness
     {
         get => GetValue(IconStrokeThicknessProperty);
@@ -81,10 +44,6 @@ public class PhButton : Button
     public static readonly StyledProperty<double> IconStrokeThicknessProperty =
         AvaloniaProperty.Register<PhButton, double>(nameof(IconStrokeThickness));
 
-
-    /// <summary>
-    /// Gets, sets the text of this button.
-    /// </summary>
     public string Text
     {
         get => GetValue(TextProperty);
@@ -93,10 +52,6 @@ public class PhButton : Button
     public static readonly StyledProperty<string> TextProperty =
         AvaloniaProperty.Register<PhButton, string>(nameof(Text));
 
-
-    /// <summary>
-    /// Gets, sets how the text is trimmed. Needs a width-constraining parent (e.g. a <c>*</c> column).
-    /// </summary>
     public TextTrimming TextTrimming
     {
         get => GetValue(TextTrimmingProperty);
@@ -105,10 +60,6 @@ public class PhButton : Button
     public static readonly StyledProperty<TextTrimming> TextTrimmingProperty =
         AvaloniaProperty.Register<PhButton, TextTrimming>(nameof(TextTrimming), TextTrimming.None);
 
-
-    /// <summary>
-    /// Gets, sets how the text is trimmed. Needs a width-constraining parent (e.g. a <c>*</c> column).
-    /// </summary>
     public TextWrapping TextWrapping
     {
         get => GetValue(TextWrappingProperty);
@@ -117,10 +68,6 @@ public class PhButton : Button
     public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
         AvaloniaProperty.Register<PhButton, TextWrapping>(nameof(TextWrapping), TextWrapping.NoWrap);
 
-
-    /// <summary>
-    /// Gets, sets the visual style variant of the button.
-    /// </summary>
     public PhButtonVariant Variant
     {
         get => GetValue(VariantProperty);
@@ -129,26 +76,14 @@ public class PhButton : Button
     public static readonly StyledProperty<PhButtonVariant> VariantProperty =
         AvaloniaProperty.Register<PhButton, PhButtonVariant>(nameof(Variant), PhButtonVariant.Default);
 
-
-    /// <summary>
-    /// Gets, sets the value indicates that the icon is visible.
-    /// </summary>
     public bool IsIconVisible => IconData != null;
     public static readonly DirectProperty<PhButton, bool> IsIconVisibleProperty =
         AvaloniaProperty.RegisterDirect<PhButton, bool>(nameof(IsIconVisible), i => i.IsIconVisible);
 
-
-    /// <summary>
-    /// Gets, sets the value indicates that the text is visible.
-    /// </summary>
     public bool IsTextVisible => !string.IsNullOrWhiteSpace(Text);
     public static readonly DirectProperty<PhButton, bool> IsTextVisibleProperty =
         AvaloniaProperty.RegisterDirect<PhButton, bool>(nameof(IsTextVisible), i => i.IsTextVisible);
 
-
-    /// <summary>
-    /// Gets, sets the value indicates that the button is checked on click.
-    /// </summary>
     public bool IsCheckOnClick
     {
         get => GetValue(IsCheckOnClickProperty);
@@ -157,10 +92,6 @@ public class PhButton : Button
     public static readonly StyledProperty<bool> IsCheckOnClickProperty =
         AvaloniaProperty.Register<PhButton, bool>(nameof(IsCheckOnClick));
 
-
-    /// <summary>
-    /// Gets, sets the value indicates that the dropdown menu is open on click.
-    /// </summary>
     public bool IsOpenDropdownMenuOnClick
     {
         get => GetValue(IsOpenDropdownMenuOnClickProperty);
@@ -169,10 +100,6 @@ public class PhButton : Button
     public static readonly StyledProperty<bool> IsOpenDropdownMenuOnClickProperty =
         AvaloniaProperty.Register<PhButton, bool>(nameof(IsOpenDropdownMenuOnClick));
 
-
-    /// <summary>
-    /// Gets, sets the dropdown menu of this button.
-    /// </summary>
     public ContextMenu? DropdownMenu
     {
         get => GetValue(DropdownMenuProperty);
@@ -189,20 +116,10 @@ public class PhButton : Button
     public static readonly StyledProperty<ContextMenu?> DropdownMenuProperty =
         AvaloniaProperty.Register<PhButton, ContextMenu?>(nameof(DropdownMenu));
 
-
-    #endregion // Public Properties
-
-
-
     public PhButton()
     {
         Content = CreateContentElement();
     }
-
-
-
-
-    #region Control Events
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
@@ -215,7 +132,6 @@ public class PhButton : Button
         Core.LanguageChanged += Core_LanguageChanged;
     }
 
-
     protected override void OnUnloaded(RoutedEventArgs e)
     {
         base.OnUnloaded(e);
@@ -223,7 +139,6 @@ public class PhButton : Button
         Core.ThemeChanged -= Core_ThemeChanged;
         Core.LanguageChanged -= Core_LanguageChanged;
     }
-
 
     protected override void OnClick()
     {
@@ -234,7 +149,6 @@ public class PhButton : Button
 
         base.OnClick();
     }
-
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
@@ -275,13 +189,8 @@ public class PhButton : Button
         }
     }
 
-
-    /// <summary>
-    /// Applies the look of the current <see cref="Variant"/>.
-    /// </summary>
     private void ApplyVariant()
     {
-        // reset everything a previous variant may have set
         Classes.Remove("accent");
         Classes.Remove("link");
         Classes.Remove("outline");
@@ -320,11 +229,6 @@ public class PhButton : Button
         UpdateContentVisual();
     }
 
-
-    /// <summary>
-    /// Builds the Outline border: the accent hue at two alphas (soft top/sides, stronger bottom).
-    /// Done in code because SystemAccentColor is opaque, so a XAML gradient can't vary its alpha.
-    /// </summary>
     private void UpdateOutlineBorderBrush()
     {
         if (Variant != PhButtonVariant.Outline)
@@ -355,30 +259,25 @@ public class PhButton : Button
         };
     }
 
-
     private void DropdownMenu_Opening(object? sender, CancelEventArgs e)
     {
         OnIgDropdownMenuOpening(e);
     }
-
 
     private void DropdownMenu_Opened(object? sender, RoutedEventArgs e)
     {
         OnIgDropdownMenuOpened(e);
     }
 
-
     private void DropdownMenu_Closing(object? sender, CancelEventArgs e)
     {
         OnIgDropdownMenuClosing(e);
     }
 
-
     private void DropdownMenu_Closed(object? sender, RoutedEventArgs e)
     {
         OnIgDropdownMenuClosed(e);
     }
-
 
     private void Core_ThemeChanged(object? sender, ThemePackChangedEventArgs e)
     {
@@ -386,74 +285,35 @@ public class PhButton : Button
         OnIgThemeChanged(e);
     }
 
-
     private void Core_LanguageChanged(object? sender, EventArgs e)
     {
         OnIgLanguageChanged();
     }
 
-    #endregion // Control Events
-
-
-
-    #region Virtual Methods
-
-    /// <summary>
-    /// Occurs when the app theme is changed.
-    /// </summary>
     protected virtual void OnIgThemeChanged(ThemePackChangedEventArgs e) { }
 
-
-    /// <summary>
-    /// Occurs when the app language is changed.
-    /// </summary>
     protected virtual void OnIgLanguageChanged() { }
 
-
-    /// <summary>
-    /// Occurs when the value of the IsOpen property is changing from false to true.
-    /// </summary>
     protected virtual void OnIgDropdownMenuOpening(CancelEventArgs e)
     {
         DropdownOpening?.Invoke(DropdownMenu!, e);
     }
 
-
-    /// <summary>
-    /// Occurs when the dropdown menu is opened.
-    /// </summary>
     protected virtual void OnIgDropdownMenuOpened(RoutedEventArgs e)
     {
         DropdownOpened?.Invoke(DropdownMenu!, e);
     }
 
-
-    /// <summary>
-    /// Occurs when the value of the IsOpen property is changing from true to false.
-    /// </summary>
     protected virtual void OnIgDropdownMenuClosing(CancelEventArgs e)
     {
         DropdownClosing?.Invoke(DropdownMenu!, e);
     }
 
-
-    /// <summary>
-    /// Occurs when the dropdown menu is closed.
-    /// </summary>
     protected virtual void OnIgDropdownMenuClosed(RoutedEventArgs e)
     {
         DropdownClosed?.Invoke(DropdownMenu!, e);
     }
 
-    #endregion // Virtual Methods
-
-
-
-    #region Control Methods
-
-    /// <summary>
-    /// Creates default button content element with icon and text element.
-    /// </summary>
     private DockPanel CreateContentElement()
     {
         var pathEl = _iconEl = new Path
@@ -477,11 +337,8 @@ public class PhButton : Button
             [!TextBlock.TextWrappingProperty] = this[!TextWrappingProperty],
         };
 
-
-        // DockPanel, not StackPanel: the filling text gets the leftover width, so it can trim
         var panel = new DockPanel
         {
-            // center the content by default (so it stays centered when the button is stretched)
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
         };
@@ -490,10 +347,6 @@ public class PhButton : Button
         return panel;
     }
 
-
-    /// <summary>
-    /// Puts the icon-to-text gap on the icon, only while there is text, so an icon-only button stays centered.
-    /// </summary>
     private void UpdateContentSpacing()
     {
         if (_iconEl is null) return;
@@ -501,10 +354,6 @@ public class PhButton : Button
         _iconEl.Margin = IsTextVisible ? ICON_GAP : default;
     }
 
-
-    /// <summary>
-    /// Paints the icon from the button foreground: stroked when <see cref="IconStrokeThickness"/> is set, filled otherwise.
-    /// </summary>
     private void UpdateIconPaint()
     {
         if (_iconEl is null) return;
@@ -515,11 +364,6 @@ public class PhButton : Button
         _iconEl.Stroke = isOutlined ? Foreground : null;
     }
 
-
-    /// <summary>
-    /// Press/hover feedback on the content (not the control, so the chrome stays
-    /// put): nudge down + dim on press, and an underline on hover/press for links.
-    /// </summary>
     private void UpdateContentVisual()
     {
         if (Content is Visual content)
@@ -528,7 +372,6 @@ public class PhButton : Button
             content.Opacity = IsPressed ? 0.6 : 1d;
         }
 
-        // link: underline on hover/press only
         if (Variant == PhButtonVariant.Link && _textEl is not null)
         {
             _textEl.TextDecorations = IsPointerOver || IsPressed
@@ -537,10 +380,6 @@ public class PhButton : Button
         }
     }
 
-
-    /// <summary>
-    /// Opens dropdown menu of this button if any.
-    /// </summary>
     public void OpenDropdownMenu(PlacementMode? placement = null)
     {
         if (DropdownMenu is null) return;
@@ -549,34 +388,16 @@ public class PhButton : Button
         DropdownMenu.Open(this);
     }
 
-    #endregion // Control Methods
-
-
 }
 
-
-/// <summary>
-/// The visual style variant of a <see cref="PhButton"/>.
-/// </summary>
 public enum PhButtonVariant
 {
-    /// <summary>
-    /// The standard button look.
-    /// </summary>
+
     Default,
 
-    /// <summary>
-    /// A filled accent button (accent background + readable foreground).
-    /// </summary>
     Accent,
 
-    /// <summary>
-    /// A borderless, link-style button (transparent background, accent text, hand cursor).
-    /// </summary>
     Link,
 
-    /// <summary>
-    /// A bordered button with the default background but an accent border and accent text.
-    /// </summary>
     Outline,
 }

@@ -1,22 +1,4 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -38,7 +20,6 @@ public partial class DialogWindow : PhWindow
     protected virtual int MAX_WIDTH => 600;
     protected virtual Thickness ContentPadding => new(24, 14, 24, 20);
 
-
     protected Grid _contentEl;
     protected Border _footerEl;
     protected PhButton _btn1;
@@ -47,12 +28,6 @@ public partial class DialogWindow : PhWindow
 
     protected TaskCompletionSource<DialogExitCode> _taskSourceExitCode = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-
-    #region Control Properties
-
-    /// <summary>
-    /// Gets, sets the dialog content.
-    /// </summary>
     public object DialogContent
     {
         get => GetValue(DialogContentProperty);
@@ -61,10 +36,6 @@ public partial class DialogWindow : PhWindow
     public static readonly StyledProperty<object> DialogContentProperty =
         AvaloniaProperty.Register<DialogWindow, object>(nameof(DialogContent));
 
-
-    /// <summary>
-    /// Gets, sets the content for left section of dialog footer.
-    /// </summary>
     public object DialogFooterLeftContent
     {
         get => GetValue(DialogFooterLeftContentProperty);
@@ -73,18 +44,10 @@ public partial class DialogWindow : PhWindow
     public static readonly StyledProperty<object> DialogFooterLeftContentProperty =
         AvaloniaProperty.Register<DialogWindow, object>(nameof(DialogFooterLeftContent));
 
-
-    /// <summary>
-    /// Gets the visibility of title bar.
-    /// </summary>
     public bool IsTitleVisible => !string.IsNullOrWhiteSpace(Title) && BHelper.OS != OSType.Linux;
     public static readonly DirectProperty<DialogWindow, bool> IsTitleVisibleProperty =
         AvaloniaProperty.RegisterDirect<DialogWindow, bool>(nameof(IsTitleVisible), i => i.IsTitleVisible);
 
-
-    /// <summary>
-    /// Gets, sets the button 1 text.
-    /// </summary>
     public string Button1Text
     {
         get => GetValue(Button1TextProperty);
@@ -93,10 +56,6 @@ public partial class DialogWindow : PhWindow
     public static readonly StyledProperty<string> Button1TextProperty =
         AvaloniaProperty.Register<DialogWindow, string>(nameof(Button1Text), "[Button 1]");
 
-
-    /// <summary>
-    /// Gets, sets the button 2 text.
-    /// </summary>
     public string Button2Text
     {
         get => GetValue(Button2TextProperty);
@@ -105,10 +64,6 @@ public partial class DialogWindow : PhWindow
     public static readonly StyledProperty<string> Button2TextProperty =
         AvaloniaProperty.Register<DialogWindow, string>(nameof(Button2Text), "[Button 2]");
 
-
-    /// <summary>
-    /// Gets, sets the button 3 text.
-    /// </summary>
     public string Button3Text
     {
         get => GetValue(Button3TextProperty);
@@ -117,10 +72,6 @@ public partial class DialogWindow : PhWindow
     public static readonly StyledProperty<string> Button3TextProperty =
         AvaloniaProperty.Register<DialogWindow, string>(nameof(Button3Text), "[Button 3]");
 
-
-    /// <summary>
-    /// Gets, sets the icon of button 1; <c>null</c> shows text only.
-    /// </summary>
     public Geometry? Button1Icon
     {
         get => GetValue(Button1IconProperty);
@@ -129,10 +80,6 @@ public partial class DialogWindow : PhWindow
     public static readonly StyledProperty<Geometry?> Button1IconProperty =
         AvaloniaProperty.Register<DialogWindow, Geometry?>(nameof(Button1Icon));
 
-
-    /// <summary>
-    /// Gets, sets the icon of button 2; <c>null</c> shows text only.
-    /// </summary>
     public Geometry? Button2Icon
     {
         get => GetValue(Button2IconProperty);
@@ -141,10 +88,6 @@ public partial class DialogWindow : PhWindow
     public static readonly StyledProperty<Geometry?> Button2IconProperty =
         AvaloniaProperty.Register<DialogWindow, Geometry?>(nameof(Button2Icon));
 
-
-    /// <summary>
-    /// Gets, sets the icon of button 3; <c>null</c> shows text only.
-    /// </summary>
     public Geometry? Button3Icon
     {
         get => GetValue(Button3IconProperty);
@@ -153,10 +96,6 @@ public partial class DialogWindow : PhWindow
     public static readonly StyledProperty<Geometry?> Button3IconProperty =
         AvaloniaProperty.Register<DialogWindow, Geometry?>(nameof(Button3Icon));
 
-
-    /// <summary>
-    /// Gets, sets the visibility of button 1.
-    /// </summary>
     public bool IsButton1Visible
     {
         get => GetValue(IsButton1VisibleProperty);
@@ -165,10 +104,6 @@ public partial class DialogWindow : PhWindow
     public static readonly StyledProperty<bool> IsButton1VisibleProperty =
         AvaloniaProperty.Register<DialogWindow, bool>(nameof(IsButton1Visible), true);
 
-
-    /// <summary>
-    /// Gets, sets the visibility of button 2.
-    /// </summary>
     public bool IsButton2Visible
     {
         get => GetValue(IsButton2VisibleProperty);
@@ -177,10 +112,6 @@ public partial class DialogWindow : PhWindow
     public static readonly StyledProperty<bool> IsButton2VisibleProperty =
         AvaloniaProperty.Register<DialogWindow, bool>(nameof(IsButton2Visible), false);
 
-
-    /// <summary>
-    /// Gets, sets the visibility of button 3.
-    /// </summary>
     public bool IsButton3Visible
     {
         get => GetValue(IsButton3VisibleProperty);
@@ -189,33 +120,13 @@ public partial class DialogWindow : PhWindow
     public static readonly StyledProperty<bool> IsButton3VisibleProperty =
         AvaloniaProperty.Register<DialogWindow, bool>(nameof(IsButton3Visible), false);
 
-
-    /// <summary>
-    /// Gets, sets the default button of dialog.
-    /// </summary>
     public DialogButton DefaultButton { get; set; } = DialogButton.Button1;
 
-
-    /// <summary>
-    /// Gets, sets the default focus of dialog.
-    /// </summary>
     public DialogFocus DefaultFocus { get; set; } = DialogFocus.Default;
 
-
-    /// <summary>
-    /// Gets, sets the value indicates that pression ENTER key to submit the window.
-    /// </summary>
     public bool PressEnterToSubmit { get; set; } = true;
 
-
-    /// <summary>
-    /// Gets or sets the result for the dialog.
-    /// </summary>
     public DialogExitCode DialogResult { get; set; } = DialogExitCode.None;
-
-    #endregion // Control Properties
-
-
 
     public DialogWindow()
     {
@@ -232,36 +143,26 @@ public partial class DialogWindow : PhWindow
         _ = UpdateWindowIconAsync();
     }
 
-
-
-    #region Window Events
-
     protected override async void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
         ApplyTheme();
         SetDefaultButton(DefaultButton);
 
-        // Note: need a delay so that pressing Space key won't hit the focused button
         await Task.Delay(200);
         SetDefaultFocus();
     }
-
 
     protected override void OnClosed(EventArgs e)
     {
         base.OnClosed(e);
 
-        // if the dialog is closed unexpected, returns Abort code to break the while loop.
         if (DialogResult == DialogExitCode.None) DialogResult = DialogExitCode.Abort;
 
-        // set the result to complete the task
         _ = _taskSourceExitCode.TrySetResult(DialogResult);
 
-        // reactivate the owner window
         Owner?.Activate();
     }
-
 
     protected override void OnIgThemeChanged(ThemePackChangedEventArgs e)
     {
@@ -270,19 +171,16 @@ public partial class DialogWindow : PhWindow
         ApplyTheme();
     }
 
-
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
         if (!PressEnterToSubmit) return;
 
-        // press Enter to submit
         var hk = new Hotkey(e.KeyModifiers, e.Key);
         if (hk.IsSame(Key.Enter))
         {
             e.Handled = true;
 
-            // execute the action of the current default button
             if (DefaultButton == DialogButton.Button1)
             {
                 Button1_Click(_btn1, e);
@@ -302,7 +200,6 @@ public partial class DialogWindow : PhWindow
         }
     }
 
-
     protected override void OnIgCloseWindowHotkeyPressed(KeyEventArgs e)
     {
         base.OnIgCloseWindowHotkeyPressed(e);
@@ -310,7 +207,6 @@ public partial class DialogWindow : PhWindow
         e.Handled = true;
         OnDialogAborted();
     }
-
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
@@ -322,10 +218,6 @@ public partial class DialogWindow : PhWindow
         }
     }
 
-
-    /// <summary>
-    /// Creates layout and content for dialog window.
-    /// </summary>
     [MemberNotNull(
         nameof(_contentEl),
         nameof(_footerEl),
@@ -334,9 +226,6 @@ public partial class DialogWindow : PhWindow
         nameof(_btn3))]
     protected Grid CreateContentElement()
     {
-        // 1. create content slot
-        // stretch the content so resizable dialogs (e.g. Settings) can fill/shrink and
-        // let their own scrollers take over instead of overflowing and centering.
         var dialogContentSlot = new ContentControl
         {
             Padding = ContentPadding,
@@ -347,17 +236,11 @@ public partial class DialogWindow : PhWindow
         _contentEl = new Grid();
         _contentEl.Children.Add(dialogContentSlot);
 
-
-
-        // 2. create footer
-        // 2.1 left footer
         var footerLeftSlot = new ContentControl
         {
             [!ContentControl.ContentProperty] = this[!DialogFooterLeftContentProperty],
         };
 
-
-        // 2.2 right footer
         _btn1 = new PhButton
         {
             MinWidth = 100,
@@ -413,8 +296,6 @@ public partial class DialogWindow : PhWindow
             Child = footerWrapper,
         };
 
-
-        // 3. create root content
         var root = new Grid
         {
             MinWidth = MIN_WIDTH,
@@ -432,7 +313,6 @@ public partial class DialogWindow : PhWindow
         return root;
     }
 
-
     private void FooterContent_KeyDown(object? sender, KeyEventArgs e)
     {
         var isMoveNext = e.Key == Key.Up || e.Key == Key.Right;
@@ -440,23 +320,18 @@ public partial class DialogWindow : PhWindow
         if (!isMoveNext && !isMoveBack) return;
         if (sender is not StackPanel panel) return;
 
-
-        // get visible footer buttons
         var visibleButtons = panel.Children
             .OfType<Button>()
             .Where(i => i.IsVisible)
             .ToList();
         if (visibleButtons.Count == 0) return;
 
-        // get focused button and its index
         var focusedIndex = -1;
         if (FocusManager?.GetFocusedElement() is Button focusedButton)
         {
             focusedIndex = visibleButtons.IndexOf(focusedButton);
         }
 
-
-        // if no button has focus yet => focus the first one
         if (focusedIndex == -1)
         {
             visibleButtons[0].Focus(NavigationMethod.Tab);
@@ -465,12 +340,10 @@ public partial class DialogWindow : PhWindow
         {
             if (isMoveNext)
             {
-                // wrap around
                 focusedIndex = (focusedIndex + 1) % visibleButtons.Count;
             }
             else if (isMoveBack)
             {
-                // wrap around
                 focusedIndex = (focusedIndex - 1 + visibleButtons.Count) % visibleButtons.Count;
             }
 
@@ -480,44 +353,27 @@ public partial class DialogWindow : PhWindow
         e.Handled = true;
     }
 
-
     private void Button1_Click(object? sender, RoutedEventArgs e)
     {
         OnDialogSubmitted(new DialogEventArgs(DialogAction.Submit));
     }
-
 
     private void Button2_Click(object? sender, RoutedEventArgs e)
     {
         OnDialogCancelled(new DialogEventArgs(DialogAction.Cancel));
     }
 
-
     private void Button3_Click(object? sender, RoutedEventArgs e)
     {
         OnDialogApplied(new DialogEventArgs(DialogAction.Apply));
     }
 
-
-    #endregion // Window Events
-
-
-
-    #region Virtual methods
-
-    /// <summary>
-    /// Closes the form and returns <see cref="DialogExitCode.Abort"/> code.
-    /// </summary>
     protected virtual void OnDialogAborted()
     {
         DialogResult = DialogExitCode.Abort;
         Close(DialogResult);
     }
 
-
-    /// <summary>
-    /// Closes the form and returns <see cref="DialogExitCode.OK"/> code.
-    /// </summary>
     protected virtual void OnDialogSubmitted(DialogEventArgs e)
     {
         if (!e.CanProceed) return;
@@ -525,10 +381,6 @@ public partial class DialogWindow : PhWindow
         Close(DialogResult);
     }
 
-
-    /// <summary>
-    /// Closes the form and returns <see cref="DialogExitCode.Cancel"/> code.
-    /// </summary>
     protected virtual void OnDialogCancelled(DialogEventArgs e)
     {
         if (!e.CanProceed) return;
@@ -536,59 +388,34 @@ public partial class DialogWindow : PhWindow
         Close(DialogResult);
     }
 
-
-    /// <summary>
-    /// Sets the dialog result to <see cref="DialogExitCode.None"/>
-    /// and does nothing.
-    /// </summary>
     protected virtual void OnDialogApplied(DialogEventArgs e)
     {
         if (!e.CanProceed) return;
         DialogResult = DialogExitCode.None;
     }
 
-
-    #endregion // Virtual methods
-
-
-
-    #region Methods
-
-    /// <summary>
-    /// Updates background according to theme color.
-    /// </summary>
     protected void ApplyTheme()
     {
         var isDarkMode = Core.Theme.Settings.IsDarkMode;
         var bg = AppThemeColors.BgBrush.Color.NoAlpha();
 
-        // content bg
         var contentAlpha = Math.Max(isDarkMode ? 180 : 220, bg.A);
         var contentBg = bg.WithAlpha(contentAlpha);
         _contentEl.Background = contentBg.ToBrush();
 
-        // footer bg
         var footerAlpha = _canUseBackdrop ? Math.Max(180, contentAlpha / 2) : contentAlpha;
         var footerBg = bg
             .WithBrightness(isDarkMode ? 0.075f : -0.075f)
             .WithAlpha(footerAlpha);
         _footerEl.Background = footerBg.ToBrush();
 
-        // footer border
         _footerEl.BorderBrush = footerBg
             .WithBrightness(isDarkMode ? 0.075f : -0.075f)
             .ToBrush();
     }
 
-
-    /// <summary>
-    /// Sets the default button style.
-    /// </summary>
     protected void SetDefaultButton(DialogButton btn)
     {
-        // Only make the button the Enter-key default when submission via Enter is allowed.
-        // Avalonia routes Enter to any IsDefault button regardless of OnKeyDown, so this
-        // is what actually honors PressEnterToSubmit = false.
         if (btn == DialogButton.Button1)
         {
             _btn1.IsDefault = PressEnterToSubmit;
@@ -606,10 +433,6 @@ public partial class DialogWindow : PhWindow
         }
     }
 
-
-    /// <summary>
-    /// Sets the default focused button.
-    /// </summary>
     protected void SetDefaultFocus()
     {
         if (DefaultFocus == DialogFocus.Button1)
@@ -626,16 +449,10 @@ public partial class DialogWindow : PhWindow
         }
     }
 
-
-    /// <summary>
-    /// Shows dialog.
-    /// </summary>
     public async Task<DialogExitCode> ShowAsync(PhWindow? owner)
     {
         _taskSourceExitCode = new TaskCompletionSource<DialogExitCode>();
 
-        // Only show as a modal child when the owner is actually visible.
-        // During early startup the owner may not be shown yet on some backends.
         if (owner is not null && owner.IsVisible)
         {
             await ShowDialog(owner);
@@ -645,14 +462,9 @@ public partial class DialogWindow : PhWindow
             Show();
         }
 
-
-        // wait for exit code
         var exitCode = await _taskSourceExitCode.Task;
 
         return exitCode;
     }
-
-    #endregion // Methods
-
 
 }

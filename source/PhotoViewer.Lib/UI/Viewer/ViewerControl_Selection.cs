@@ -1,22 +1,4 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Input;
 using Avalonia.Media;
 using PhotoViewer.Common;
@@ -27,49 +9,22 @@ using System.Collections.Generic;
 
 namespace PhotoViewer.UI.Viewer;
 
-
 public partial class ViewerControl
 {
-    // selection
     private SelectionInfo _selection = new();
 
-
-    /// <summary>
-    /// Occurs when the <see cref="ClientSelection"/> is changed.
-    /// </summary>
     public event TEventHandler<ViewerControl, ViewerSelectionChangedEventArgs>? SelectionChanged;
 
-
-
-    #region Public Properties
-
-    /// <summary>
-    /// Gets the client selection area.
-    /// </summary>
     public Rect ClientSelection => RectSourceToClient(_selection.SourceRect);
 
-
-    /// <summary>
-    /// Gets, sets the image source selection. This will emit the event <see cref="SelectionChanged"/>.
-    /// Use <see cref="SetSourceSelection"/> to control the selection event.
-    /// </summary>
     public Rect SourceSelection
     {
         get => _selection.SourceRect;
         set => SetSourceSelection(value, true);
     }
 
-
-    /// <summary>
-    /// Gets, sets selection aspect ratio.
-    /// If Width or Height is <c>less than or equals 0</c>, we will use free aspect ratio.
-    /// </summary>
     public Size SelectionAspectRatio { get; set; } = new();
 
-
-    /// <summary>
-    /// Enables or disables the selection.
-    /// </summary>
     public bool EnableSelection
     {
         get => _selection.Enabled;
@@ -83,16 +38,8 @@ public partial class ViewerControl
         }
     }
 
-
-    /// <summary>
-    /// Gets the current action of selection.
-    /// </summary>
     public SelectionAction CurrentSelectionAction { get; private set; } = SelectionAction.None;
 
-
-    /// <summary>
-    /// Gets 8 resizers of the selection rectangle
-    /// </summary>
     public List<SelectionResizer> SelectionResizers
     {
         get
@@ -103,8 +50,6 @@ public partial class ViewerControl
             var resizerMargin = DpiScale(1f);
             var hitSize = DpiScale(resizerSize * 1.3f);
 
-
-            // top left
             var topLeft = new Rect(
                 ClientSelection.X + resizerMargin,
                 ClientSelection.Y + resizerMargin,
@@ -114,8 +59,6 @@ public partial class ViewerControl
                 ClientSelection.Y - hitSize / 2 + resizerSize / 2,
                 hitSize, hitSize);
 
-
-            // top right
             var topRight = new Rect(
                 ClientSelection.Right - resizerSize - resizerMargin,
                 ClientSelection.Y + resizerMargin,
@@ -125,8 +68,6 @@ public partial class ViewerControl
                 ClientSelection.Y - hitSize / 2 + resizerSize / 2,
                 hitSize, hitSize);
 
-
-            // bottom left
             var bottomLeft = new Rect(
                 ClientSelection.X + resizerMargin,
                 ClientSelection.Bottom - resizerSize - resizerMargin,
@@ -136,8 +77,6 @@ public partial class ViewerControl
                 ClientSelection.Bottom - hitSize / 2 - resizerSize / 2,
                 hitSize, hitSize);
 
-
-            // bottom right
             var bottomRight = new Rect(
                 ClientSelection.Right - resizerSize - resizerMargin,
                 ClientSelection.Bottom - resizerSize - resizerMargin,
@@ -147,8 +86,6 @@ public partial class ViewerControl
                 ClientSelection.Bottom - hitSize / 2 - resizerSize / 2,
                 hitSize, hitSize);
 
-
-            // top
             var top = new Rect(
                 ClientSelection.X + ClientSelection.Width / 2 - resizerSize / 2,
                 ClientSelection.Y + resizerMargin,
@@ -158,8 +95,6 @@ public partial class ViewerControl
                 ClientSelection.Y - hitSize / 2 + resizerSize / 2,
                 Math.Abs(topRightHit.X - topLeftHit.Right), hitSize);
 
-
-            // right
             var right = new Rect(
                     ClientSelection.Right - resizerSize - resizerMargin,
                     ClientSelection.Y + ClientSelection.Height / 2 - resizerSize / 2,
@@ -169,8 +104,6 @@ public partial class ViewerControl
                     topRightHit.Bottom,
                     hitSize, Math.Abs(bottomRightHit.Y - topRightHit.Bottom));
 
-
-            // bottom
             var bottom = new Rect(
                     ClientSelection.X + ClientSelection.Width / 2 - resizerSize / 2,
                     ClientSelection.Bottom - resizerSize - resizerMargin,
@@ -180,8 +113,6 @@ public partial class ViewerControl
                     ClientSelection.Bottom - hitSize / 2 - resizerSize / 2,
                     Math.Abs(bottomRightHit.X - bottomLeftHit.Right), hitSize);
 
-
-            // left
             var left = new Rect(
                     ClientSelection.X + resizerMargin,
                     ClientSelection.Y + ClientSelection.Height / 2 - resizerSize / 2,
@@ -191,10 +122,7 @@ public partial class ViewerControl
                     topLeftHit.Bottom,
                     hitSize, Math.Abs(bottomLeftHit.Y - topLeftHit.Bottom));
 
-
-            // 8 resizers
             return [
-                // bottom-right is in higher layer
                 new(SelectionResizerType.BottomRight, bottomRight, bottomRightHit),
                 new(SelectionResizerType.TopLeft, topLeft, topLeftHit),
                 new(SelectionResizerType.BottomLeft, bottomLeft, bottomLeftHit),
@@ -208,19 +136,8 @@ public partial class ViewerControl
         }
     }
 
-
-    #endregion // Public Properties
-
-
-
-    #region Public Functions
-
-    /// <summary>
-    /// Sets selection area on the source image coordinates.
-    /// </summary>
     public void SetSourceSelection(Rect srcRect, bool triggerEvent = true)
     {
-        // use integer numbers for pixel rounding
         var w = (int)BitmapSize.Width;
         var h = (int)BitmapSize.Height;
         _selection.SourceRect = srcRect.GetIntersection(new Rect(0, 0, w, h));
@@ -231,12 +148,6 @@ public partial class ViewerControl
         }
     }
 
-
-    #region Coordinate converters
-
-    /// <summary>
-    /// Computes the location of the client point into image source coords.
-    /// </summary>
     public Point PointClientToSource(Point clientPoint)
     {
         var dpiFactor = _zooming.Factor / Dpi;
@@ -246,18 +157,12 @@ public partial class ViewerControl
         return new Point(x, y);
     }
 
-
-    /// <summary>
-    /// Computes and scale the rectangle of the client to image source coords
-    /// </summary>
     public Rect RectClientToSource(Rect rect)
     {
         var safeRect = rect.Normalize();
         var p1 = PointClientToSource(new Point(safeRect.X, safeRect.Y));
         var p2 = PointClientToSource(new Point(safeRect.Right, safeRect.Bottom));
 
-
-        // get the min int value
         var floorP1X = Math.Floor(Math.Round(p1.X, 1));
         var floorP1Y = Math.Floor(Math.Round(p1.Y, 1));
 
@@ -268,8 +173,6 @@ public partial class ViewerControl
 
         if (p1 == p2) return new Rect(floorP1X, floorP1Y, 0, 0);
 
-
-        // get the max int value
         var ceilP2X = Math.Ceiling(Math.Round(p2.X, 1));
         var ceilP2Y = Math.Ceiling(Math.Round(p2.Y, 1));
         if (ceilP2X < 0) ceilP2X = 0;
@@ -277,18 +180,12 @@ public partial class ViewerControl
         if (ceilP2X > BitmapSize.Width) ceilP2X = BitmapSize.Width;
         if (ceilP2Y > BitmapSize.Height) ceilP2Y = BitmapSize.Height;
 
-
         var width = Math.Max(0, ceilP2X - floorP1X);
         var height = Math.Max(0, ceilP2Y - floorP1Y);
 
-        // the selection area is where the p1 and p2 intersected.
         return new Rect(floorP1X, floorP1Y, width, height);
     }
 
-
-    /// <summary>
-    /// Computes the location of the image source point into client coords.
-    /// </summary>
     public Point PointSourceToClient(Point srcPoint)
     {
         var dpiFactor = _zooming.Factor / Dpi;
@@ -298,10 +195,6 @@ public partial class ViewerControl
         return new Point(x, y);
     }
 
-
-    /// <summary>
-    /// Computes and scale the rectangle of the image source to client coords
-    /// </summary>
     public Rect RectSourceToClient(Rect rect)
     {
         var safeRect = rect.Normalize();
@@ -313,20 +206,6 @@ public partial class ViewerControl
         return new Rect(loc, size);
     }
 
-    #endregion // Coordinate converters
-
-
-    #endregion // Public Functions
-
-
-
-
-
-    #region Private Functions
-
-    /// <summary>
-    /// Initializes the selection logics when <see cref="OnPointerPressed"/> event occurs.
-    /// </summary>
     private bool OnSelectionBegin(PointerPoint p)
     {
         if (_imgSource?.Image?.IsDisposed() ?? true) return false;
@@ -334,69 +213,52 @@ public partial class ViewerControl
         _selection.PointerDownPoint = p.Position;
         _selection.IsLeftButtonPressed = p.Properties.IsLeftButtonPressed;
 
-
-        // check if we can start the selection
         var canSelect = EnableSelection && p.Properties.IsLeftButtonPressed;
         var isSelectionHovered = ClientSelection.Contains(p.Position);
         var requestRerender = canSelect && !SourceSelection.IsEmpty;
 
-
-        // get the selected resizer
         _selection.SelectedResizer = SelectionResizers.Find(i => i.HitRegion.Contains(p.Position));
         CurrentSelectionAction = SelectionAction.None;
-
 
         if (canSelect)
         {
             _selection.SourceRectBeforeMoved = new Rect(_selection.SourceRect.Position, _selection.SourceRect.Size);
 
-            // resize selection
             if (canSelect && _selection.SelectedResizer != null)
             {
                 CurrentSelectionAction = SelectionAction.Resizing;
             }
-            // move selection
             else if (isSelectionHovered)
             {
                 CurrentSelectionAction = SelectionAction.Moving;
             }
-            // draw selection
             else if (canSelect)
             {
                 CurrentSelectionAction = SelectionAction.Drawing;
             }
         }
 
-
         return requestRerender;
     }
 
-
-    /// <summary>
-    /// Updates selection logics when <see cref="OnPointerMoved"/> event occurs.
-    /// </summary>
     private bool OnSelectionUpdating(Point position)
     {
         var requestRerender = false;
         var canSelect = EnableSelection && _selection.IsLeftButtonPressed;
         _selection.PointerMovePoint = position;
 
-
         if (_selection.IsLeftButtonPressed)
         {
-            // resize the selection
             if (CurrentSelectionAction == SelectionAction.Resizing && _selection.SelectedResizer != null)
             {
                 ResizeSelection(position, _selection.SelectedResizer.Type);
                 requestRerender = true;
             }
-            // move selection
             else if (CurrentSelectionAction == SelectionAction.Moving)
             {
                 MoveSelection(position);
                 requestRerender = true;
             }
-            // draw new selection
             else if (CurrentSelectionAction == SelectionAction.Drawing)
             {
                 CreateNewSelection();
@@ -404,11 +266,8 @@ public partial class ViewerControl
             }
         }
 
-
-        // change cursor
         if (EnableSelection)
         {
-            // set resizer cursor
             var hoveredResizer = SelectionResizers.Find(i => i.HitRegion.Contains(position));
 
             if (hoveredResizer != null)
@@ -424,41 +283,26 @@ public partial class ViewerControl
                 Cursor = new Cursor(StandardCursorType.Cross);
             }
 
-
-            // redraw the canvas
             var isSelectionHovered = ClientSelection.Contains(position);
             requestRerender = requestRerender
                 || _selection.IsHovered != isSelectionHovered
                 || _selection.HoveredResizer != hoveredResizer;
 
-
             _selection.IsHovered = isSelectionHovered;
             _selection.HoveredResizer = hoveredResizer;
         }
-        // restore default cursor
         else
         {
             Cursor = Avalonia.Input.Cursor.Default;
         }
 
-
         return requestRerender;
     }
 
-
-    /// <summary>
-    /// Updates selection when one of these events occurs:
-    /// <list type="bullet">
-    ///   <item><see cref="OnPointerReleased"/></item>
-    ///   <item><see cref="OnPointerCaptureLost"/></item>
-    ///   <item><see cref="OnPointerExited"/></item>
-    /// </list>
-    /// </summary>
     private bool OnSelectionEnd(bool isPointerExited)
     {
         var requestRerender = false;
 
-        // if the pointer is exited
         if (isPointerExited)
         {
             _selection.IsHovered = false;
@@ -467,14 +311,11 @@ public partial class ViewerControl
             return requestRerender;
         }
 
-
-        // if the pointer is released or canceled
         var canSelect = EnableSelection && _selection.IsLeftButtonPressed;
 
         _selection.PointerDownPoint = null;
         _selection.IsLeftButtonPressed = false;
         _selection.SelectedResizer = null;
-
 
         if (canSelect)
         {
@@ -485,30 +326,19 @@ public partial class ViewerControl
         return requestRerender;
     }
 
-
-    /// <summary>
-    /// Draws the selection visuals on a canvas, including selection borders, grids, and resizers
-    /// when <see cref="Render"/> occurs.
-    /// </summary>
     private void OnDrawSelection(DrawingContext g)
     {
         if (!EnableSelection || SourceSelection.IsEmpty) return;
 
-
-        // 1. draw the clip selection region
         var selectionGeo = g.GetCombinedRectGeometryEx(ClientSelection, DestRect, 0, 0, GeometryCombineMode.Xor);
         g.DrawGeometryEx(selectionGeo, Colors.Transparent,
             Colors.Black.WithAlpha(_selection.IsLeftButtonPressed ? 100 : 180));
 
-
-        // 2. draw selection grid, resizers
         if (_selection.IsLeftButtonPressed || _selection.IsHovered || _selection.HoveredResizer != null)
         {
             var width3 = ClientSelection.Width / 3;
             var height3 = ClientSelection.Height / 3;
 
-
-            // draw grid, ignore alpha value
             for (int i = 1; i < 3; i++)
             {
                 g.DrawLineEx(
@@ -530,7 +360,6 @@ public partial class ViewerControl
                     ClientSelection.Y + ClientSelection.Height, Core.AccentColor.WithAlpha(200),
                     0.4f);
 
-
                 g.DrawLineEx(
                     ClientSelection.X,
                     ClientSelection.Y + (i * height3),
@@ -551,8 +380,6 @@ public partial class ViewerControl
                     0.4f);
             }
 
-
-            // draw selection size
             var text = $"{_selection.SourceRect.Width} x {_selection.SourceRect.Height}";
             var textSize = g.MeasureTextEx(text, FontFamily, FontSize * 0.95);
             var textPadding = new Thickness(5, 2.5);
@@ -572,8 +399,6 @@ public partial class ViewerControl
                 g.DrawTextEx(text, FontFamily, FontSize * 0.95, textX, textY, Colors.White);
             }
 
-
-            // draw resizers with layer order
             var resizers = SelectionResizers;
             resizers.Reverse();
 
@@ -589,7 +414,6 @@ public partial class ViewerControl
                     && (rItem.Type == SelectionResizerType.Left
                     || rItem.Type == SelectionResizerType.Right)) continue;
 
-                // hover style
                 var resizerRect = rItem.IndicatorRegion;
                 var fillColor = Colors.White.WithAlpha(200);
                 if (rItem.Type == _selection.HoveredResizer?.Type)
@@ -601,8 +425,6 @@ public partial class ViewerControl
                 g.DrawEllipseEx(resizerRect, Colors.White.WithAlpha(50), Colors.Black.WithAlpha(200), 4f);
                 g.DrawEllipseEx(resizerRect, Core.AccentColor.WithAlpha(255), fillColor, 1f);
 
-
-                // draw debug Hit region
                 if (EnableDebug)
                 {
                     g.DrawRectangleEx(rItem.HitRegion, 0, Colors.Red);
@@ -610,19 +432,12 @@ public partial class ViewerControl
             }
         }
 
-
-        // 3. draw the selection border
         var borderWidth = (_selection.IsHovered && _selection.IsLeftButtonPressed) ? 0.6f : 0.3f;
         g.DrawRectangleEx(ClientSelection, 0, Colors.White, null, borderWidth);
         g.DrawRectangleEx(ClientSelection, 0, Core.AccentColor, null, borderWidth);
 
     }
 
-
-
-    /// <summary>
-    /// Creates a new selection based on mouse pointer positions.
-    /// </summary>
     private void CreateNewSelection()
     {
         if (_selection.PointerDownPoint == null || _selection.PointerMovePoint == null) return;
@@ -633,21 +448,12 @@ public partial class ViewerControl
             SelectionAspectRatio,
             BitmapSize.Width, BitmapSize.Height, DestRect);
 
-        // limit the selected area to the image
         cliRect = cliRect.GetIntersection(DestRect);
 
         var srcRect = RectClientToSource(cliRect);
         SetSourceSelection(srcRect, true);
     }
 
-
-    /// <summary>
-    /// Gets the rectangle between 2 points with aspect ratio.
-    /// </summary>
-    /// <param name="point1">The first point</param>
-    /// <param name="point2">The second point</param>
-    /// <param name="aspectRatio">Aspect ratio</param>
-    /// <param name="limitRect">The rectangle to limit the selection</param>
     private static Rect GetRectBetween2Points(Point? point1, Point? point2,
         Size aspectRatio, double srcWidth, double srcHeight, Rect limitRect)
     {
@@ -655,7 +461,6 @@ public partial class ViewerControl
         var fromPoint = point1 ?? new Point();
         var toPoint = point2 ?? new Point();
 
-        // swap fromPoint and toPoint value if toPoint is less than fromPoint
         if (toPoint.X < fromPoint.X)
         {
             var tempX = fromPoint.X;
@@ -677,19 +482,14 @@ public partial class ViewerControl
         selectedArea = selectedArea.WithWidth(width);
         selectedArea = selectedArea.WithHeight(height);
 
-        // limit the selected area to the limitRect
         selectedArea = selectedArea.GetIntersection(limitRect);
 
-
-        // free aspect ratio
         if (aspectRatio.Width <= 0 || aspectRatio.Height <= 0)
             return selectedArea;
-
 
         var wRatio = aspectRatio.Width / aspectRatio.Height;
         var hRatio = aspectRatio.Height / aspectRatio.Width;
 
-        // update selection size according to the ratio
         if (wRatio > hRatio)
         {
             selectedArea = selectedArea.WithHeight(selectedArea.Width / wRatio);
@@ -716,10 +516,6 @@ public partial class ViewerControl
         return selectedArea;
     }
 
-
-    /// <summary>
-    /// Moves the current selection to the given location.
-    /// </summary>
     private void MoveSelection(Point clientPoint)
     {
         if (!EnableSelection || _selection.PointerDownPoint == null) return;
@@ -727,33 +523,23 @@ public partial class ViewerControl
         var srcPoint = PointClientToSource(clientPoint);
         var srcMouseDownPoint = PointClientToSource(_selection.PointerDownPoint.Value);
 
-
-        // get the distance the source rect moved
         var dX = srcMouseDownPoint.X - _selection.SourceRectBeforeMoved.X;
         var dY = srcMouseDownPoint.Y - _selection.SourceRectBeforeMoved.Y;
 
-
-        // get the new selection start point
         var newSrcPoint = new Point(srcPoint.X - dX, srcPoint.Y - dY);
 
+        if (newSrcPoint.X < 0) newSrcPoint = newSrcPoint.WithX(0);
+        if (newSrcPoint.Y < 0) newSrcPoint = newSrcPoint.WithY(0);
 
-        // limit the new selection to the image source
-        if (newSrcPoint.X < 0) newSrcPoint = newSrcPoint.WithX(0); // left edge
-        if (newSrcPoint.Y < 0) newSrcPoint = newSrcPoint.WithY(0); // right edge
-
-        // right edge
         if (newSrcPoint.X + _selection.SourceRectBeforeMoved.Width > BitmapSize.Width)
         {
             newSrcPoint = newSrcPoint.WithX(BitmapSize.Width - _selection.SourceRectBeforeMoved.Width);
         }
-        // bottom edge
         if (newSrcPoint.Y + _selection.SourceRectBeforeMoved.Height > BitmapSize.Height)
         {
             newSrcPoint = newSrcPoint.WithY(BitmapSize.Height - _selection.SourceRectBeforeMoved.Height);
         }
 
-
-        // set the final source selection after moved
         var srcRect = new Rect(
             (int)newSrcPoint.X, (int)newSrcPoint.Y,
             (int)_selection.SourceRectBeforeMoved.Width, (int)_selection.SourceRectBeforeMoved.Height);
@@ -761,10 +547,6 @@ public partial class ViewerControl
         SetSourceSelection(srcRect, true);
     }
 
-
-    /// <summary>
-    /// Resizes the current selection.
-    /// </summary>
     private void ResizeSelection(Point clientPoint, SelectionResizerType direction)
     {
         if (!EnableSelection || _selection.PointerDownPoint == null) return;
@@ -778,9 +560,6 @@ public partial class ViewerControl
         var newY = SourceSelection.Y;
         var newWidth = SourceSelection.Width;
         var newHeight = SourceSelection.Height;
-
-
-        #region 1. Get correct size and location of new selection
 
         var isTopDirections = direction == SelectionResizerType.Top
             || direction == SelectionResizerType.TopLeft
@@ -798,8 +577,6 @@ public partial class ViewerControl
             || direction == SelectionResizerType.TopRight
             || direction == SelectionResizerType.BottomRight;
 
-
-        // top resizers
         if (isTopDirections)
         {
             var gapY = srcSelectionBeforeMoved.Y - srcMouseDownPoint.Y;
@@ -809,7 +586,6 @@ public partial class ViewerControl
             newHeight = Math.Max(0, srcSelectionBeforeMoved.Height - dH);
         }
 
-        // right resizers
         if (isRightDirections)
         {
             var gapX = srcSelectionBeforeMoved.Right - srcMouseDownPoint.X;
@@ -818,7 +594,6 @@ public partial class ViewerControl
             newWidth = Math.Max(0, srcSelectionBeforeMoved.Width + dW);
         }
 
-        // bottom resizers
         if (isBottomDirections)
         {
             var gapY = srcSelectionBeforeMoved.Bottom - srcMouseDownPoint.Y;
@@ -827,7 +602,6 @@ public partial class ViewerControl
             newHeight = Math.Max(0, srcSelectionBeforeMoved.Height + dH);
         }
 
-        // left resizers
         if (isLeftDirections)
         {
             var gapX = srcSelectionBeforeMoved.X - srcMouseDownPoint.X;
@@ -837,17 +611,9 @@ public partial class ViewerControl
             newWidth = Math.Max(0, srcSelectionBeforeMoved.Width - dW);
         }
 
-
-        // limit the selected client rect to the image source
         var newSrcRect = new Rect(newX, newY, newWidth, newHeight)
             .GetIntersection(new Rect(0, 0, BitmapSize.Width, BitmapSize.Height));
 
-        #endregion // 1. Get correct size and location of new selection
-
-
-        #region 2. Handle Aspect ratio
-
-        // update selection size according to the ratio
         if (SelectionAspectRatio.Width > 0 && SelectionAspectRatio.Height > 0)
         {
             var wRatio = SelectionAspectRatio.Width / SelectionAspectRatio.Height;
@@ -875,7 +641,6 @@ public partial class ViewerControl
                 {
                     newSrcRect = newSrcRect.WithHeight(newSrcRect.Width / wRatio);
                 }
-
 
                 if (newSrcRect.Bottom >= BitmapSize.Height)
                 {
@@ -907,7 +672,6 @@ public partial class ViewerControl
                     newSrcRect = newSrcRect.WithWidth(newSrcRect.Height / hRatio);
                 }
 
-
                 if (newSrcRect.Right >= BitmapSize.Width)
                 {
                     var maxWidth = BitmapSize.Width - newSrcRect.X;
@@ -917,12 +681,6 @@ public partial class ViewerControl
             }
         }
 
-        #endregion // 2. Handle Aspect ratio
-
-
-        #region 3. Convert float values to int
-
-        // round the values of location & size
         if (isTopDirections || isLeftDirections)
         {
             finalSrcRect = new Rect(
@@ -938,21 +696,9 @@ public partial class ViewerControl
                 (int)Math.Round(newSrcRect.Height));
         }
 
-        #endregion // 3. Convert float values to int
-
-
-        #region 4. Handle small size (<= 1px)
-
-
-
-        // limit the size to 1 pixel
         if (finalSrcRect.Width <= 1) finalSrcRect = finalSrcRect.WithWidth(1);
         if (finalSrcRect.Height <= 1) finalSrcRect = finalSrcRect.WithHeight(1);
 
-
-        // make sure selection rect is not moved when size <= 1
-
-        // top, top-left, left
         if (direction == SelectionResizerType.Top
             || direction == SelectionResizerType.TopLeft
             || direction == SelectionResizerType.Left)
@@ -967,7 +713,6 @@ public partial class ViewerControl
             }
         }
 
-        // right, bottom-right, bottom
         else if (direction == SelectionResizerType.Right
             || direction == SelectionResizerType.BottomRight
             || direction == SelectionResizerType.Bottom)
@@ -982,7 +727,6 @@ public partial class ViewerControl
             }
         }
 
-        // top-right
         else if (direction == SelectionResizerType.TopRight)
         {
             if ((finalSrcRect.Width <= 1 && finalSrcRect.Height <= 1)
@@ -996,7 +740,6 @@ public partial class ViewerControl
                 finalSrcRect = finalSrcRect.WithX((int)srcSelectionBeforeMoved.Left);
             }
         }
-        // bottom-left
         else
         {
             if (finalSrcRect.Width <= 1)
@@ -1005,13 +748,7 @@ public partial class ViewerControl
             }
         }
 
-        #endregion // 4. Handle small size (<= 1px)
-
-
         SetSourceSelection(finalSrcRect, true);
     }
-
-    #endregion // Private Functions
-
 
 }

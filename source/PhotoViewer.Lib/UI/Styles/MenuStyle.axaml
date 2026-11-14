@@ -1,8 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!--  Open animation: subtle scale + fade, growing from the top edge where the menu is anchored  -->
     <Style Selector="MenuFlyoutPresenter, ContextMenu, FlyoutPresenter, ToolTip, Popup">
-        <!--  initialize the transform so the animator has something to target  -->
         <Setter Property="RenderTransformOrigin" Value="50%,0%" />
         <Setter Property="RenderTransform">
             <ScaleTransform ScaleX="0.95" ScaleY="0.95" />
@@ -24,30 +22,21 @@
         </Style.Animations>
     </Style>
 
-
-    <!--  Dropdown shadow  -->
     <Style Selector="MenuFlyoutPresenter > Border, ContextMenu > Border, FlyoutPresenter > Border, ToolTip > Border, Popup > Border">
         <Setter Property="Margin" Value="6, 1, 6, 12" />
         <Setter Property="BoxShadow" Value="{DynamicResource MenuShadow}" />
     </Style>
 
-
-    <!--  Menu separator  -->
     <Style Selector="Separator">
         <Setter Property="Background" Value="{DynamicResource IG_MenuSeparatorBackground}" />
     </Style>
 
-
-
-    <!--  Menu item  -->
     <Style Selector="MenuItem">
         <Setter Property="Margin" Value="4, 0" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
 
-
-        <!--  Menu item content  -->
         <Style Selector="^ /template/ Border#PART_LayoutRoot">
             <Setter Property="Transitions">
                 <Transitions>
@@ -57,7 +46,6 @@
             </Setter>
         </Style>
 
-        <!--  Fixed: check mark is cut off  -->
         <Style Selector="^:checked:toggle /template/ ContentControl#PART_ToggleIconPresenter Path">
             <Setter Property="Width" Value="14" />
             <Setter Property="Stretch" Value="Uniform" />
@@ -67,12 +55,10 @@
             <Setter Property="BorderBrush" Value="{DynamicResource IG_ToolButtonBackgroundHover}" />
         </Style>
 
-        <!--  Icon dims with the header: the Fluent template recolors only the header when disabled  -->
         <Style Selector="^:disabled > PathIcon">
             <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForegroundDisabled}" />
         </Style>
 
-        <!--  attention: a soft tinted row, e.g. a downloaded update waiting to install  -->
         <Style Selector="^.attention /template/ Border#PART_LayoutRoot">
             <Setter Property="Background" Value="{DynamicResource IG_BackgroundWarningBrush}" />
         </Style>

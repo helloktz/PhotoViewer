@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Automation;
@@ -42,62 +24,43 @@ using System.Threading.Tasks;
 
 namespace PhotoViewer.Common.Windows;
 
-/// <summary>
-/// The drag-and-drop toolbar arranger used by the Toolbar settings page.
-/// </summary>
 public partial class ToolbarEditorControl : PhControl
 {
-    /// <summary>
-    /// Identifies one of the three button lists shown in the editor.
-    /// </summary>
+
     private enum EditorGroup { Primary, Secondary, Available }
 
-    // editor chip size (icon only); kept fixed so chips stay uniform regardless of the toolbar icon size
     private const double ICON_SIZE = 24;
     private const double CHIP_PADDING = 6;
     private const double DRAG_THRESHOLD = 3;
 
-    // working copies (clones); the catalog is never mutated
     private readonly List<ToolbarItemModel> _primary = [];
     private readonly List<ToolbarItemModel> _secondary = [];
     private readonly List<ToolbarItemModel> _available = [];
 
-    // cache of parsed SVG sources by icon path so re-renders never hit the disk (keeps drag/drop snappy)
     private readonly Dictionary<string, SvgSource?> _svgCache = new(StringComparer.OrdinalIgnoreCase);
 
-    // the built-in button catalog, built once (Config.BuiltInToolbarItems rebuilds it on each access)
     private List<ToolbarItemModel>? _catalog;
     private List<ToolbarItemModel> Catalog => _catalog ??= [.. Config.BuiltInToolbarItems];
 
-    // drag state
     private Control? _dragChip;
     private ToolbarItemModel? _dragModel;
     private EditorGroup _dragSource;
     private Point _dragStart;
     private bool _isDragging;
-    private bool _suppressClick; // set when a drag occurs so the chip's Click (open dialog) is skipped
+    private bool _suppressClick;
 
-    // drag visuals
     private Border? _ghost;
-    private Border? _ghostTag; // "Delete" chip shown on the ghost when a custom button is dragged over Available
-    private Border? _marker; // insertion line; stays on PART_DragLayer (inside the editor)
-    private Panel? _ghostHost; // hosts the ghost: the window OverlayLayer so it isn't clipped
+    private Border? _ghostTag;
+    private Border? _marker;
+    private Panel? _ghostHost;
 
-    // true while dragging a custom (non-built-in) current button: dropping it on Available deletes it for good
     private bool _dragCanDelete;
 
-    // the chip to briefly highlight after a move (set just before a re-render)
     private ToolbarItemModel? _justMoved;
 
-    // the model whose chip should receive focus after the next re-render (keyboard edits)
     private ToolbarItemModel? _focusAfterRender;
 
-
-    /// <summary>
-    /// Raised after any edit (drag, menu action, or reset) so the host can re-stage the buttons.
-    /// </summary>
     public event EventHandler? ButtonsChanged;
-
 
     public ToolbarEditorControl()
     {
@@ -106,23 +69,14 @@ public partial class ToolbarEditorControl : PhControl
         PART_AddCustomBtn.Click += (_, _) => OnAddCustomClicked();
         PART_ResetBtn.Click += (_, _) => ResetToDefault();
 
-        // Tab moves between groups; the control itself is focusable so settings-search navigation
-        // can land here (forwarded into the Current buttons by OnGotFocus).
         Focusable = true;
         KeyboardNavigation.SetTabNavigation(PART_PrimaryGroup, KeyboardNavigationMode.Once);
         KeyboardNavigation.SetTabNavigation(PART_SecondaryGroup, KeyboardNavigationMode.Once);
         KeyboardNavigation.SetTabNavigation(PART_AvailableGroup, KeyboardNavigationMode.Once);
 
-        // tunnel + handledEventsToo so we see Enter / Delete before the focused chip (a button) consumes them
         AddHandler(KeyDownEvent, OnEditorKeyDown, RoutingStrategies.Tunnel, handledEventsToo: true);
     }
 
-
-    #region Public API
-
-    /// <summary>
-    /// Loads the given toolbar buttons into the editor (cloned into working copies) and renders them.
-    /// </summary>
     public void LoadButtons(IEnumerable<ToolbarItemModel> current)
     {
         _primary.Clear();
@@ -139,11 +93,6 @@ public partial class ToolbarEditorControl : PhControl
         RenderAll();
     }
 
-
-    /// <summary>
-    /// Gets the current buttons as a flat collection (primary group first, then secondary),
-    /// with each item's <see cref="ToolbarItemModel.Alignment"/> set to match its group.
-    /// </summary>
     public ObservableCollection<ToolbarItemModel> CurrentButtons
     {
         get
@@ -155,19 +104,11 @@ public partial class ToolbarEditorControl : PhControl
         }
     }
 
-    #endregion // Public API
-
-
-    #region Control events
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
-        // the theme (and thus icon paths) may have changed while this page was detached;
-        // drop cached icons so they reload for the current dark/light pack
         _svgCache.Clear();
-        base.OnLoaded(e); // base triggers OnIgLanguageChanged -> RenderAll with fresh icons
+        base.OnLoaded(e);
     }
-
 
     protected override void OnIgLanguageChanged()
     {
@@ -176,39 +117,27 @@ public partial class ToolbarEditorControl : PhControl
         PART_AddCustomBtn.Text = Core.Lang[LangId.Settings_Toolbar_AddCustomButton];
         PART_ResetBtn.Text = Core.Lang[LangId._ResetToDefault];
 
-        // tooltips and the available-list sort order are language-dependent
         RecomputeAvailable();
         RenderAll();
     }
-
 
     protected override void OnIgThemeChanged(ThemePackChangedEventArgs e)
     {
         base.OnIgThemeChanged(e);
 
-        // theme icon paths change with the dark/light pack: drop the cache and reload icons
         _svgCache.Clear();
         RenderAll();
     }
-
 
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
         base.OnGotFocus(e);
 
-        // settings-search navigation focuses the editor itself; forward focus into the
-        // Current buttons so keyboard users start where they can arrange the toolbar
-        // (guard on IsFocused so a quick Tab-through that already left isn't yanked back)
         if (ReferenceEquals(e.Source, this))
         {
             Dispatcher.UIThread.Post(() => { if (IsFocused) FocusFirstButton(); }, DispatcherPriority.Input);
         }
     }
-
-    #endregion // Control events
-
-
-    #region Model helpers
 
     private List<ToolbarItemModel> ListFor(EditorGroup g) => g switch
     {
@@ -238,10 +167,6 @@ public partial class ToolbarEditorControl : PhControl
         _ => PART_AvailableDash,
     };
 
-
-    /// <summary>
-    /// Creates a shallow copy of a toolbar item (the click action is shared, it is never mutated).
-    /// </summary>
     private static ToolbarItemModel Clone(ToolbarItemModel m) => new()
     {
         Id = m.Id,
@@ -254,11 +179,6 @@ public partial class ToolbarEditorControl : PhControl
         OnClick = m.OnClick,
     };
 
-
-    /// <summary>
-    /// Rebuilds the "Available" list: a separator template followed by every built-in button
-    /// not already in the current toolbar, sorted by localized name.
-    /// </summary>
     private void RecomputeAvailable()
     {
         _available.Clear();
@@ -274,10 +194,6 @@ public partial class ToolbarEditorControl : PhControl
         _available.AddRange(others);
     }
 
-
-    /// <summary>
-    /// Gets a parsed SVG source for the given icon path, caching it so repeated renders avoid disk I/O.
-    /// </summary>
     private SvgSource? GetSvg(string path)
     {
         if (string.IsNullOrEmpty(path)) return null;
@@ -291,11 +207,6 @@ public partial class ToolbarEditorControl : PhControl
         return src;
     }
 
-    #endregion // Model helpers
-
-
-    #region Rendering
-
     private void RenderAll()
     {
         RenderGroup(EditorGroup.Primary);
@@ -303,8 +214,6 @@ public partial class ToolbarEditorControl : PhControl
         RenderGroup(EditorGroup.Available);
         _justMoved = null;
 
-        // a keyboard edit asked to keep focus on a specific button: re-focus it once the
-        // fresh chips are in the tree (only set by keyboard/menu edits, never by mouse drag)
         var focusModel = _focusAfterRender;
         _focusAfterRender = null;
 
@@ -313,7 +222,6 @@ public partial class ToolbarEditorControl : PhControl
             Dispatcher.UIThread.Post(() => FocusChipFor(focusModel), DispatcherPriority.Input);
         }
     }
-
 
     private void RenderGroup(EditorGroup g)
     {
@@ -326,10 +234,6 @@ public partial class ToolbarEditorControl : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Builds a draggable chip (icon only, with a tooltip) for a toolbar item.
-    /// </summary>
     private PhToolButton BuildChip(ToolbarItemModel model)
     {
         var name = model.IsSeparator ? Core.Lang[LangId._Separator] : model.DisplayText;
@@ -340,27 +244,22 @@ public partial class ToolbarEditorControl : PhControl
             Padding = new Thickness(CHIP_PADDING),
             Margin = new Thickness(3),
             Cursor = new Cursor(StandardCursorType.Hand),
-            Focusable = true, // focusable so Tab reaches chips and Enter/Delete act on them
+            Focusable = true,
             Content = BuildIconVisual(model),
             Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(180) }],
         };
 
-        // a button with no text gets no tooltip; an empty tip string still pops an empty box up
         if (!string.IsNullOrWhiteSpace(name)) ToolTip.SetTip(chip, name);
 
-        AutomationProperties.SetName(chip, name); // screen-reader label
+        AutomationProperties.SetName(chip, name);
 
-        // PhToolButton (a button) marks pointer events handled, so listen on the tunnel route
-        // with handledEventsToo to still drive the drag
         chip.AddHandler(PointerPressedEvent, Chip_PointerPressed, RoutingStrategies.Tunnel, handledEventsToo: true);
         chip.AddHandler(PointerMovedEvent, Chip_PointerMoved, RoutingStrategies.Tunnel, handledEventsToo: true);
         chip.AddHandler(PointerReleasedEvent, Chip_PointerReleased, RoutingStrategies.Tunnel, handledEventsToo: true);
         chip.AddHandler(PointerCaptureLostEvent, Chip_PointerCaptureLost, handledEventsToo: true);
 
-        // the button's action (click, tap, or Space/Enter on the focused chip) opens the dialog
         chip.Click += Chip_Click;
 
-        // brief fade-in on the chip that was just moved/added so the landing spot is easy to spot
         if (ReferenceEquals(model, _justMoved))
         {
             chip.Opacity = 0.25;
@@ -370,10 +269,6 @@ public partial class ToolbarEditorControl : PhControl
         return chip;
     }
 
-
-    /// <summary>
-    /// Builds the icon visual for a chip / ghost: the button's SVG icon, or a thin line for a separator.
-    /// </summary>
     private Control BuildIconVisual(ToolbarItemModel model)
     {
         if (model.IsSeparator)
@@ -400,7 +295,6 @@ public partial class ToolbarEditorControl : PhControl
         var src = GetSvg(model.ImagePath);
         if (src is null)
         {
-            // same hatch the toolbar shows for a button that runs something but has no icon
             if (!model.IsPlaceholderIconVisible) return new Border { Width = ICON_SIZE, Height = ICON_SIZE };
 
             return new PathIcon
@@ -420,26 +314,14 @@ public partial class ToolbarEditorControl : PhControl
         };
     }
 
-
-    #endregion // Rendering
-
-
-    #region Edit operations
-
     private void ResetToDefault()
     {
         LoadButtons(Config.DefaultToolbarItems);
         ButtonsChanged?.Invoke(this, EventArgs.Empty);
     }
 
-
     private void OnAddCustomClicked() => _ = OpenAddDialogAsync();
 
-
-    /// <summary>
-    /// Opens the editor dialog to create a new custom button, then appends it to the matching
-    /// current group (Primary, or Secondary when right-aligned).
-    /// </summary>
     private async Task OpenAddDialogAsync()
     {
         var win = new ToolbarButtonEditWindow(null, CollectTakenIds(except: null), isBuiltIn: false);
@@ -454,18 +336,13 @@ public partial class ToolbarEditorControl : PhControl
         Commit();
     }
 
-
-    /// <summary>
-    /// Opens the editor dialog for an existing button: read-only for built-in buttons, editable for
-    /// custom ones. Separators have nothing to edit. Applies the edit in place on success.
-    /// </summary>
     private async Task OpenEditDialogAsync(ToolbarItemModel model)
     {
         if (model.IsSeparator) return;
 
         var win = new ToolbarButtonEditWindow(model, CollectTakenIds(except: model), IsBuiltIn(model));
         if (await win.ShowAsync(TopLevel.GetTopLevel(this) as PhWindow) != DialogExitCode.OK) return;
-        if (win.ResultModel is not { } edited) return; // cancelled or read-only built-in
+        if (win.ResultModel is not { } edited) return;
 
         ApplyEdit(model, edited);
         _justMoved = model;
@@ -473,11 +350,6 @@ public partial class ToolbarEditorControl : PhControl
         Commit();
     }
 
-
-    /// <summary>
-    /// Copies the edited values onto the existing model (keeping its identity), hopping it between the
-    /// Primary and Secondary groups when its alignment changed.
-    /// </summary>
     private void ApplyEdit(ToolbarItemModel model, ToolbarItemModel edited)
     {
         model.Id = edited.Id;
@@ -507,11 +379,6 @@ public partial class ToolbarEditorControl : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Gets the button IDs already in use across the built-in catalog and the current groups,
-    /// excluding the given model's own ID (so editing a button doesn't clash with itself).
-    /// </summary>
     private HashSet<string> CollectTakenIds(ToolbarItemModel? except)
     {
         var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -522,18 +389,9 @@ public partial class ToolbarEditorControl : PhControl
         return set;
     }
 
-
-    /// <summary>
-    /// Whether the model is a built-in button (its ID exists in the built-in catalog), and so is
-    /// shown read-only in the editor dialog.
-    /// </summary>
     private bool IsBuiltIn(ToolbarItemModel model) => !model.IsSeparator
         && Catalog.Any(c => !c.IsSeparator && c.Id.Equals(model.Id, StringComparison.OrdinalIgnoreCase));
 
-
-    /// <summary>
-    /// Recomputes the available list, re-renders, and notifies the host of the change.
-    /// </summary>
     private void Commit()
     {
         RecomputeAvailable();
@@ -541,29 +399,21 @@ public partial class ToolbarEditorControl : PhControl
         ButtonsChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    #endregion // Edit operations
-
-
-    #region Drag and drop
-
     private void Chip_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (sender is not Control chip || chip.Tag is not ToolbarItemModel model) return;
 
-        // left button starts a drag; right button falls through to the context menu
         if (!e.GetCurrentPoint(chip).Properties.IsLeftButtonPressed) return;
 
-        _suppressClick = false; // fresh gesture; a drag will set this to skip the button's Click
+        _suppressClick = false;
         _dragChip = chip;
         _dragModel = model;
         _dragSource = GroupOfChip(chip);
         _dragStart = e.GetPosition(PART_DragLayer);
         _isDragging = false;
 
-        // don't mark handled: let the button show its pressed state
         e.Pointer.Capture(chip);
     }
-
 
     private void Chip_PointerMoved(object? sender, PointerEventArgs e)
     {
@@ -572,7 +422,6 @@ public partial class ToolbarEditorControl : PhControl
 
         var pos = e.GetPosition(PART_DragLayer);
 
-        // ignore tiny moves so a click doesn't start a drag
         if (!_isDragging)
         {
             var delta = pos - _dragStart;
@@ -580,14 +429,11 @@ public partial class ToolbarEditorControl : PhControl
             StartDrag(e);
         }
 
-        // float the ghost centered under the cursor (in its host's coordinate space)
         var host = _ghostHost ?? (Panel)PART_DragLayer;
         var gpos = e.GetPosition(host);
         Canvas.SetLeft(_ghost!, gpos.X - _ghost!.Width / 2);
         Canvas.SetTop(_ghost, gpos.Y - _ghost.Height / 2);
 
-        // float the "Delete" chip just above the ghost (its visibility is driven by UpdateDropTarget).
-        // Fall back to an estimated height on the first frame before it has been laid out.
         if (_ghostTag is not null)
         {
             var tagH = _ghostTag.Bounds.Height > 0 ? _ghostTag.Bounds.Height : 24;
@@ -598,15 +444,12 @@ public partial class ToolbarEditorControl : PhControl
         UpdateDropTarget(e);
     }
 
-
     private void Chip_PointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         if (_dragChip is null || !ReferenceEquals(sender, _dragChip)) return;
 
         if (!_isDragging)
         {
-            // not a drag: leave the pointer capture intact so the button raises its Click, which
-            // opens the dialog via Chip_Click (matching Space/Enter). Just drop our drag tracking.
             _dragChip = null;
             _dragModel = null;
             return;
@@ -632,11 +475,9 @@ public partial class ToolbarEditorControl : PhControl
         }
         else
         {
-            // dropped outside any zone: just restore the dimmed chip
             RenderAll();
         }
     }
-
 
     private void Chip_PointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
     {
@@ -651,30 +492,18 @@ public partial class ToolbarEditorControl : PhControl
         if (wasDragging) RenderAll();
     }
 
-
-    /// <summary>
-    /// The chip's button action (mouse click, touch tap, or Space/Enter on the focused chip): opens
-    /// the edit dialog. Skipped right after a drag, which already did the rearranging.
-    /// </summary>
     private void Chip_Click(object? sender, RoutedEventArgs e)
     {
         if (_suppressClick) { _suppressClick = false; return; }
         if (sender is not Control chip || chip.Tag is not ToolbarItemModel model) return;
 
-        // post so the click/key event unwinds before the modal opens
         Dispatcher.UIThread.Post(() => _ = OpenEditDialogAsync(model));
     }
 
-
-    /// <summary>
-    /// Applies a drop: dropping onto the Available zone removes the button from the toolbar; dropping
-    /// onto a group adds (from Available) or moves (from another/the same group) at the given index.
-    /// </summary>
     private void PerformDrop(ToolbarItemModel src, EditorGroup srcGroup, EditorGroup dst, int index)
     {
         if (dst == EditorGroup.Available)
         {
-            // only current buttons can be dropped here (Available isn't a valid target for itself)
             if (srcGroup == EditorGroup.Available) { RenderAll(); return; }
             ListFor(srcGroup).Remove(src);
         }
@@ -687,7 +516,6 @@ public partial class ToolbarEditorControl : PhControl
 
             if (srcGroup == EditorGroup.Available)
             {
-                // adding a copy from the catalog (a fresh instance for separators)
                 var clone = src.IsSeparator ? ToolbarItemModel.Separator : Clone(src);
                 index = Math.Clamp(index, 0, dstList.Count);
                 dstList.Insert(index, clone);
@@ -696,7 +524,6 @@ public partial class ToolbarEditorControl : PhControl
             }
             else
             {
-                // moving an existing button (reorder within a group, or across groups)
                 var srcList = ListFor(srcGroup);
                 var oldIndex = srcList.IndexOf(src);
                 if (oldIndex < 0) { RenderAll(); return; }
@@ -713,18 +540,16 @@ public partial class ToolbarEditorControl : PhControl
         Commit();
     }
 
-
     private void StartDrag(PointerEventArgs e)
     {
         _isDragging = true;
         _dragChip!.Opacity = 0.35;
-        _suppressClick = true; // this gesture became a drag; skip the button's Click on release
+        _suppressClick = true;
         _ghostHost = OverlayLayer.GetOverlayLayer(this) ?? (Panel)PART_DragLayer;
 
         var accent = Resx.Get<Color>(ResxId.SystemAccentColor).ToBrush();
         var ghostBg = Resx.Get<IBrush>(ResxId.IG_BackgroundNeutralBrush);
 
-        // floating ghost
         _ghost = new Border
         {
             Padding = new Thickness(6),
@@ -740,7 +565,6 @@ public partial class ToolbarEditorControl : PhControl
         };
         _ghostHost.Children.Add(_ghost);
 
-        // dragging chip for custom button
         _dragCanDelete = _dragSource != EditorGroup.Available
             && !_dragModel!.IsSeparator
             && !IsBuiltIn(_dragModel);
@@ -768,7 +592,6 @@ public partial class ToolbarEditorControl : PhControl
             _ghostHost.Children.Add(_ghostTag);
         }
 
-        // outline valid drop zones (not the group the button came from)
         var hovered = HitZone(e);
         foreach (var g in ValidTargets())
         {
@@ -776,7 +599,6 @@ public partial class ToolbarEditorControl : PhControl
             SetZoneState(g, valid: show, hover: show && g == hovered);
         }
     }
-
 
     private void EndDrag()
     {
@@ -801,11 +623,6 @@ public partial class ToolbarEditorControl : PhControl
         if (_dragChip is not null) _dragChip.Opacity = 1;
     }
 
-
-    /// <summary>
-    /// Gets the groups a button can be dropped onto: a button from Available can only land in a group;
-    /// a current button can also be dropped on the Available zone to remove it.
-    /// </summary>
     private IEnumerable<EditorGroup> ValidTargets()
     {
         yield return EditorGroup.Primary;
@@ -813,11 +630,6 @@ public partial class ToolbarEditorControl : PhControl
         if (_dragSource != EditorGroup.Available) yield return EditorGroup.Available;
     }
 
-
-    /// <summary>
-    /// Highlights the hovered zone (and positions the insertion marker for a group), keeping the
-    /// dashed "valid" outline on the other valid zones.
-    /// </summary>
     private void UpdateDropTarget(PointerEventArgs e)
     {
         HideMarker();
@@ -825,16 +637,13 @@ public partial class ToolbarEditorControl : PhControl
         var hovered = HitZone(e);
         foreach (var g in ValidTargets())
         {
-            // don't outline the group the button came from
             var show = g != _dragSource;
             var isHover = show && g == hovered;
 
-            // a custom button over Available means "delete": flag the zone red instead of accent
             var isDanger = isHover && g == EditorGroup.Available && _dragCanDelete;
             SetZoneState(g, valid: show, hover: isHover && !isDanger, danger: isDanger);
         }
 
-        // surface the "Delete" chip only while the custom button is over the Available zone
         if (_ghostTag is not null) _ghostTag.IsVisible = hovered == EditorGroup.Available;
 
         if (hovered is EditorGroup hg && hg != EditorGroup.Available)
@@ -844,10 +653,6 @@ public partial class ToolbarEditorControl : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Returns the valid drop group whose zone is under the pointer, or <c>null</c>.
-    /// </summary>
     private EditorGroup? HitZone(PointerEventArgs e)
     {
         foreach (var g in ValidTargets())
@@ -863,14 +668,12 @@ public partial class ToolbarEditorControl : PhControl
         return null;
     }
 
-
     private EditorGroup GroupOfChip(Control chip)
     {
         if (PART_PrimaryGroup.Children.Contains(chip)) return EditorGroup.Primary;
         if (PART_SecondaryGroup.Children.Contains(chip)) return EditorGroup.Secondary;
         return EditorGroup.Available;
     }
-
 
     private void SetZoneState(EditorGroup g, bool valid, bool hover, bool danger = false)
     {
@@ -881,7 +684,6 @@ public partial class ToolbarEditorControl : PhControl
         SetClass(DashFor(g), "danger", danger);
     }
 
-
     private void ResetZoneStates()
     {
         SetZoneState(EditorGroup.Primary, false, false);
@@ -889,11 +691,6 @@ public partial class ToolbarEditorControl : PhControl
         SetZoneState(EditorGroup.Available, false, false);
     }
 
-
-    /// <summary>
-    /// Computes the index at which a dropped chip should be inserted, based on the pointer position
-    /// over the wrapped chips (row-aware: respects line wrapping).
-    /// </summary>
     private static int ComputeInsertIndex(WrapPanel panel, Point p)
     {
         var chips = panel.Children.Where(c => c.Tag is ToolbarItemModel).ToList();
@@ -904,23 +701,18 @@ public partial class ToolbarEditorControl : PhControl
         {
             var b = chips[i].Bounds;
 
-            // chip's row is entirely above the pointer: keep scanning
             if (p.Y > b.Bottom) continue;
 
-            // pointer is above this chip's row entirely: insert before it
             if (p.Y < b.Top) return i;
 
-            // pointer is within this chip's row
             if (p.X < b.X + b.Width / 2) return i;
 
-            // past this chip; if it's the last on its row, insert after it
             var lastInRow = i == n - 1 || chips[i + 1].Bounds.Top > b.Bottom - 0.5;
             if (lastInRow) return i + 1;
         }
 
         return n;
     }
-
 
     private void ShowMarker(WrapPanel panel, int index)
     {
@@ -959,7 +751,6 @@ public partial class ToolbarEditorControl : PhControl
         _marker.IsVisible = true;
     }
 
-
     private void EnsureMarker()
     {
         if (_marker is not null) return;
@@ -968,39 +759,24 @@ public partial class ToolbarEditorControl : PhControl
         PART_DragLayer.Children.Add(_marker);
     }
 
-
     private void HideMarker()
     {
         if (_marker is not null) _marker.IsVisible = false;
     }
 
-
     private static void SetClass(StyledElement el, string className, bool on)
     {
-        // only mutate when the state actually changes (avoids duplicate classes + redundant
-        // style invalidation on every pointer move while dragging)
         var has = el.Classes.Contains(className);
         if (on && !has) el.Classes.Add(className);
         else if (!on && has) el.Classes.Remove(className);
     }
 
-    #endregion // Drag and drop
-
-
-    #region Keyboard navigation
-
-    /// <summary>
-    /// Keyboard navigation on the focused chip: arrow keys move focus between chips, Delete removes a
-    /// current button. Space/Enter are left for the chip's default button activation, which opens the
-    /// dialog via Chip_Click. Runs on the tunnel route so the arrows beat default focus handling.
-    /// </summary>
     private void OnEditorKeyDown(object? sender, KeyEventArgs e)
     {
         if (TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is not Control focused
             || focused.Tag is not ToolbarItemModel model)
             return;
 
-        // a key press clears any stale drag suppression so Space/Enter activation isn't swallowed
         _suppressClick = false;
 
         var group = GroupOfChip(focused);
@@ -1027,11 +803,6 @@ public partial class ToolbarEditorControl : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Moves focus to the previous/next chip in the group, flowing across the two side-by-side
-    /// Current groups at their inner edge. Returns whether focus actually moved.
-    /// </summary>
     private bool MoveFocusHorizontal(Control chip, EditorGroup group, int delta)
     {
         var chips = ChipsOf(PanelFor(group));
@@ -1045,7 +816,6 @@ public partial class ToolbarEditorControl : PhControl
             return true;
         }
 
-        // hop between Primary and Secondary at their inner edge
         Control? cross = null;
         if (group == EditorGroup.Primary && delta > 0) cross = FirstChip(PART_SecondaryGroup);
         else if (group == EditorGroup.Secondary && delta < 0) cross = LastChip(PART_PrimaryGroup);
@@ -1055,11 +825,6 @@ public partial class ToolbarEditorControl : PhControl
         return true;
     }
 
-
-    /// <summary>
-    /// Moves focus to the chip on the nearest adjacent row whose horizontal centre is closest
-    /// (so Up/Down feel natural across wrapped rows). Returns whether focus moved.
-    /// </summary>
     private bool MoveFocusVertical(Control chip, EditorGroup group, bool up)
     {
         var chips = ChipsOf(PanelFor(group));
@@ -1068,7 +833,6 @@ public partial class ToolbarEditorControl : PhControl
         var cur = chip.Bounds;
         var cx = cur.X + cur.Width / 2;
 
-        // find the nearest adjacent row by its Top
         double? rowTop = null;
         foreach (var c in chips)
         {
@@ -1076,18 +840,17 @@ public partial class ToolbarEditorControl : PhControl
             var top = c.Bounds.Top;
             if (up)
             {
-                if (top >= cur.Top - 0.5) continue;                 // not on a higher row
-                if (rowTop is null || top > rowTop) rowTop = top;   // closest above = largest Top
+                if (top >= cur.Top - 0.5) continue;
+                if (rowTop is null || top > rowTop) rowTop = top;
             }
             else
             {
-                if (top <= cur.Top + 0.5) continue;                 // not on a lower row
-                if (rowTop is null || top < rowTop) rowTop = top;   // closest below = smallest Top
+                if (top <= cur.Top + 0.5) continue;
+                if (rowTop is null || top < rowTop) rowTop = top;
             }
         }
         if (rowTop is null) return false;
 
-        // on that row, pick the chip whose horizontal centre is closest
         Control? best = null;
         var bestDx = double.PositiveInfinity;
         foreach (var c in chips)
@@ -1103,10 +866,6 @@ public partial class ToolbarEditorControl : PhControl
         return best is not null;
     }
 
-
-    /// <summary>
-    /// Returns which working list currently holds the given model, or <c>null</c>.
-    /// </summary>
     private EditorGroup? GroupOf(ToolbarItemModel model)
     {
         if (_primary.Contains(model)) return EditorGroup.Primary;
@@ -1115,11 +874,6 @@ public partial class ToolbarEditorControl : PhControl
         return null;
     }
 
-
-    /// <summary>
-    /// Removes a current button (keyboard), keeping focus on a neighbour, or the first button if the
-    /// group is now empty.
-    /// </summary>
     private bool RemoveByKeyboard(ToolbarItemModel model, EditorGroup group)
     {
         var list = ListFor(group);
@@ -1135,19 +889,10 @@ public partial class ToolbarEditorControl : PhControl
         return true;
     }
 
-
-    /// <summary>
-    /// Focuses the first button in the editor (Primary, else Secondary, else Available). Called when
-    /// the page is navigated to so keyboard users land on the Current buttons.
-    /// </summary>
     public void FocusFirstButton()
         => (FirstChip(PART_PrimaryGroup) ?? FirstChip(PART_SecondaryGroup) ?? FirstChip(PART_AvailableGroup))
             ?.Focus(NavigationMethod.Tab);
 
-
-    /// <summary>
-    /// Focuses the chip currently bound to the given model (across all three groups).
-    /// </summary>
     private void FocusChipFor(ToolbarItemModel model)
     {
         foreach (var panel in new Panel[] { PART_PrimaryGroup, PART_SecondaryGroup, PART_AvailableGroup })
@@ -1159,7 +904,6 @@ public partial class ToolbarEditorControl : PhControl
         }
     }
 
-
     private static List<Control> ChipsOf(Panel panel)
         => panel.Children.Where(c => c.Tag is ToolbarItemModel).ToList();
 
@@ -1168,7 +912,5 @@ public partial class ToolbarEditorControl : PhControl
 
     private static Control? LastChip(Panel panel)
         => panel.Children.LastOrDefault(c => c.Tag is ToolbarItemModel);
-
-    #endregion // Keyboard navigation
 
 }

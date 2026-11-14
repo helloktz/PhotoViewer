@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using PhotoViewer.Common.Actions;
 using PhotoViewer.Common.Localization;
 using PhotoViewer.UI;
@@ -23,10 +5,6 @@ using PhotoViewer.UI.Windowing;
 
 namespace PhotoViewer.Common.Windows;
 
-/// <summary>
-/// Modal window to edit the <see cref="SingleAction"/> bound to a single mouse click event,
-/// using a <see cref="PhActionEditorControl"/>. An empty executable means "do nothing".
-/// </summary>
 internal sealed class MouseClickActionEditWindow : DialogWindow
 {
     private readonly PhActionEditorControl _editor;
@@ -36,16 +14,8 @@ internal sealed class MouseClickActionEditWindow : DialogWindow
     protected override int MIN_WIDTH => 460;
     protected override int MAX_WIDTH => 460;
 
-
-    /// <summary>
-    /// Gets the action built from the dialog inputs, or <c>null</c> if cancelled or read-only.
-    /// </summary>
     public SingleAction? ResultAction { get; private set; }
 
-
-    /// <summary>
-    /// Opens the editor for <paramref name="action"/> (null = empty), titled by <paramref name="eventLabel"/>.
-    /// </summary>
     public MouseClickActionEditWindow(string eventLabel, SingleAction? action, bool isReadOnly = false)
     {
         _eventLabel = eventLabel;
@@ -54,12 +24,10 @@ internal sealed class MouseClickActionEditWindow : DialogWindow
         IsButton2Visible = true;
         IsButton3Visible = false;
 
-        // view-only: show a single Close button instead of OK/Cancel
         IsButton1Visible = !_isReadOnly;
         DefaultButton = _isReadOnly ? DialogButton.Button2 : DialogButton.Button1;
         DefaultFocus = _isReadOnly ? DialogFocus.Button2 : DialogFocus.Default;
 
-        // optional action: no hotkeys, allow an empty executable
         _editor = new PhActionEditorControl
         {
             ShowHotkeys = false,
@@ -70,7 +38,6 @@ internal sealed class MouseClickActionEditWindow : DialogWindow
         DialogContent = _editor;
     }
 
-
     protected override void OnIgLanguageChanged()
     {
         base.OnIgLanguageChanged();
@@ -80,10 +47,8 @@ internal sealed class MouseClickActionEditWindow : DialogWindow
         Button2Text = Core.Lang[_isReadOnly ? LangId._Close : LangId._Cancel];
     }
 
-
     protected override void OnDialogSubmitted(DialogEventArgs e)
     {
-        // never commit a view-only action
         if (_isReadOnly)
         {
             e.CanProceed = false;

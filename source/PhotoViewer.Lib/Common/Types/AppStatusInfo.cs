@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Threading;
 using PhotoViewer.Common.Extensions;
 using PhotoViewer.Common.Localization;
@@ -32,23 +14,15 @@ namespace PhotoViewer.Common;
 
 public partial class AppStatusInfo : PhDisposable
 {
-    /// <summary>
-    /// Gets the tag of the item naming a clipboard image, which no image info tag stands for.
-    /// </summary>
+
     public const string CLIPBOARD_TAG = "ClipboardImage";
 
-    /// <summary>
-    /// Gets the separator between the items of the status text.
-    /// </summary>
     public const string TEXT_SEPARATOR = "  ︱  ";
 
     private ViewerControl _viewer;
     private string? _filePath = null;
 
     public event EventHandler? Changed;
-
-
-    #region Image Info Tags
 
     internal string? AppName
     {
@@ -63,12 +37,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? Name
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(Name)))
@@ -81,12 +53,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? Path
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(Path)))
@@ -99,12 +69,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? FileSize
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(FileSize))
@@ -117,12 +85,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? ModifiedDateTime
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if ((Core.Config.ImageInfoTags.Contains(nameof(ModifiedDateTime))
@@ -135,7 +101,6 @@ public partial class AppStatusInfo : PhDisposable
             return null;
         }
     }
-
 
     internal string? Dimension
     {
@@ -151,7 +116,6 @@ public partial class AppStatusInfo : PhDisposable
                 {
                     var dimension = $"{_viewer.BitmapSize.Width:n0}×{_viewer.BitmapSize.Height:n0}";
 
-                    // the file is bigger than what could be decoded
                     var scale = _viewer.Photo?.DecodeScale ?? 1;
                     if (scale < 1 && Core.Photos.CurrentMetadata is { } meta)
                     {
@@ -166,12 +130,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? FrameCount
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(FrameCount))
@@ -190,12 +152,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? ListCount
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(ListCount))
@@ -213,7 +173,6 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? Zoom
     {
         get
@@ -227,12 +186,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? ExifRating
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(ExifRating))
@@ -245,12 +202,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? ExifDateTime
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if ((Core.Config.ImageInfoTags.Contains(nameof(ExifDateTime))
@@ -265,12 +220,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? ExifDateTimeOriginal
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if ((Core.Config.ImageInfoTags.Contains(nameof(ExifDateTimeOriginal))
@@ -285,12 +238,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? DateTimeAuto
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(DateTimeAuto))
@@ -313,12 +264,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? HdrInfo
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(HdrInfo))
@@ -361,12 +310,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? ColorSpace
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(ColorSpace))
@@ -390,12 +337,10 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-
     internal string? DPI
     {
         get
         {
-            // skip for clipboard image
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(DPI))
@@ -410,13 +355,6 @@ public partial class AppStatusInfo : PhDisposable
         }
     }
 
-    #endregion // Image Info Tags
-
-
-
-    /// <summary>
-    /// Gets the values of the image info tags in their configured order, skipping the empty ones.
-    /// </summary>
     public List<ImageInfoItem> GetItems()
     {
         var items = new List<ImageInfoItem>(Core.Config.ImageInfoTags.Count + 1);
@@ -439,10 +377,6 @@ public partial class AppStatusInfo : PhDisposable
         return items;
     }
 
-
-    /// <summary>
-    /// Joins the items into the status text.
-    /// </summary>
     public static string ToText(IReadOnlyList<ImageInfoItem> items)
     {
         var strBuilder = new StringBuilder();
@@ -460,10 +394,6 @@ public partial class AppStatusInfo : PhDisposable
         return strBuilder.ToString();
     }
 
-
-    /// <summary>
-    /// Gets the value of an image info tag; <c>null</c> when it has none or the tag is unknown.
-    /// </summary>
     private string? GetTagValue(string tag) => tag switch
     {
         nameof(AppName) => AppName,
@@ -487,7 +417,6 @@ public partial class AppStatusInfo : PhDisposable
         _ => null,
     };
 
-
     public AppStatusInfo(ViewerControl viewer)
     {
         _viewer = viewer;
@@ -499,7 +428,6 @@ public partial class AppStatusInfo : PhDisposable
         _viewer.ZoomChanged += Viewer_ZoomChanged;
         _viewer.PhotoFrameChanged += Viewer_PhotoFrameChanged;
     }
-
 
     protected override void OnDisposing()
     {
@@ -513,17 +441,13 @@ public partial class AppStatusInfo : PhDisposable
         _viewer.PhotoFrameChanged -= Viewer_PhotoFrameChanged;
     }
 
-
     private void Core_LanguageChanged(object? sender, EventArgs e)
     {
-        // some values are localized, e.g. the file count
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-
     private void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        // the status text is built from these tags, so refresh it when they change
         if (e.PropertyName != nameof(Core.Config.ImageInfoTags)) return;
 
         Dispatcher.UIThread.Post(() =>
@@ -531,7 +455,6 @@ public partial class AppStatusInfo : PhDisposable
             Changed?.Invoke(this, EventArgs.Empty);
         });
     }
-
 
     private void Photos_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -542,13 +465,11 @@ public partial class AppStatusInfo : PhDisposable
                 : BHelper.ResolvePath(Core.Photos.CurrentFilePath);
         }
 
-
         Dispatcher.UIThread.Post(() =>
         {
             Changed?.Invoke(this, EventArgs.Empty);
         });
     }
-
 
     private void ImageTransform_Changed(PhotoTransform sender, EventArgs e)
     {
@@ -558,7 +479,6 @@ public partial class AppStatusInfo : PhDisposable
         });
     }
 
-
     private void Viewer_ZoomChanged(ViewerControl sender, ViewerZoomEventArgs e)
     {
         Dispatcher.UIThread.Post(() =>
@@ -566,7 +486,6 @@ public partial class AppStatusInfo : PhDisposable
             Changed?.Invoke(this, EventArgs.Empty);
         });
     }
-
 
     private void Viewer_PhotoFrameChanged(ViewerControl sender, PhotoFrameChangedEventArgs e)
     {
@@ -576,11 +495,6 @@ public partial class AppStatusInfo : PhDisposable
         });
     }
 
-
 }
 
-
-/// <summary>
-/// The formatted value of one image info tag (see <see cref="Config.ImageInfoTags"/>), e.g. the file size.
-/// </summary>
 public readonly record struct ImageInfoItem(string Tag, string Value);

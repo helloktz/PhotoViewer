@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <?include Variables.wxi ?>
+
+  <Package
+      Name="$(var.IgProductName)"
+      Manufacturer="$(var.IgManufacturer)"
+      Version="$(var.ProductVersion)"
+      UpgradeCode="$(var.IgUpgradeCode)"
+      ProductCode="$(var.ProductCode)"
+      Language="1033"
+      Scope="perUserOrMachine"
+      InstallerVersion="500"
+      Compressed="yes">
+
+    <SummaryInformation Description="$(var.IgProductName) (x64) Setup"
+                        Keywords="Installer,Photo Viewer" />
+
+    <Launch Condition="Installed OR (VersionNT64 AND PVWINDOWSBUILD &gt;= 22000)" Message="Photo Viewer requires Windows 11 x64." />
+    <Property Id="PVWINDOWSBUILD" Secure="yes">
+      <RegistrySearch Id="WindowsBuildSearch" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+                      Name="CurrentBuildNumber" Type="raw" Bitness="always64" />
+    </Property>
+
+    <MediaTemplate EmbedCab="yes" CompressionLevel="$(var.Cabinet)" />
+
+    <UIRef Id="IgWixUI" />
+
+    <MajorUpgrade
+        Schedule="afterInstallInitialize"
+        AllowDowngrades="no"
+        AllowSameVersionUpgrades="yes"
+        DowngradeErrorMessage="!(loc.IgNewerVersionInstalled)" />
+
+    <Property Id="INSTALLFOLDER" Secure="yes" />
+
+    <Property Id="IGDESKTOPSHORTCUT"   Value="1" Secure="yes" />
+    <Property Id="IGSTARTMENUSHORTCUT" Value="1" Secure="yes" />
+    <Property Id="IGREMOVEFILEASSOC"   Value="1" Secure="yes" />
+    <Property Id="IGAGREETOTERMS"                Secure="yes" />
+
+    <Property Id="IGLAUNCHAFTERINSTALL" Value="1" Secure="yes" />
+
+    <Property Id="IGINSTALLSCOPE"   Value="perUser" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+    <Property Id="IGPROGRAMFILES64" Secure="yes">
+      <RegistrySearch Id="SearchProgramFiles64" Root="HKLM"
+                      Key="SOFTWARE\Microsoft\Windows\CurrentVersion"
+                      Name="ProgramFilesDir" Type="raw" Bitness="always64" />
+    </Property>
+
+    <Property Id="IGPREVMACHINEDIR" Secure="yes">
+      <RegistrySearch Id="PrevMachineDir" Root="HKLM" Key="$(var.IgSetupRegKey)"
+                      Name="InstallLocation" Type="raw" Bitness="always64" />
+    </Property>
+    <Property Id="IGPREVMACHINESM" Secure="yes">
+      <RegistrySearch Id="PrevMachineSm" Root="HKLM" Key="$(var.IgSetupRegKey)"
+                      Name="StartMenuShortcut" Type="raw" Bitness="always64" />
+    </Property>
+    <Property Id="IGPREVMACHINEDT" Secure="yes">
+      <RegistrySearch Id="PrevMachineDt" Root="HKLM" Key="$(var.IgSetupRegKey)"
+                      Name="DesktopShortcut" Type="raw" Bitness="always64" />
+    </Property>
+    <Property Id="IGPREVUSERDIR" Secure="yes">
+      <RegistrySearch Id="PrevUserDir" Root="HKCU" Key="$(var.IgSetupRegKey)"
+                      Name="InstallLocation" Type="raw" />
+    </Property>
+    <Property Id="IGPREVUSERSM" Secure="yes">
+      <RegistrySearch Id="PrevUserSm" Root="HKCU" Key="$(var.IgSetupRegKey)"
+                      Name="StartMenuShortcut" Type="raw" />
+    </Property>
+    <Property Id="IGPREVUSERDT" Secure="yes">
+      <RegistrySearch Id="PrevUserDt" Root="HKCU" Key="$(var.IgSetupRegKey)"
+                      Name="DesktopShortcut" Type="raw" />
+    </Property>
+
+    <SetProperty Id="IGPREVPERMACHINE" Value="1" After="AppSearch" Sequence="both"
+                 Condition="IGPREVMACHINEDIR OR IGPREVMACHINESM OR IGPREVMACHINEDT" />
+    <SetProperty Id="IGPREVPERUSER" Value="1" After="SetIGPREVPERMACHINE" Sequence="both"
+                 Condition="IGPREVUSERDIR OR IGPREVUSERSM OR IGPREVUSERDT" />
+
+    <CustomAction Id="IgBlockPerUserOverMachine" Error="!(loc.IgScopeMismatchMachine)" />
+    <CustomAction Id="IgBlockPerMachineOverUser" Error="!(loc.IgScopeMismatchUser)" />
+
+    <InstallUISequence>
+      <FindRelatedProducts After="SetIgAllUsersFromPrev" />
+    </InstallUISequence>
+
+    <SetProperty Id="IGINSTALLSCOPE" Value="perMachine" After="SetIGPREVPERUSER" Sequence="ui"
+                 Condition="IGPREVPERMACHINE" />
+
+    <SetProperty Id="ALLUSERS" Action="SetIgAllUsersFromPrev" Value="1" After="SetIGINSTALLSCOPE"
+                 Sequence="ui" Condition="IGPREVPERMACHINE" />
+
+    <SetProperty Id="IGPREVDIR" Action="SetIgPrevDirFromMachine" Value="[IGPREVMACHINEDIR]"
+                 After="FindRelatedProducts" Sequence="ui" Condition="IGPREVMACHINEDIR" />
+    <SetProperty Id="IGPREVDIR" Action="SetIgPrevDirFromUser" Value="[IGPREVUSERDIR]"
+                 After="SetIgPrevDirFromMachine" Sequence="ui"
+                 Condition="IGPREVUSERDIR AND NOT IGPREVMACHINEDIR" />
+
+    <SetProperty Id="INSTALLFOLDER" Action="RestoreMachineInstallFolder" Value="[IGPREVMACHINEDIR]"
+                 Before="RestoreUserInstallFolder" Sequence="execute"
+                 Condition="NOT Installed AND WIX_UPGRADE_DETECTED AND NOT INSTALLFOLDER AND IGPREVMACHINEDIR AND ALLUSERS = 1" />
+    <SetProperty Id="INSTALLFOLDER" Action="RestoreUserInstallFolder" Value="[IGPREVUSERDIR]"
+                 Before="CostInitialize" Sequence="execute"
+                 Condition="NOT Installed AND WIX_UPGRADE_DETECTED AND NOT INSTALLFOLDER AND IGPREVUSERDIR AND NOT ALLUSERS" />
+
+    <SetProperty Id="IGFOLDERPERUSER" Action="SetIgFolderPerUserFromPrev" Value="[IGPREVDIR]"
+                 After="CostFinalize" Sequence="ui"
+                 Condition="IGPREVDIR AND IGPREVPERUSER AND NOT IGPREVPERMACHINE" />
+    <SetProperty Id="IGFOLDERPERMACHINE" Action="SetIgFolderPerMachineFromPrev" Value="[IGPREVDIR]"
+                 After="SetIgFolderPerUserFromPrev" Sequence="ui"
+                 Condition="IGPREVDIR AND IGPREVPERMACHINE" />
+    <SetProperty Id="IGFOLDERPERUSER"
+                 Value="[LocalAppDataFolder]Programs\$(var.IgFolderName)\"
+                 After="SetIgFolderPerMachineFromPrev" Sequence="ui" Condition="NOT IGFOLDERPERUSER" />
+    <SetProperty Id="IGFOLDERPERMACHINE"
+                 Value="[IGPROGRAMFILES64]\$(var.IgFolderName)\"
+                 After="SetIGFOLDERPERUSER" Sequence="ui" Condition="NOT IGFOLDERPERMACHINE" />
+
+    <Icon Id="ImageGlassIcon"
+          SourceFile="$(sys.SOURCEFILEDIR)..\..\..\PhotoViewer.Win32\icon256.ico" />
+
+    <Property Id="ARPPRODUCTICON"   Value="ImageGlassIcon" />
+    <Property Id="ARPCOMMENTS"      Value="A Fast, Seamless Photo Viewer" />
+
+    <Property Id="ARPNOMODIFY" Value="1" />
+
+    <Property Id="MSIFASTINSTALL" Value="3" />
+
+    <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]"
+                 After="CostFinalize" Sequence="execute" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="$(var.IgFolderName)" />
+    </StandardDirectory>
+
+    <Feature Id="MainFeature" Title="!(loc.IgFeatureMainTitle)" Level="1" AllowAbsent="no">
+      <ComponentGroupRef Id="IgAppFiles" />
+      <ComponentRef Id="CmpStartMenuShortcut" />
+      <ComponentRef Id="CmpDesktopShortcut" />
+    </Feature>
+
+    <CustomAction Id="IgRemoveDefaultViewer"
+                  FileRef="FileImageGlassExe"
+                  ExeCommand="--ig-remove-default-viewer"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="ignore" />
+    <CustomAction Id="IgRemoveUserDefaultViewer"
+                  FileRef="FileImageGlassExe"
+                  ExeCommand="--ig-remove-default-viewer"
+                  Execute="deferred"
+                  Impersonate="yes"
+                  Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="IgBlockPerUserOverMachine" After="SetIGPREVPERUSER"
+              Condition="NOT Installed AND IGPREVPERMACHINE AND NOT ALLUSERS" />
+      <Custom Action="IgBlockPerMachineOverUser" After="IgBlockPerUserOverMachine"
+              Condition="NOT Installed AND IGPREVPERUSER AND NOT IGPREVPERMACHINE AND ALLUSERS" />
+      <Custom Action="IgRemoveDefaultViewer" Before="RemoveRegistryValues"
+              Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE AND IGREMOVEFILEASSOC=&quot;1&quot; AND ALLUSERS" />
+      <Custom Action="IgRemoveUserDefaultViewer" Before="IgRemoveDefaultViewer"
+              Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE AND IGREMOVEFILEASSOC=&quot;1&quot; AND NOT ALLUSERS" />
+    </InstallExecuteSequence>
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="IgAppFiles" Directory="INSTALLFOLDER">
+
+      <Component Id="CmpImageGlassExe" Guid="$(var.IgExeComponentGuid)">
+        <File Id="FileImageGlassExe" Source="$(var.PayloadDir)\PhotoViewer.exe"
+              Name="PhotoViewer.exe" KeyPath="yes" />
+        <File Id="FileMagickNative" Source="$(var.PayloadDir)\$(var.IgMagickNativeFile)"
+              Name="$(var.IgMagickNativeFile)" CompanionFile="FileImageGlassExe" />
+      </Component>
+
+      <Component Id="CmpInstallInfo" Guid="DB85ED25-70C2-494B-91F7-9F137447CD58">
+        <RegistryValue Root="HKMU" Key="$(var.IgSetupRegKey)" Name="InstallLocation"
+                       Type="string" Value="[INSTALLFOLDER]" KeyPath="yes" />
+      </Component>
+
+      <Files Include="$(var.PayloadDir)\**">
+        <Exclude Files="$(var.PayloadDir)\PhotoViewer.exe" />
+        <Exclude Files="$(var.PayloadDir)\$(var.IgMagickNativeFile)" />
+        <Exclude Files="**\*.pdb" />
+        <Exclude Files="**\.igportable" />
+      </Files>
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Component Id="CmpStartMenuShortcut" Guid="C240ECE0-F4CA-493D-828D-8F550001120A"
+                 Condition="IGSTARTMENUSHORTCUT = &quot;1&quot;">
+        <Shortcut Id="ScStartMenu" Name="!(loc.IgShortcutName)"
+                  Description="!(loc.IgShortcutDescription)"
+                  Target="[INSTALLFOLDER]PhotoViewer.exe" WorkingDirectory="INSTALLFOLDER"
+                  Advertise="no" />
+        <RegistryValue Root="HKMU" Key="$(var.IgSetupRegKey)" Name="StartMenuShortcut"
+                       Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder">
+      <Component Id="CmpDesktopShortcut" Guid="806BC8D3-9812-4845-B478-A74C337A50CA"
+                 Condition="IGDESKTOPSHORTCUT = &quot;1&quot;">
+        <Shortcut Id="ScDesktop" Name="!(loc.IgShortcutName)"
+                  Description="!(loc.IgShortcutDescription)"
+                  Target="[INSTALLFOLDER]PhotoViewer.exe" WorkingDirectory="INSTALLFOLDER"
+                  Advertise="no" />
+        <RegistryValue Root="HKMU" Key="$(var.IgSetupRegKey)" Name="DesktopShortcut"
+                       Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+  </Fragment>
+</Wix>

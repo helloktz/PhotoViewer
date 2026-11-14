@@ -14,7 +14,6 @@
         PlaceholderText="{CompiledBinding PlaceholderText, RelativeSource={RelativeSource AncestorType=ui:PhSearchBoxControl}}"
         Text="{CompiledBinding Text, RelativeSource={RelativeSource AncestorType=ui:PhSearchBoxControl}, Mode=TwoWay}">
 
-        <!--  Search icon inside the textbox (left)  -->
         <ui:PhTextBox.InnerLeftContent>
             <PathIcon
                 Width="14"
@@ -24,7 +23,6 @@
                 Opacity="0.6" />
         </ui:PhTextBox.InnerLeftContent>
 
-        <!--  Clear button inside the textbox (right)  -->
         <ui:PhTextBox.InnerRightContent>
             <ui:PhToolButton
                 x:Name="PART_ClearButton"

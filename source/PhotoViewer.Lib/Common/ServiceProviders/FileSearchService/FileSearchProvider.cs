@@ -1,22 +1,4 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-
+﻿
 using PhotoViewer.Common.Types;
 using System;
 using System.Collections.Generic;
@@ -29,52 +11,25 @@ using System.Threading.Tasks;
 
 namespace PhotoViewer.Common.ServiceProviders.FileSearchService;
 
-
-/// <summary>
-/// Handles file searching, filtering, and sorting based on specified criteria.
-/// </summary>
 public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
 {
     protected CancellationTokenSource? _cancelSearching;
 
-    // Dolphin and Nautilus rank the base name above the extension; Explorer and Finder do not
     private static readonly bool _compareExtensionLast = BHelper.OS == OSType.Linux;
 
-    // Dolphin collates by the user's locale, so "a_b" comes before "ab" and "éa" before "f"
     private static readonly CompareInfo? _nameCollation = BHelper.OS == OSType.Linux ? GetLinuxCollation() : null;
 
-
-    // Public Properties
-    #region Public Properties
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
     public FileSearchOptions Options { get; protected set; } = new();
 
-
-    #endregion // Public Properties
-
-
-
-    #region Public Methods
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
     public async virtual Task SearchAsync(IEnumerable<string> dirs, FileSearchOptions options, Action<FileSearchingEventArgs>? progressFn = null)
     {
         Options = options;
 
-        // cancel ongoing search
         CancelSearching();
         var token = _cancelSearching.Token;
 
-        // snapshot the collection to avoid modification during enumeration
         var dirList = dirs.ToList();
 
-        // Re-check the token at delivery, like the Win32 override does: a batch computed before
-        // the caller's Clear() must not repopulate the fresh list it raced.
         Action<FileSearchingEventArgs>? publishFn = progressFn is null
             ? null
             : e =>
@@ -82,7 +37,6 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
                 if (!token.IsCancellationRequested) progressFn(e);
             };
 
-        // get files from the given directories
         try
         {
             await Task.Run(() =>
@@ -97,10 +51,6 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
         catch { }
     }
 
-
-    /// <summary>
-    /// Cancels an ongoing file searching operation.
-    /// </summary>
     [MemberNotNull(nameof(_cancelSearching))]
     public virtual void CancelSearching()
     {
@@ -109,16 +59,6 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
         _cancelSearching = new();
     }
 
-
-    #endregion // Public Methods
-
-
-
-    #region Protected Functions
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
     protected override void OnDisposing()
     {
         base.OnDisposing();
@@ -126,10 +66,6 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
         CancelSearching();
     }
 
-
-    /// <summary>
-    /// Filters a collection of strings and returns the filtered results.
-    /// </summary>
     protected virtual IEnumerable<FileSearchEntry> OnFiltering(IEnumerable<FileSearchEntry> fileList,
         FileSearchOptions options)
     {
@@ -143,55 +79,32 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
         });
     }
 
-
-    /// <summary>
-    /// Sorts a collection of image file paths based on provided criteria.
-    /// </summary>
     protected virtual IOrderedEnumerable<FileSearchEntry> OnSorting(IEnumerable<FileSearchEntry> fileList,
         FileSearchOptions options)
     {
         return SortEntries(fileList, options);
     }
 
-
-    /// <summary>
-    /// Finds files in the given directory, emits <see cref="FileSearching"/> event.
-    /// </summary>
     protected void FindFiles(string dirPath, FileSearchOptions options,
         Action<FileSearchingEventArgs>? progressFn, CancellationToken token)
     {
-        // cancel if requested
         if (token.IsCancellationRequested) return;
 
-        // search files; hidden/system sub-folders are pruned from the recursion too
         var entries = EnumerateFileEntries(dirPath, options, options.SearchSubDirectories, token);
 
-
-        // cancel if requested
         if (token.IsCancellationRequested) return;
 
-        // filter list
         var filePaths = OnFiltering(entries, options);
 
-
-        // cancel if requested
         if (token.IsCancellationRequested) return;
 
-        // sort list
         filePaths = OnSorting(filePaths, options);
 
-
-        // cancel if requested
         if (token.IsCancellationRequested) return;
 
-        // emits results
         progressFn?.Invoke(new FileSearchingEventArgs(filePaths.ToList()));
     }
 
-
-    /// <summary>
-    /// Enumerates files and captures their filesystem metadata.
-    /// </summary>
     protected static List<FileSearchEntry> EnumerateFileEntries(string dirPath,
         FileSearchOptions options, bool searchSubDirectories, CancellationToken token)
     {
@@ -215,10 +128,6 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
         return entries;
     }
 
-
-    /// <summary>
-    /// Sorts a collection of filesystem entries based on provided criteria.
-    /// </summary>
     private static IOrderedEnumerable<FileSearchEntry> SortEntries(IEnumerable<FileSearchEntry> fileList, FileSearchOptions options)
     {
         var filePathComparer = new StringNaturalComparer(options.OrderType == ImageOrderType.Asc, StringComparison.OrdinalIgnoreCase, _compareExtensionLast, _nameCollation);
@@ -250,25 +159,16 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
         return sorted.ThenBy(f => Path.GetFileName(f.FilePath), filePathComparer);
     }
 
-
-    /// <summary>
-    /// Sorts a collection of image file paths based on provided criteria.
-    /// </summary>
     public static IOrderedEnumerable<string> SortFiles(IEnumerable<string> fileList, FileSearchOptions options)
     {
         var query = fileList;
 
-
-        // Gets the file path comparer.
         var filePathComparer = new StringNaturalComparer(options.OrderType == ImageOrderType.Asc, StringComparison.OrdinalIgnoreCase, _compareExtensionLast, _nameCollation);
 
-        // Gets the directory path comparer.
         var dirPathComparer = options.GroupByDir
             ? new StringNaturalComparer(options.OrderType == ImageOrderType.Asc, StringComparison.OrdinalIgnoreCase, collation: _nameCollation)
             : (IComparer<string?>)Comparer<string>.Create((a, b) => 0);
 
-
-        // sort by FileSize
         if (options.OrderBy == ImageOrderBy.FileSize)
         {
             if (options.OrderType == ImageOrderType.Desc)
@@ -287,7 +187,6 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
             }
         }
 
-        // sort by DateCreated
         if (options.OrderBy == ImageOrderBy.DateCreated)
         {
             if (options.OrderType == ImageOrderType.Desc)
@@ -306,7 +205,6 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
             }
         }
 
-        // sort by Extension
         if (options.OrderBy == ImageOrderBy.Extension)
         {
             if (options.OrderType == ImageOrderType.Desc)
@@ -325,7 +223,6 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
             }
         }
 
-        // sort by DateAccessed
         if (options.OrderBy == ImageOrderBy.DateAccessed)
         {
             if (options.OrderType == ImageOrderType.Desc)
@@ -344,7 +241,6 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
             }
         }
 
-        // sort by DateModified
         if (options.OrderBy == ImageOrderBy.DateModified)
         {
             if (options.OrderType == ImageOrderType.Desc)
@@ -363,26 +259,18 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
             }
         }
 
-        // sort by Random
         if (options.OrderBy == ImageOrderBy.Random)
         {
-            // NOTE: ignoring the 'descending order' setting
             return query
                 .OrderBy(f => Path.GetDirectoryName(f), dirPathComparer)
                 .ThenBy(_ => Guid.NewGuid());
         }
 
-
-        // sort by Name (default)
         return query
             .OrderBy(f => Path.GetDirectoryName(f), dirPathComparer)
             .ThenBy(f => Path.GetFileName(f), filePathComparer);
     }
 
-
-    /// <summary>
-    /// Gets the collation of the user's locale, read from the environment as the app pins its culture to invariant.
-    /// </summary>
     private static CompareInfo GetLinuxCollation()
     {
         try
@@ -391,7 +279,6 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
                 : Environment.GetEnvironmentVariable("LC_COLLATE") is { Length: > 0 } collate ? collate
                 : Environment.GetEnvironmentVariable("LANG");
 
-            // "en_US.UTF-8" is the culture "en-US"; the C locale has no tailoring
             var name = locale?.Split('.', '@')[0].Replace('_', '-');
             if (!string.IsNullOrEmpty(name) && name is not ("C" or "POSIX"))
             {
@@ -402,9 +289,5 @@ public partial class FileSearchProvider() : PhDisposable, IFileSearchProvider
 
         return CultureInfo.InvariantCulture.CompareInfo;
     }
-
-
-    #endregion // Protected Functions
-
 
 }

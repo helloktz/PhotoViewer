@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
-    <IgVersion>1.0.0.0</IgVersion>
+    <IgVersion>1.0.0</IgVersion>
+    <ArtifactsPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\.artifacts'))</ArtifactsPath>
   </PropertyGroup>
 </Project>

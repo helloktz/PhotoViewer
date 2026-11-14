@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using PhotoViewer.Common.Extensions;
 using SkiaSharp;
 using System;
@@ -25,18 +7,9 @@ using System.Threading.Tasks;
 
 namespace PhotoViewer.Common.Photoing;
 
-
-/// <summary>
-/// Routes a save through a plugin encoder when one claims the destination extension, leaving the
-/// built-in Magick path untouched otherwise. Keeps <see cref="Photo.SaveAsAsync"/> thin.
-/// </summary>
 internal static class CodecEncodePipeline
 {
-    /// <summary>
-    /// Tries to write <paramref name="destFilePath"/> with a plugin encoder. Returns <c>false</c>
-    /// when no plugin claims it, so the caller falls back to the built-in path. Throws when a
-    /// plugin was selected and genuinely failed.
-    /// </summary>
+
     public static async Task<bool> TryEncodeAsync(Photo photo, string destFilePath,
         PhotoTransform? transform, uint quality, CancellationToken token)
     {
@@ -44,8 +17,6 @@ internal static class CodecEncodePipeline
 
         var codec = Core.CodecRegistry.SelectEncodeCodec(destFilePath);
 
-        // No encoder, or the built-in one: keep today's behavior verbatim, which also preserves
-        // the multi-frame re-decode and the ICO downscale that live in MagickCodec.SaveAsync.
         if (codec is null || codec is MagickCodecAdapter) return false;
 
         var isMultiFrame = !photo.IsClipboard
@@ -79,7 +50,6 @@ internal static class CodecEncodePipeline
             throw;
         }
 
-        // a failed promote deliberately keeps the staged file: it holds the finished image
         var (promoted, promoteError) = await SaveStaging.PromoteAsync(tempPath, destFilePath, token).ConfigureAwait(false);
         if (!promoted)
         {
@@ -89,10 +59,6 @@ internal static class CodecEncodePipeline
         return true;
     }
 
-
-    /// <summary>
-    /// Encodes the single image the user is saving.
-    /// </summary>
     private static async Task<CodecEncodeResult> EncodeSingleFrameAsync(ICodec codec, Photo photo,
         string tempPath, PhotoTransform? transform, uint quality, CancellationToken token)
     {
@@ -116,12 +82,6 @@ internal static class CodecEncodePipeline
         }
     }
 
-
-    /// <summary>
-    /// Resolves the pixels to write. Clipboard and selection content is already in memory; a file
-    /// is re-decoded rather than reusing the cached bitmap, which may be a preview or a tone-mapped
-    /// HDR frame that would silently downgrade the save.
-    /// </summary>
     private static async Task<(SKImage? Image, bool Owned)> GetSingleFrameAsync(Photo photo,
         PhotoTransform? transform, CancellationToken token)
     {
@@ -144,10 +104,6 @@ internal static class CodecEncodePipeline
         return (withTransform, true);
     }
 
-
-    /// <summary>
-    /// Encodes every frame of a multi-frame photo, pulling one frame at a time.
-    /// </summary>
     private static async Task<CodecEncodeResult> EncodeMultiFrameAsync(ICodec codec, Photo photo,
         string tempPath, PhotoTransform? transform, uint quality, CancellationToken token)
     {
@@ -155,8 +111,6 @@ internal static class CodecEncodePipeline
         var animator = photo.Bitmap as AnimatorImpl;
         var wasPlaying = animator?.IsPlaying == true;
 
-        // The animator's frame cache is small and evicts by disposing, and it keeps advancing on
-        // the UI thread. Pause it so frames stay valid long enough to be copied.
         if (wasPlaying) animator!.Pause();
 
         try
@@ -179,11 +133,6 @@ internal static class CodecEncodePipeline
         }
     }
 
-
-    /// <summary>
-    /// Supplies one frame of a multi-frame save. An animator frame stays owned by the animator and
-    /// is only valid until the next request, so the encoder copies it before asking for another.
-    /// </summary>
     private static async Task<CodecEncodeFrame?> GetMultiFrameAsync(Photo photo, AnimatorImpl? animator,
         int index, PhotoTransform? transform, CancellationToken token)
     {
@@ -200,7 +149,6 @@ internal static class CodecEncodePipeline
                 : new CodecEncodeFrame(frame, duration, false);
         }
 
-        // Page container (multi-page TIFF, PDF): no timing, decode each page on demand.
         var decoded = await photo.DecodeStaticFrameAsync((uint)index, token).ConfigureAwait(false);
         if (decoded is null) return null;
 
@@ -211,11 +159,6 @@ internal static class CodecEncodePipeline
         return new CodecEncodeFrame(transformed, 0, true);
     }
 
-
-    /// <summary>
-    /// Applies the transform to one frame, matching Magick's rule: only the targeted frame, or all
-    /// frames when the transform targets -1. Returns <c>null</c> when nothing changed.
-    /// </summary>
     private static SKImage? ApplyFrameTransform(SKImage frame, PhotoTransform? transform, int index)
     {
         if (transform is null) return null;
@@ -224,10 +167,6 @@ internal static class CodecEncodePipeline
         return SkiaCodec.TransformImage(frame, transform);
     }
 
-
-    /// <summary>
-    /// The raw ICC bytes of the photo, so an encoder can tag its output; <c>null</c> means sRGB.
-    /// </summary>
     private static byte[]? GetIccProfile(Photo photo)
     {
         try
@@ -239,6 +178,5 @@ internal static class CodecEncodePipeline
             return null;
         }
     }
-
 
 }

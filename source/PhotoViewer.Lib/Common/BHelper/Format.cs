@@ -1,22 +1,4 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-
+﻿
 using System;
 using System.Globalization;
 using System.Linq;
@@ -25,11 +7,7 @@ namespace PhotoViewer.Common;
 
 public partial class BHelper
 {
-    /// <summary>
-    /// Formats the given file size as a human readable string.
-    /// </summary>
-    /// <param name="size">File size in bytes.</param>
-    /// <returns>The formatted string.</returns>
+
     public static string FormatSize(long size)
     {
         var mod = 1024d;
@@ -45,18 +23,11 @@ public partial class BHelper
         return String.Format("{0} {1}", Math.Round(sized, 2), units[i]);
     }
 
-    /// <summary>
-    /// Formats a timestamp for persistence as culture-independent UTC, e.g. <c>2026-08-30T10:08:12.4924980Z</c>.
-    /// </summary>
     public static string FormatUtcRoundtrip(DateTime dt)
     {
         return dt.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture);
     }
 
-
-    /// <summary>
-    /// Reverses <see cref="FormatUtcRoundtrip"/> in UTC; also reads values written before that format.
-    /// </summary>
     public static bool TryParseUtcRoundtrip(string? value, out DateTime utc)
     {
         utc = DateTime.MinValue;
@@ -65,7 +36,6 @@ public partial class BHelper
         if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dt)
             || DateTime.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out dt))
         {
-            // values written before this format carried no zone, and every writer used UtcNow
             utc = dt.Kind == DateTimeKind.Unspecified
                 ? DateTime.SpecifyKind(dt, DateTimeKind.Utc)
                 : dt.ToUniversalTime();
@@ -75,10 +45,6 @@ public partial class BHelper
         return false;
     }
 
-
-    /// <summary>
-    /// Formats date time string to string.
-    /// </summary>
     public static string FormatDateTime(string? str, bool includeTime = true)
     {
         var dt = ConvertDateTime(str);
@@ -86,9 +52,6 @@ public partial class BHelper
         return FormatDateTime(dt, includeTime);
     }
 
-    /// <summary>
-    /// Formats <see cref="DateTime"/> to string.
-    /// </summary>
     public static string FormatDateTime(DateTime? dt, bool includeTime = true)
     {
         if (dt != null)
@@ -102,9 +65,6 @@ public partial class BHelper
         return string.Empty;
     }
 
-    /// <summary>
-    /// Convert date time string to <see cref="DateTime"/>.
-    /// </summary>
     public static DateTime? ConvertDateTime(string? dt)
     {
         if (DateTime.TryParseExact(dt,
@@ -119,10 +79,6 @@ public partial class BHelper
         return null;
     }
 
-
-    /// <summary>
-    /// Formats the 0-99 rating to the simple rating (0-5).
-    /// </summary>
     public static int FormatStarRating(int rating)
     {
         var star = 0;
@@ -141,10 +97,6 @@ public partial class BHelper
         return star;
     }
 
-
-    /// <summary>
-    /// Formats the rating as stars.
-    /// </summary>
     public static string FormatStarRatingText(int rating)
     {
         var star = FormatStarRating(rating);
@@ -155,13 +107,8 @@ public partial class BHelper
         return ratingText;
     }
 
-
-    /// <summary>
-    /// Simplifies the fractions.
-    /// </summary>
     public static int[] SimplifyFractions(params int[] numbers)
     {
-        // get the greatest common divisor of the input numbers
         var gcd = numbers.Aggregate((currentGcd, arg) => CalculateGcd(currentGcd, arg));
 
         for (int i = 0; i < numbers.Length; i++)
@@ -170,7 +117,6 @@ public partial class BHelper
         }
 
         return numbers;
-
 
         int CalculateGcd(int a, int b)
         {
@@ -183,6 +129,5 @@ public partial class BHelper
             return a;
         }
     }
-
 
 }

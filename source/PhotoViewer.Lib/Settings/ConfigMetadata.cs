@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 namespace PhotoViewer.Common;
 
 public record ConfigMetadata
@@ -24,12 +6,8 @@ public record ConfigMetadata
     public float Version { get; set; } = 10.0f;
 }
 
-
-
 public enum ConfigId
 {
-
-    #region Boolean settings
 
     ShowToolbar,
     ShowToolbarInFullscreen,
@@ -78,11 +56,6 @@ public enum ConfigId
     EnableAutoOpenNewAddedImage,
     EnableDebug,
 
-    #endregion // Boolean settings
-
-
-    #region Number settings
-
     QuickSetupVersion,
     PanMargin,
     PanSpeed,
@@ -106,11 +79,6 @@ public enum ConfigId
     PreviewMinWidth,
     PreviewMinHeight,
 
-    #endregion // Number settings
-
-
-    #region String settings
-
     ColorProfile,
     LastSeenImagePath,
     LastOpenedTool,
@@ -123,11 +91,6 @@ public enum ConfigId
     LightTheme,
     Language,
 
-    #endregion // String settings
-
-
-    #region Enum settings
-
     CheckerboardMode,
     ViewerScrollbarMode,
     ImageInfoOverlayMode,
@@ -139,11 +102,6 @@ public enum ConfigId
     ImageInterpolationScaleUp,
     AfterEditingAction,
     WindowBackdrop,
-
-    #endregion // Enum settings
-
-
-    #region Array settings
 
     MainWindowBounds,
     SettingsWindowBounds,
@@ -162,8 +120,4 @@ public enum ConfigId
     ToolSettings,
     ToolbarButtons,
 
-    #endregion // Array settings
-
 }
-
-

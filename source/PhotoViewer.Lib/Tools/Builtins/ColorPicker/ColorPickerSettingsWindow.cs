@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Controls;
 using Avalonia.Layout;
 using PhotoViewer.Common;
@@ -33,12 +15,7 @@ internal class ColorPickerSettingsWindow : DialogWindow
     private CheckBox _chkShowCmykA = null!;
     private CheckBox _chkShowCIELabA = null!;
 
-
-    /// <summary>
-    /// Gets a snapshot of the edited config values.
-    /// </summary>
     public ColorPickerConfig ResultConfig { get; private set; } = new();
-
 
     public ColorPickerSettingsWindow(ColorPickerConfig config)
     {
@@ -52,10 +29,6 @@ internal class ColorPickerSettingsWindow : DialogWindow
         DialogContent = CreateDialogContentElement();
         LoadConfigValues(config);
     }
-
-
-
-    #region Override Methods
 
     protected override void OnIgLanguageChanged()
     {
@@ -73,7 +46,6 @@ internal class ColorPickerSettingsWindow : DialogWindow
         _chkShowCIELabA.Content = Core.Lang[LangId.Tool_ColorPicker_ChkShowCIELabA];
     }
 
-
     protected override void OnDialogSubmitted(DialogEventArgs e)
     {
         ResultConfig = new ColorPickerConfig
@@ -89,15 +61,6 @@ internal class ColorPickerSettingsWindow : DialogWindow
         base.OnDialogSubmitted(e);
     }
 
-    #endregion // Override Methods
-
-
-
-    #region Private Methods
-
-    /// <summary>
-    /// Loads the current config values into the checkboxes.
-    /// </summary>
     private void LoadConfigValues(ColorPickerConfig config)
     {
         _chkShowRgbA.IsChecked = config.ShowRgbWithAlpha;
@@ -108,10 +71,6 @@ internal class ColorPickerSettingsWindow : DialogWindow
         _chkShowCIELabA.IsChecked = config.ShowCIELabWithAlpha;
     }
 
-
-    /// <summary>
-    /// Creates dialog content with checkboxes for all color format settings.
-    /// </summary>
     private StackPanel CreateDialogContentElement()
     {
         _chkShowRgbA = new CheckBox();
@@ -139,8 +98,5 @@ internal class ColorPickerSettingsWindow : DialogWindow
 
         return root;
     }
-
-    #endregion // Private Methods
-
 
 }

@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
@@ -63,14 +45,7 @@ public partial class ImageResizerWindow : ModalWindow
     private TextBlock _lblNewSizeValue = null!;
     private TextBlock _lblSizeError = null!;
 
-
-
-    /// <summary>
-    /// Gets the output bitmap.
-    /// </summary>
     public SKBitmap? OutputBitmap { get; private set; }
-
-
 
     public ImageResizerWindow(SKBitmap srcBmp)
     {
@@ -90,22 +65,16 @@ public partial class ImageResizerWindow : ModalWindow
         ModalExtraContent = CreateResizerContentElement();
     }
 
-
-
-    #region Override Methods
-
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
 
-        // set default focus to pixels radio button
         _radPixels.Focus(NavigationMethod.Tab);
 
         _numWidth.Value = (decimal)_srcSize.Width;
         _numHeight.Value = (decimal)_srcSize.Height;
         _lblCurrentSizeValue.Text = $"{_srcSize.Width:N0}×{_srcSize.Height:N0} px";
     }
-
 
     protected override void OnIgLanguageChanged()
     {
@@ -124,15 +93,12 @@ public partial class ImageResizerWindow : ModalWindow
         _lblNewSize.Text = Core.Lang[LangId.Tool_Resizer_LblNewSize];
     }
 
-
     protected override void OnDialogSubmitted(DialogEventArgs e)
     {
-        // Enter submits without going through the disabled OK button
         if (!_btn1.IsEnabled) return;
 
         _ = RunAsync();
     }
-
 
     protected override void OnDialogCancelled(DialogEventArgs e)
     {
@@ -142,7 +108,6 @@ public partial class ImageResizerWindow : ModalWindow
         base.OnDialogCancelled(e);
     }
 
-
     protected override void OnDialogAborted()
     {
         _cancel?.Cancel();
@@ -151,16 +116,8 @@ public partial class ImageResizerWindow : ModalWindow
         base.OnDialogAborted();
     }
 
-    #endregion // Override Methods
-
-
-
-
-    #region Private methods
-
     private Grid CreateResizerContentElement()
     {
-        // Row 0: Radio buttons (Pixels, Percentage)
         _radPixels = new RadioButton
         {
             GroupName = "ResizeUnit",
@@ -182,8 +139,6 @@ public partial class ImageResizerWindow : ModalWindow
         radioPanel.KeyDown += RadioPanel_KeyDown;
         radioPanel.Children.AddRange([_radPixels, _radPercentage]);
 
-
-        // Row 1: Size inputs (Width, Height) + unit label
         _lblSize = new TextBlock
         {
             VerticalAlignment = VerticalAlignment.Center,
@@ -233,15 +188,11 @@ public partial class ImageResizerWindow : ModalWindow
             MinWidth = 50,
         };
 
-
-        // Row 2: Keep ratio checkbox
         _chkKeepRatio = new CheckBox
         {
             IsChecked = true,
         };
 
-
-        // Row 3: Resample combobox
         _lblResample = new TextBlock
         {
             VerticalAlignment = VerticalAlignment.Center,
@@ -257,8 +208,6 @@ public partial class ImageResizerWindow : ModalWindow
         }
         _cmbResample.SelectedIndex = 0;
 
-
-        // Row 4: Current size label
         _lblCurrentSize = new TextBlock
         {
             VerticalAlignment = VerticalAlignment.Center,
@@ -270,8 +219,6 @@ public partial class ImageResizerWindow : ModalWindow
             Margin = new(0, 8, 0, 0),
         };
 
-
-        // Row 5: New size label + size limit error
         _lblNewSize = new TextBlock
         {
             VerticalAlignment = VerticalAlignment.Top,
@@ -290,8 +237,6 @@ public partial class ImageResizerWindow : ModalWindow
         };
         newSizePanel.Children.AddRange([_lblNewSizeValue, _lblSizeError]);
 
-
-        // Build the grid layout
         var gridEl = new Grid
         {
             ColumnDefinitions = new("Auto, *, Auto"),
@@ -301,11 +246,9 @@ public partial class ImageResizerWindow : ModalWindow
             MinWidth = 380,
         };
 
-        // Row 0: radio buttons
         Grid.SetRow(radioPanel, 0);
         Grid.SetColumn(radioPanel, 1);
 
-        // Row 1: size label + inputs + unit
         Grid.SetRow(_lblSize, 1);
         Grid.SetColumn(_lblSize, 0);
         Grid.SetRow(sizeInputPanel, 1);
@@ -313,23 +256,19 @@ public partial class ImageResizerWindow : ModalWindow
         Grid.SetRow(_lblSizeUnit, 1);
         Grid.SetColumn(_lblSizeUnit, 2);
 
-        // Row 2: keep ratio checkbox
         Grid.SetRow(_chkKeepRatio, 2);
         Grid.SetColumn(_chkKeepRatio, 1);
 
-        // Row 3: resample label + combobox
         Grid.SetRow(_lblResample, 3);
         Grid.SetColumn(_lblResample, 0);
         Grid.SetRow(_cmbResample, 3);
         Grid.SetColumn(_cmbResample, 1);
 
-        // Row 4: current size
         Grid.SetRow(_lblCurrentSize, 4);
         Grid.SetColumn(_lblCurrentSize, 0);
         Grid.SetRow(_lblCurrentSizeValue, 4);
         Grid.SetColumn(_lblCurrentSizeValue, 1);
 
-        // Row 5: new size
         Grid.SetRow(_lblNewSize, 5);
         Grid.SetColumn(_lblNewSize, 0);
         Grid.SetRow(newSizePanel, 5);
@@ -347,7 +286,6 @@ public partial class ImageResizerWindow : ModalWindow
         return gridEl;
     }
 
-
     private void RadioPanel_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key is not (Key.Left or Key.Right)) return;
@@ -360,7 +298,6 @@ public partial class ImageResizerWindow : ModalWindow
         target.Focus(NavigationMethod.Directional);
         e.Handled = true;
     }
-
 
     private void RadResizeUnit_IsCheckedChanged(object? sender, RoutedEventArgs e)
     {
@@ -381,13 +318,11 @@ public partial class ImageResizerWindow : ModalWindow
 
             if (usePixels)
             {
-                // percentage -> pixels
                 _numWidth.Value = (decimal)Math.Max(1, Math.Round(w / 100.0 * _srcSize.Width));
                 _numHeight.Value = (decimal)Math.Max(1, Math.Round(h / 100.0 * _srcSize.Height));
             }
             else
             {
-                // pixels -> percentage
                 _numWidth.Value = (decimal)Math.Max(1, Math.Round(w / _srcSize.Width * 100.0, 2));
                 _numHeight.Value = (decimal)Math.Max(1, Math.Round(h / _srcSize.Height * 100.0, 2));
             }
@@ -399,7 +334,6 @@ public partial class ImageResizerWindow : ModalWindow
 
         UpdateOutputSize();
     }
-
 
     private void NumWidth_ValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
     {
@@ -413,7 +347,6 @@ public partial class ImageResizerWindow : ModalWindow
             {
                 var w = (double)(_numWidth.Value ?? 1);
 
-                // percentages are relative to each axis, so keeping the ratio means equal values
                 var ratio = _radPixels.IsChecked == true ? _srcSize.Height / _srcSize.Width : 1.0;
                 _numHeight.Value = (decimal)Math.Max(1, Math.Round(w * ratio, 2));
             }
@@ -425,7 +358,6 @@ public partial class ImageResizerWindow : ModalWindow
 
         UpdateOutputSize();
     }
-
 
     private void NumHeight_ValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
     {
@@ -439,7 +371,6 @@ public partial class ImageResizerWindow : ModalWindow
             {
                 var h = (double)(_numHeight.Value ?? 1);
 
-                // percentages are relative to each axis, so keeping the ratio means equal values
                 var ratio = _radPixels.IsChecked == true ? _srcSize.Width / _srcSize.Height : 1.0;
                 _numWidth.Value = (decimal)Math.Max(1, Math.Round(h * ratio, 2));
             }
@@ -451,7 +382,6 @@ public partial class ImageResizerWindow : ModalWindow
 
         UpdateOutputSize();
     }
-
 
     private void UpdateOutputSize()
     {
@@ -471,7 +401,6 @@ public partial class ImageResizerWindow : ModalWindow
 
         _lblNewSizeValue.Text = $"{_outputSize.Width:N0}×{_outputSize.Height:N0} px";
 
-        // each output side is capped at MAX_SIZE
         var isWidthValid = _outputSize.Width <= MAX_SIZE;
         var isHeightValid = _outputSize.Height <= MAX_SIZE;
         var isValid = isWidthValid && isHeightValid;
@@ -484,13 +413,8 @@ public partial class ImageResizerWindow : ModalWindow
         _btn1.IsEnabled = isValid;
     }
 
-
-    /// <summary>
-    /// Shows or clears the error color on a size box or label.
-    /// </summary>
     private static void SetErrorForeground(Control control, bool isError)
     {
-        // the focus style outranks NumericUpDown's template binding, so color its inner text box directly
         var target = control is NumericUpDown num
             ? num.GetVisualDescendants().OfType<TextBox>().FirstOrDefault()
             : control;
@@ -506,7 +430,6 @@ public partial class ImageResizerWindow : ModalWindow
         }
     }
 
-
     private async Task RunAsync()
     {
         _btn1.IsEnabled = false;
@@ -514,12 +437,10 @@ public partial class ImageResizerWindow : ModalWindow
         IsButton2Visible = true;
         Button2Text = Core.Lang[LangId._Cancel];
 
-        // show progress bar
         IsProgressVisible = true;
         IsProgressIndeterminate = true;
         ProgressValue = 0;
 
-        // disable UI
         _radPixels.IsEnabled = false;
         _radPercentage.IsEnabled = false;
         _numWidth.IsEnabled = false;
@@ -527,19 +448,15 @@ public partial class ImageResizerWindow : ModalWindow
         _chkKeepRatio.IsEnabled = false;
         _cmbResample.IsEnabled = false;
 
-
         _ = Task.Factory.StartNew(async () =>
         {
-            // start resizing
             var resample = (ImageResamplingMethod)_cmbResample.SelectedIndex;
             OutputBitmap = await SkiaCodec.ResizeAsync(_srcBmp,
                 (int)_outputSize.Width,
                 (int)_outputSize.Height, resample, _cancel.Token);
 
-            await Task.Delay(200, _cancel.Token); // make it feel slow for better UX
+            await Task.Delay(200, _cancel.Token);
 
-
-            // done
             Dispatcher.UIThread.Post(() =>
             {
                 IsProgressIndeterminate = false;
@@ -552,10 +469,4 @@ public partial class ImageResizerWindow : ModalWindow
         }, _cancel.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
     }
 
-
-    #endregion // Private methods
-
-
-
 }
-

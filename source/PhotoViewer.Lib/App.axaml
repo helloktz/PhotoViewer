@@ -6,9 +6,6 @@
     Name="Photo Viewer"
     RequestedThemeVariant="Default">
 
-    <!--  macOS application menu  -->
-
-
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
@@ -25,8 +22,6 @@
         <StyleInclude Source="avares://PhotoViewer.Lib/UI/Styles/ControlStyle.axaml" />
 
     </Application.Styles>
-
-
 
     <Application.Resources>
         <ResourceDictionary>

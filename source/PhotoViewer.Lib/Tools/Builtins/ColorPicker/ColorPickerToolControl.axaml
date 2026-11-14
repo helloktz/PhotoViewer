@@ -17,7 +17,6 @@
         <cv:ColorToBrushConverter x:Key="ColorToBrushConverter" />
     </ui:PhControl.Resources>
 
-
     <WrapPanel
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
@@ -26,14 +25,12 @@
         LineSpacing="6"
         Orientation="Horizontal">
 
-        <!--  Color Preview  -->
         <Border
             BorderBrush="{DynamicResource IG_BorderControlBrush}"
             BorderThickness="1"
             ClipToBounds="True"
             CornerRadius="1">
             <StackPanel Orientation="Horizontal">
-                <!--  Checkerboard background brush  -->
                 <StackPanel.Background>
                     <VisualBrush
                         DestinationRect="0,0,20,20"
@@ -70,8 +67,6 @@
                     </VisualBrush>
                 </StackPanel.Background>
 
-
-                <!--  Current color  -->
                 <Border
                     MinWidth="100"
                     Padding="4"
@@ -85,7 +80,6 @@
                 </Border>
                 <Border Width="1" Background="{DynamicResource IG_BorderControlBrush}" />
 
-                <!--  Selected color  -->
                 <Border
                     MinWidth="100"
                     Padding="4"
@@ -100,15 +94,12 @@
             </StackPanel>
         </Border>
 
-
-        <!--  Color Codes  -->
         <WrapPanel
             ItemSpacing="24"
             LineSpacing="6"
             Orientation="Horizontal">
 
             <StackPanel Spacing="6">
-                <!--  RGBA  -->
                 <StackPanel
                     MinWidth="150"
                     VerticalAlignment="Center"
@@ -123,7 +114,6 @@
                         ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
                 </StackPanel>
 
-                <!--  HEX  -->
                 <StackPanel
                     MinWidth="150"
                     VerticalAlignment="Center"
@@ -139,9 +129,7 @@
                 </StackPanel>
             </StackPanel>
 
-
             <StackPanel Spacing="6">
-                <!--  HSL  -->
                 <StackPanel
                     MinWidth="150"
                     VerticalAlignment="Center"
@@ -156,7 +144,6 @@
                         ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
                 </StackPanel>
 
-                <!--  HSV  -->
                 <StackPanel
                     MinWidth="150"
                     VerticalAlignment="Center"
@@ -172,9 +159,7 @@
                 </StackPanel>
             </StackPanel>
 
-
             <StackPanel Spacing="6">
-                <!--  CMYK  -->
                 <StackPanel
                     MinWidth="200"
                     VerticalAlignment="Center"
@@ -189,7 +174,6 @@
                         ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
                 </StackPanel>
 
-                <!--  CIELAB  -->
                 <StackPanel
                     MinWidth="200"
                     VerticalAlignment="Center"

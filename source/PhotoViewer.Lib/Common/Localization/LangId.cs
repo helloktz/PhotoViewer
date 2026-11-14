@@ -1,26 +1,8 @@
-﻿/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-namespace PhotoViewer.Common.Localization;
+﻿namespace PhotoViewer.Common.Localization;
 
 public enum LangId
 {
-    #region General
+
     _OK,
     _Cancel,
     _Apply,
@@ -64,7 +46,6 @@ public enum LangId
     _Description,
     _Type,
     _Version,
-    _Author,
     _View,
     _Start,
     _Register,
@@ -88,7 +69,6 @@ public enum LangId
 
     _UserAction_Win32ExeError,
 
-    // Gallery tooltip
     _Metadata_FileSize,
     _Metadata_FileLastWriteTime,
     _Metadata_FrameCount,
@@ -98,11 +78,9 @@ public enum LangId
     _Metadata_ExifDateTime,
     _Metadata_ExifDateTimeOriginal,
 
-    // image info
     _ImageInfo_ListCount,
     _ImageInfo_FrameCount,
 
-    // layout position
     _Position_Left,
     _Position_Right,
     _Position_Top,
@@ -119,7 +97,6 @@ public enum LangId
     _Validation_FileExtensionValueOnly,
     _Validation_FileExtensionsValueOnly,
 
-    // print options
     _PrintOrientation_Auto,
     _PrintOrientation_Portrait,
     _PrintOrientation_Landscape,
@@ -147,8 +124,6 @@ public enum LangId
     _PrinterState_Paused,
     _PrinterState_Error,
 
-
-    // main window
     _PicMain_ErrorText,
     _OpenFileDialog,
     _Loading,
@@ -159,30 +134,22 @@ public enum LangId
     _ClipboardImage,
     _PlayMotionVideo,
 
-    // about
     _Slogan,
     _AboutVersion,
     _License,
     _Credits,
 
-    // slideshow
     _PauseSlideshow,
     _ResumeSlideshow,
     _MnuPauseResumeSlideshow,
     _MnuToggleCountdown,
     _MnuExitSlideshow,
 
-    // export frames
     _Title,
     _FolderPickerTitle,
     _Exporting,
     _ExportDone,
     _OpenOutputFolder,
-
-    #endregion // General
-
-
-    #region Enums
 
     ImageOrderBy_Name,
     ImageOrderBy_Random,
@@ -233,34 +200,23 @@ public enum LangId
     MouseClickEvent_XButton1Click,
     MouseClickEvent_XButton2Click,
 
-    // values match the CheckerboardType enum members
     CheckerboardType_None,
     CheckerboardType_Client,
     CheckerboardType_Image,
 
-    // values match the ScrollbarMode enum members
     ScrollbarMode_Never,
     ScrollbarMode_AutoHide,
     ScrollbarMode_Always,
 
-    // values match the ImageInfoOverlayMode enum members
     ImageInfoOverlayMode_Hidden,
     ImageInfoOverlayMode_Always,
     ImageInfoOverlayMode_AlwaysAutoHide,
     ImageInfoOverlayMode_Borderless,
     ImageInfoOverlayMode_BorderlessAutoHide,
 
-    #endregion // Enums
-
-
-    #region Main Window
     Menu_MnuMain,
     Menu_MnuToolbarOverflow,
 
-
-    #region Main Window > Main Menu
-
-    #region Main Menu > File
     Menu_MnuFile,
     Menu_MnuOpenFile,
     Menu_MnuNewWindow,
@@ -289,10 +245,6 @@ public enum LangId
     Menu_MnuDeleteFromHardDisk,
     Menu_MnuDeleteFromHardDisk_Description,
 
-    #endregion // Main Menu > File
-
-
-    #region Main Menu > Navigation
     Menu_MnuNavigation,
     Menu_MnuViewNext,
     Menu_MnuViewPrevious,
@@ -306,10 +258,7 @@ public enum LangId
     Menu_MnuViewPreviousFrame,
     Menu_MnuViewFirstFrame,
     Menu_MnuViewLastFrame,
-    #endregion // Main Menu > Navigation
 
-
-    #region Main Menu > Zoom
     Menu_MnuZoom,
     Menu_MnuZoomIn,
     Menu_MnuZoomOut,
@@ -322,10 +271,7 @@ public enum LangId
     Menu_MnuAutoZoom,
     Menu_MnuScaleToWidth,
     Menu_MnuScaleToHeight,
-    #endregion // Main Menu > Zoom
 
-
-    #region Main Menu > Panning
     Menu_MnuPanning,
 
     Menu_MnuPanLeft,
@@ -337,10 +283,7 @@ public enum LangId
     Menu_MnuPanToRightSide,
     Menu_MnuPanToTop,
     Menu_MnuPanToBottom,
-    #endregion // Main Menu > Panning
 
-
-    #region Main Menu > Image
     Menu_MnuImage,
 
     Menu_MnuRefresh,
@@ -367,10 +310,7 @@ public enum LangId
     Menu_MnuSetLockScreen_Success,
 
     Menu_MnuImageProperties,
-    #endregion // Main Menu > Image
 
-
-    #region Main Menu > Clipboard
     Menu_MnuClipboard,
     Menu_MnuCopyFile,
     Menu_MnuCopyFile_Success,
@@ -384,8 +324,6 @@ public enum LangId
     Menu_MnuPasteImage,
     Menu_MnuClearClipboard,
     Menu_MnuClearClipboard_Success,
-    #endregion // Main Menu > Clipboard
-
 
     Menu_MnuWindowFit,
     Menu_MnuFullScreen,
@@ -393,8 +331,6 @@ public enum LangId
     Menu_MnuFrameless_EnableDescription,
     Menu_MnuSlideshow,
 
-
-    #region Main Menu > Layout
     Menu_MnuLayout,
     Menu_MnuToggleToolbar,
     Menu_MnuToggleGallery,
@@ -403,9 +339,7 @@ public enum LangId
     Menu_MnuToggleTopMost_Enable,
     Menu_MnuToggleTopMost_Disable,
     Menu_MnuChangeBackgroundColor,
-    #endregion // Main Menu > Layout
 
-    #region Main Menu > Tools
     Menu_MnuTools,
     Menu_MnuColorPicker,
     Menu_MnuCropTool,
@@ -421,16 +355,11 @@ public enum LangId
     Menu_MnuLosslessCompression_Compressing,
     Menu_MnuLosslessCompression_Done,
     Menu_MnuLosslessCompression_Error,
-    #endregion // Main Menu > Tools
-
     Menu_MnuPlugins,
     Menu_MnuSettings,
 
-    #region Main Menu > Help
     Menu_MnuHelp,
     Menu_MnuAbout,
-
-
 
     Menu_MnuQuickSetup,
 
@@ -441,24 +370,13 @@ public enum LangId
     Menu_MnuRemoveDefaultPhotoViewer,
     Menu_MnuRemoveDefaultPhotoViewer_Success,
     Menu_MnuRemoveDefaultPhotoViewer_Error,
-    #endregion // Main Menu > Help
-
     Menu_MnuExit,
-
-
-    #endregion // Main Window > Main Menu
-
-    #endregion // Main Window
-
-
-    #region Settings
 
     Settings_ResetSettings,
     Settings_UnmanagedSettingReminder,
     Settings_SearchPlaceholder,
     Settings_AdminLockWarning,
 
-    #region Settings > Navbar
     Settings_Nav_General,
     Settings_Nav_Image,
     Settings_Nav_Slideshow,
@@ -474,39 +392,25 @@ public enum LangId
     Settings_Nav_Plugins,
     Settings_Nav_Language,
     Settings_Nav_Appearance,
-    #endregion // Settings > Navbar
 
-
-    #region Settings > Tab General
-    // General > General
     Settings_StartupDir,
     Settings_ConfigDir,
     Settings_UserConfigFile,
 
-    // General > Startup
     Settings_Startup,
     Settings_EnableWelcomeImage,
     Settings_EnableLastSeenImage,
 
-
-    // General > Real-time update
     Settings_EnableFileWatcher,
     Settings_EnableAutoOpenNewAddedImage,
 
-    // General > App update
-
-    // General > Others
     Settings_Others,
     Settings_EnableMultiInstances,
     Settings_ShowAppIcon,
     Settings_InAppMessageDuration,
     Settings_ImageInfoTags,
     Settings_AvailableImageInfoTags,
-    #endregion // Settings > Tab General
 
-
-    #region Settings > Tab Image
-    // Image > Browsing
     Settings_Browsing,
     Settings_ImageLoadingOrder,
     Settings_EnableExplorerSortOrder,
@@ -525,32 +429,24 @@ public enum LangId
     Settings_MinEmbeddedThumbnailSize_Width,
     Settings_MinEmbeddedThumbnailSize_Height,
 
-    // Image > File watcher
     Settings_FileWatcher,
 
-    // Image > Caching
     Settings_Caching,
     Settings_ImageBoosterCacheMaxFiles,
     Settings_ImageBoosterCacheMaxMemoryInMb,
     Settings_ImageBoosterCacheMaxDimension,
     Settings_ImageBoosterCacheMaxFileSizeInMb,
 
-    // Image > Color management
     Settings_ColorManagement,
     Settings_EnableHdrToneMapping,
     Settings_EnableAlwaysApplyColorProfile,
     Settings_ColorProfile,
     Settings_CurrentMonitorProfile_Description,
-    #endregion // Settings > Tab Image
 
-
-    #region Settings > Tab Slideshow
-    // Slideshow > Appearance
     Settings_Slideshow_Appearance,
     Settings_EnableSlideshowCountdown,
     Settings_EnableFullscreenSlideshow,
 
-    // Slideshow > Playback
     Settings_Slideshow_Playback,
     Settings_EnableLoopSlideshow,
     Settings_EnableSlideshowRandomInterval,
@@ -560,16 +456,11 @@ public enum LangId
 
     Settings_SlideshowImagesToNotifySound,
 
-    // Slideshow > Transition (shared with Image > Browsing)
     Settings_TransitionEffect,
     Settings_TransitionDuration,
     Settings_TransitionCompileError,
     Settings_OpenTransitionsFolder,
-    #endregion // Settings > Tab Slideshow
 
-
-    #region Settings > Tab Edit
-    // Edit > Saving
     Settings_Edit_Saving,
     Settings_EnableDeleteConfirmation,
     Settings_EnableSaveConfirmation,
@@ -577,43 +468,30 @@ public enum LangId
     Settings_EnableOpenSaveAsInCurrentFolder,
     Settings_ImageEditQuality,
 
-    // Edit > Clipboard
     Settings_Clipboard,
     Settings_EnableCopyMultipleFiles,
     Settings_EnableCutMultipleFiles,
 
-    // Edit > Image editing apps
     Settings_AfterEditingAction,
     Settings_EditApps,
     Settings_EditApps_AppName,
     Settings_EditAppDialog_AddApp,
     Settings_EditAppDialog_EditApp,
-    #endregion // Settings > Tab Edit
 
-
-    #region Settings > Tab Layout
-    // Layout > Window
     Settings_Window,
 
-    // Layout > Controls
     Settings_Controls,
     Settings_Layout_ArrangeHint,
     Settings_Layout_Viewer,
 
-    // Layout > Layout
     Settings_Layout_Toolbar,
     Settings_Layout_Gallery,
     Settings_Layout_ToolbarPosition,
     Settings_Layout_GalleryPosition,
 
-    // Layout > Image information
     Settings_ImageInfo,
     Settings_ImageInfoOverlay,
-    #endregion // Settings > Tab Layout
 
-
-    #region Settings > Tab Viewer
-    // Viewer > Appearance
     Settings_Appearance,
     Settings_EnableNavigationButtons,
     Settings_ViewerScrollbarMode,
@@ -621,13 +499,11 @@ public enum LangId
     Settings_EnableVectorRenderer,
     Settings_CheckerboardMode,
 
-    // Viewer > Panning
     Settings_Panning,
     Settings_EnableFreePan,
     Settings_PanMargin,
     Settings_PanSpeed,
 
-    // Viewer > Zooming
     Settings_Zooming,
     Settings_ImageInterpolation,
     Settings_ImageInterpolation_ScaleDown,
@@ -636,11 +512,7 @@ public enum LangId
     Settings_ZoomLevels,
     Settings_UseSmoothZooming,
     Settings_LoadDefaultZoomLevels,
-    #endregion // Settings > Tab Viewer
 
-
-    #region Settings > Tab Toolbar
-    // Toolbar > Toolbar
     Settings_Toolbar_ShowToolbarInFullscreen,
     Settings_Toolbar_ToolbarIconHeight,
 
@@ -664,44 +536,27 @@ public enum LangId
     Settings_Toolbar_BuiltInReadonly,
 
     Settings_Toolbar_ArrangeHint,
-    #endregion // Settings > Tab Toolbar
 
-
-    #region Settings > Tab Gallery
-    // Gallery > Gallery
     Settings_ShowGalleryInFullscreen,
     Settings_ShowGalleryFileName,
     Settings_EnableGalleryShellThumbnail,
     Settings_ThumbnailSize,
     Settings_GalleryCacheSizeInMb,
     Settings_GalleryColumns,
-    #endregion // Settings > Tab Gallery
 
-
-    #region Settings > Tab Mouse
-    // Mouse > Mouse wheel action
     Settings_MouseWheelAction,
-    // Mouse > Mouse click action
     Settings_MouseClickAction,
-    #endregion // Settings > Tab Mouse
 
-
-    #region Settings > Tab Keyboard
     Settings_Keyboard_MenuHotkeys,
     Settings_Keyboard_Action,
     Settings_Keyboard_NoResults,
     Settings_Keyboard_EditTitle,
     Settings_Keyboard_Conflict,
-    #endregion // Settings > Tab Mouse & Keyboard
 
-
-    #region Settings > Tab File type associations
-    // File type associations > File extension icons
     Settings_FileExtensionIcons,
     Settings_FileExtensionIcons_Description,
     Settings_OpenExtensionIconFolder,
 
-    // File type associations > Default photo viewer
     Settings_DefaultPhotoViewer,
     Settings_AppMenuEntry,
     Settings_AppMenuEntry_Description,
@@ -713,16 +568,10 @@ public enum LangId
     Settings_DefaultPhotoViewer_ScopePerUser,
     Settings_OpenDefaultAppsSetting,
 
-    // File type associations > File formats
     Settings_FileFormats,
     Settings_TotalSupportedFormats,
     Settings_AddNewFileExtension,
 
-    #endregion // Settings > Tab File type associations
-
-
-    #region Settings > Tab Tools
-    // Tools > Tools
     Settings_Tools_AddNewTool,
     Settings_Tools_EditTool,
     Settings_Tools_ToolLaunchFailed,
@@ -730,10 +579,7 @@ public enum LangId
     Settings_Tools_Integrated,
     Settings_Tools_IntegratedWith,
     Settings_Tools_Errors_ToolIdDuplicated,
-    #endregion // Settings > Tab Tools
 
-
-    #region Settings > Tab Plugins
     Settings_Plugins_OpenPluginFolder,
     Settings_Plugins_SupportedExtensions,
     Settings_Plugins_ViewMetadata,
@@ -755,23 +601,13 @@ public enum LangId
     Settings_Plugins_ExtensionsHint,
     Settings_Plugins_FormatsAfterEnable,
     Settings_Plugins_NoFormats,
-    #endregion // Settings > Tab Plugins
 
-
-    #region Settings > Tab Language
-    // Language > Language
     Settings_DisplayLanguage,
     Settings_Refresh,
     Settings_ExportLanguagePack,
-    Settings_Contributors,
-    #endregion // Settings > Tab Language
 
-
-    #region Settings > Tab Appearance
-    // Appearance > Appearance
     Settings_WindowBackdrop,
 
-    // Appearance > Theme
     Settings_Theme,
     Settings_DarkTheme,
     Settings_LightTheme,
@@ -784,12 +620,7 @@ public enum LangId
 
     Settings_UseThemeForDarkMode,
     Settings_UseThemeForLightMode,
-    #endregion // Settings > Tab Appearance
 
-    #endregion // Settings
-
-
-    #region Tool: Crop
     Tool_Crop_LblAspectRatio,
     Tool_Crop_LblLocation,
     Tool_Crop_LblSize,
@@ -802,8 +633,6 @@ public enum LangId
     Tool_Crop_BtnCrop,
     Tool_Crop_BtnCopy,
 
-
-    // Crop settings
     Tool_Crop_Title,
     Tool_Crop_ChkCloseToolAfterSaving,
     Tool_Crop_LblDefaultSelection,
@@ -814,20 +643,14 @@ public enum LangId
     Tool_Crop_DefaultSelectionType_SelectX,
     Tool_Crop_DefaultSelectionType_SelectAll,
     Tool_Crop_DefaultSelectionType_CustomArea,
-    #endregion // Tool: Crop
 
-
-    #region Tool: HDR tone mapper
     Tool_Hdr_LblMode,
     Tool_Hdr_LblExposure,
     Tool_Hdr_LblReferenceWhite,
     Tool_Hdr_LblHighlightCompression,
     Tool_Hdr_LblSaturation,
     Tool_Hdr_BtnReset,
-    #endregion // Tool: HDR tone mapper
 
-
-    #region Tool: Projector
     Tool_Projector_WindowTitle,
     Tool_Projector_BtnAdd,
     Tool_Projector_ChkSyncView,
@@ -841,12 +664,7 @@ public enum LangId
     Tool_Projector_DragHint,
     Tool_Projector_ScreenInfo,
     Tool_Projector_MainWindow,
-    #endregion // Tool: Projector
 
-
-    #region Tool: Color picker
-
-    // Color picker settings
     Tool_ColorPicker_Title,
     Tool_ColorPicker_ChkShowRgbA,
     Tool_ColorPicker_ChkShowHexA,
@@ -854,10 +672,7 @@ public enum LangId
     Tool_ColorPicker_ChkShowHsvA,
     Tool_ColorPicker_ChkShowCmykA,
     Tool_ColorPicker_ChkShowCIELabA,
-    #endregion // Tool: Color picker
 
-
-    #region Tool: Resizer
     Tool_Resizer_RadResizeByPixels,
     Tool_Resizer_RadResizeByPercentage,
     Tool_Resizer_ChkKeepRatio,
@@ -865,10 +680,7 @@ public enum LangId
     Tool_Resizer_LblCurrentSize,
     Tool_Resizer_LblNewSize,
     Tool_Resizer_Errors_SizeTooLarge,
-    #endregion // Tool: Resizer
 
-
-    #region Print
     Print_Title,
     Print_LblPrinter,
     Print_LblCopies,
@@ -912,10 +724,7 @@ public enum LangId
     Print_Layout_Wallet,
     Print_Layout_Passport,
     Print_Layout_ContactSheet,
-    #endregion // Print
 
-
-    #region Quick setup
     QuickSetup_Title,
     QuickSetup_StepInfo,
     QuickSetup_SkipAndLaunch,
@@ -930,8 +739,5 @@ public enum LangId
 
     QuickSetup_ConfirmCloseProcess,
     QuickSetup_ConfirmCloseProcess_Description,
-    #endregion // Quick setup
-
 
 }
-

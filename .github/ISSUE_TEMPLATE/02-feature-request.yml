@@ -1,9 +1,0 @@
-name: Feature request
-description: Suggest an improvement to Photo Viewer.
-body:
-  - type: textarea
-    id: request
-    attributes:
-      label: What would you like to do?
-    validations:
-      required: true

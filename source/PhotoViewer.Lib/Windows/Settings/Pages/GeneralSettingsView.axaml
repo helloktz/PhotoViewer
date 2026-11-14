@@ -12,13 +12,11 @@
 
     <StackPanel Orientation="Vertical">
 
-        <!--  Links (no heading): locations on the left, actions on the right  -->
         <Grid
             ColumnDefinitions="Auto,Auto"
             Margin="{DynamicResource SettingsGroupIndent}"
             ColumnSpacing="64">
 
-            <!--  Locations: tooltip = full path, click = open  -->
             <StackPanel
                 Grid.Column="0"
                 HorizontalAlignment="Left"
@@ -37,7 +35,6 @@
                     Variant="Link" />
             </StackPanel>
 
-            <!--  Actions  -->
             <StackPanel
                 Grid.Column="1"
                 HorizontalAlignment="Left"
@@ -49,8 +46,6 @@
             </StackPanel>
         </Grid>
 
-
-        <!--  Startup  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_Startup" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
             <CheckBox x:Name="PART_WelcomeImage">
@@ -64,8 +59,6 @@
             </CheckBox>
         </StackPanel>
 
-
-        <!--  Others  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_Others" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
             <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">

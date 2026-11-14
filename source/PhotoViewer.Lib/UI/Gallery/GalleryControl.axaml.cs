@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -45,17 +27,8 @@ public partial class GalleryControl : PhControl
     public static readonly Thickness GalleryItemMargin = new(1);
     public static readonly Thickness GalleryPadding = new(4, 4, 4, 8);
 
-
-    // events
     public event TEventHandler<GalleryItem, GalleryItemClickEventArgs>? ItemClicked;
 
-
-
-    #region Public Properties
-
-    /// <summary>
-    /// Gets, sets the items source.
-    /// </summary>
     public IEnumerable<Photo> ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
@@ -64,10 +37,6 @@ public partial class GalleryControl : PhControl
     public static readonly StyledProperty<IEnumerable<Photo>> ItemsSourceProperty =
         AvaloniaProperty.Register<GalleryControl, IEnumerable<Photo>>(nameof(ItemsSource), []);
 
-
-    /// <summary>
-    /// Gets, sets the gallery view mode.
-    /// </summary>
     public PhVirtualizingUniformPanelViewMode ViewMode
     {
         get => GetValue(ViewModeProperty);
@@ -76,10 +45,6 @@ public partial class GalleryControl : PhControl
     public static readonly StyledProperty<PhVirtualizingUniformPanelViewMode> ViewModeProperty =
         AvaloniaProperty.Register<GalleryControl, PhVirtualizingUniformPanelViewMode>(nameof(ViewMode), PhVirtualizingUniformPanelViewMode.FilmStrip);
 
-
-    /// <summary>
-    /// Gets, sets tooltip placement for gallery item.
-    /// </summary>
     public PlacementMode ItemTooltipPlacement
     {
         get => GetValue(ItemTooltipPlacementProperty);
@@ -88,10 +53,6 @@ public partial class GalleryControl : PhControl
     public static readonly StyledProperty<PlacementMode> ItemTooltipPlacementProperty =
         AvaloniaProperty.Register<GalleryControl, PlacementMode>(nameof(ItemTooltipPlacement), PlacementMode.Pointer);
 
-
-    /// <summary>
-    /// Gets the minimum content size.
-    /// </summary>
     public Size MinContentSize
     {
         get
@@ -112,23 +73,13 @@ public partial class GalleryControl : PhControl
     public static readonly DirectProperty<GalleryControl, Size> MinContentSizeProperty =
         AvaloniaProperty.RegisterDirect<GalleryControl, Size>(nameof(MinContentSize), i => i.MinContentSize);
 
-
-    #endregion // Public Properties
-
-
-
     public GalleryControl()
     {
         InitializeComponent();
 
-        // tunneling: ScrollContentPresenter consumes the bubbling wheel event with its own fixed 50px step
         AddHandler(PointerWheelChangedEvent, GalleryControl_PointerWheelChanged, RoutingStrategies.Tunnel);
         AddHandler(ScrollViewer.ScrollChangedEvent, GalleryControl_ScrollChanged);
     }
-
-
-
-    #region Override Methods
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
@@ -138,7 +89,6 @@ public partial class GalleryControl : PhControl
         Core.Config.PropertyChanged += Config_PropertyChanged;
     }
 
-
     protected override void OnUnloaded(RoutedEventArgs e)
     {
         base.OnUnloaded(e);
@@ -147,7 +97,6 @@ public partial class GalleryControl : PhControl
         Core.Config.PropertyChanged -= Config_PropertyChanged;
     }
 
-
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {
         base.OnSizeChanged(e);
@@ -155,13 +104,11 @@ public partial class GalleryControl : PhControl
         ScrollToItem(Core.Photos.CurrentIndex, false);
     }
 
-
     protected override void OnIgDpiChanged()
     {
         base.OnIgDpiChanged();
         RefreshRealizedThumbnails();
     }
-
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
@@ -178,7 +125,6 @@ public partial class GalleryControl : PhControl
         }
     }
 
-
     private void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(Config.ThumbnailSize))
@@ -188,13 +134,6 @@ public partial class GalleryControl : PhControl
             RefreshRealizedThumbnails();
         }
     }
-
-
-    #endregion // Override Methods
-
-
-
-    #region Control Events
 
     private void GalleryControl_PointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
@@ -209,12 +148,10 @@ public partial class GalleryControl : PhControl
         {
             if (svEl.Extent.Width <= svEl.Viewport.Width) return;
 
-            // touchpad horizontal swipe reports the delta on X, mouse wheel on Y
             var delta = e.Delta.Y != 0 ? e.Delta.Y : e.Delta.X;
             var step = GetWheelScrollStep(cellSize.Width, svEl.Viewport.Width);
             var maxOffset = Math.Max(0, svEl.Extent.Width - svEl.Viewport.Width);
 
-            // subtract to match natural scroll direction (wheel down -> scroll right)
             var targetX = svEl.Offset.X - (delta * step);
             svEl.Offset = new Vector(Math.Clamp(targetX, 0, maxOffset), 0);
         }
@@ -232,7 +169,6 @@ public partial class GalleryControl : PhControl
         e.Handled = true;
     }
 
-
     private void GalleryControl_ScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
         if (e.OffsetDelta == default || !IsPointerOver) return;
@@ -240,38 +176,24 @@ public partial class GalleryControl : PhControl
         SuspendItemTooltips();
     }
 
-
     private void GalleryItem_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not GalleryItem itemEl) return;
         if (itemEl.VM.IsCurrent) return;
 
-        // raise event
         ItemClicked?.Invoke(itemEl, new GalleryItemClickEventArgs(itemEl.VM));
     }
 
-    #endregion // Control Events
-
-
-
-    #region Control Methods
-
-
-    /// <summary>
-    /// Loads the thumbnail.
-    /// </summary>
     public void LoadThumbnail(int index, bool useCache)
     {
         var photo = Core.Photos.Get(index);
         if (photo is null) return;
 
-        // Cancel in-flight thumbnail load so it exits early
         if (!useCache) photo.CancelThumbnailLoading();
 
         var thumbSize = Core.Config.ThumbnailSize * Dpi * 2;
         _ = photo.LoadThumbnailAsync(thumbSize, useCache);
     }
-
 
     private void RefreshRealizedThumbnails()
     {
@@ -282,10 +204,6 @@ public partial class GalleryControl : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Hides item tooltips until scrolling stops, else Avalonia opens a popup for every item passing under the pointer.
-    /// </summary>
     private void SuspendItemTooltips()
     {
         if (ToolTip.GetServiceEnabled(this))
@@ -311,10 +229,6 @@ public partial class GalleryControl : PhControl
         _tooltipResumeTimer.Start();
     }
 
-
-    /// <summary>
-    /// Scrolls the gallery to bring the specified item into the center of the view.
-    /// </summary>
     public void ScrollToItem(int index, bool enableAnimation = false)
     {
         var svEl = FindScrollViewer();
@@ -332,10 +246,6 @@ public partial class GalleryControl : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Gets the size of a single item cell: item size + margin on each side (must match panel layout).
-    /// </summary>
     private static Size GetCellSize()
     {
         var itemSize = (double)Core.Config.ThumbnailSize;
@@ -345,11 +255,6 @@ public partial class GalleryControl : PhControl
         return new Size(cellWidth, cellHeight);
     }
 
-
-    /// <summary>
-    /// Gets the distance to scroll for one wheel notch: one item cell, capped to the viewport
-    /// so a thumbnail larger than the viewport never scrolls past a full page.
-    /// </summary>
     private static double GetWheelScrollStep(double cellLength, double viewportLength)
     {
         if (viewportLength <= 0) return cellLength;
@@ -357,13 +262,8 @@ public partial class GalleryControl : PhControl
         return Math.Min(cellLength, viewportLength);
     }
 
-
-    /// <summary>
-    /// Calculates the scroll offset that centers the item at <paramref name="index"/>.
-    /// </summary>
     private Vector GetCenteredScrollOffset(ScrollViewer svEl, int index)
     {
-        // Border padding offsets the panel within the scroll content.
         var cellSize = GetCellSize();
         var cellWidth = cellSize.Width;
         var cellHeight = cellSize.Height;
@@ -380,7 +280,6 @@ public partial class GalleryControl : PhControl
         }
         else
         {
-            // Gallery mode: calculate row position
             var availWidth = svEl.Viewport.Width - padLeft - GalleryPadding.Right;
             var columnsPerRow = Math.Max(1, (int)(availWidth / cellWidth));
             var row = index / columnsPerRow;
@@ -393,11 +292,6 @@ public partial class GalleryControl : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Smoothly animates the <see cref="ScrollViewer"/> offset
-    /// from its current position to <paramref name="targetOffset"/> using ease-out cubic.
-    /// </summary>
     private async Task AnimateScrollAsync(ScrollViewer svEl, Vector targetOffset, int durationMs = 300)
     {
         _cancelScrollAnimation?.Cancel();
@@ -412,7 +306,6 @@ public partial class GalleryControl : PhControl
             var elapsed = Environment.TickCount64 - startTime;
             var progress = Math.Clamp((double)elapsed / durationMs, 0, 1);
 
-            // ease-out cubic: f(t) = 1 - (1 - t)^3
             var eased = 1 - Math.Pow(1 - progress, 3);
 
             var x = startOffset.X + (targetOffset.X - startOffset.X) * eased;
@@ -421,14 +314,10 @@ public partial class GalleryControl : PhControl
 
             if (progress >= 1) break;
 
-            await Task.Delay(16, token); // ~60 fps
+            await Task.Delay(16, token);
         }
     }
 
-
-    /// <summary>
-    /// Finds the <see cref="ScrollViewer"/> inside the <see cref="ItemsControl"/> template.
-    /// </summary>
     public ScrollViewer? FindScrollViewer()
     {
         _cachedScrollViewerEl ??= PART_ItemsControl
@@ -439,10 +328,6 @@ public partial class GalleryControl : PhControl
         return _cachedScrollViewerEl;
     }
 
-
-    /// <summary>
-    /// Finds the virtual panel inside ItemsControl template.
-    /// </summary>
     public PhVirtualizingUniformPanel? FindVirtualPanel()
     {
         return PART_ItemsControl
@@ -451,18 +336,11 @@ public partial class GalleryControl : PhControl
             .FirstOrDefault();
     }
 
-
-    /// <summary>
-    /// Updates the minimum size of gallery control and scroll bar visibility.
-    /// </summary>
     private void UpdateReservedSize()
     {
         PART_ItemsControl.MinWidth = MinContentSize.Width;
         PART_ItemsControl.MinHeight = MinContentSize.Height;
 
-        // Update ScrollViewer visibility so the panel receives correct constraints:
-        // - FilmStrip: horizontal scroll, no vertical
-        // - Gallery: vertical scroll, no horizontal (gives finite width to panel)
         var svEl = FindScrollViewer();
         if (svEl is not null)
         {
@@ -479,11 +357,6 @@ public partial class GalleryControl : PhControl
         }
     }
 
-
-    /// <summary>
-    /// Calculates the total width required to display a gallery view
-    /// with the specified number of item columns.
-    /// </summary>
     public static double CalculateWidthForGalleryView(uint itemColumns)
     {
         var itemWidth = Core.Config.ThumbnailSize
@@ -493,12 +366,7 @@ public partial class GalleryControl : PhControl
         return itemWidth * itemColumns;
     }
 
-
-    #endregion // Control Methods
-
-
 }
-
 
 public class GalleryItemClickEventArgs(Photo vm) : RoutedEventArgs
 {

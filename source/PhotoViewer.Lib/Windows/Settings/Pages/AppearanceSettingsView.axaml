@@ -12,7 +12,6 @@
     HorizontalAlignment="Stretch">
 
     <windows:SettingsPageView.Styles>
-        <!--  Theme card: themed chrome (set here, not locally, so the hover override applies)  -->
         <Style Selector="Border.theme-card">
             <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource IG_BorderControlBrush}" />
@@ -26,19 +25,15 @@
             </Setter>
         </Style>
 
-        <!--  hover: accent border only (no background change)  -->
         <Style Selector="Border.theme-card:pointerover">
             <Setter Property="BorderBrush" Value="{DynamicResource PhAccentFillPointerOver}" />
         </Style>
     </windows:SettingsPageView.Styles>
 
-
     <StackPanel Orientation="Vertical">
 
-        <!--  Appearance (no heading)  -->
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
 
-            <!--  Window backdrop (Windows 11 only)  -->
             <StackPanel x:Name="PART_BackdropSection" Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="Settings_WindowBackdrop" />
                 <ComboBox
@@ -47,7 +42,6 @@
                     HorizontalAlignment="Left" />
             </StackPanel>
 
-            <!--  Viewer background color  -->
             <StackPanel Margin="0,14,0,0" Spacing="{DynamicResource SettingsLabelInputGap}">
                 <ui:PhTextBlock LangKey="_BackgroundColor" />
                 <ui:PhColorPickerControl x:Name="PART_BgColor" HorizontalAlignment="Left" />
@@ -55,12 +49,9 @@
 
         </StackPanel>
 
-
-        <!--  Theme  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_Theme" />
         <StackPanel x:Name="PART_ThemeGroup" Margin="{DynamicResource SettingsGroupIndent}">
 
-            <!--  Theme actions  -->
             <StackPanel
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
@@ -75,7 +66,6 @@
                 <ui:PhButton x:Name="PART_OpenThemeFolder" HorizontalContentAlignment="Center" />
             </StackPanel>
 
-            <!--  Overview: which packs are used for dark/light mode  -->
             <Border
                 x:Name="PART_ThemeOverview"
                 Width="{CompiledBinding #PART_ThemeGroup.Bounds.Width}"
@@ -86,7 +76,6 @@
                 Background="{DynamicResource IG_BackgroundNeutralBrush}"
                 CornerRadius="{DynamicResource ControlCornerRadius}">
                 <Grid ColumnDefinitions="*,Auto,*">
-                    <!--  Dark mode  -->
                     <StackPanel Grid.Column="0" Spacing="3">
                         <StackPanel
                             VerticalAlignment="Center"
@@ -108,14 +97,12 @@
                             TextTrimming="CharacterEllipsis" />
                     </StackPanel>
 
-                    <!--  divider  -->
                     <Border
                         Grid.Column="1"
                         Width="1"
                         Margin="24,2"
                         Background="{DynamicResource IG_BorderControlBrush}" />
 
-                    <!--  Light mode  -->
                     <StackPanel Grid.Column="2" Spacing="3">
                         <StackPanel
                             VerticalAlignment="Center"
@@ -139,7 +126,6 @@
                 </Grid>
             </Border>
 
-            <!--  empty state  -->
             <ui:PhTextBlock
                 x:Name="PART_ThemeEmpty"
                 Margin="0,12,0,0"
@@ -148,7 +134,6 @@
                 LangKey="_Empty"
                 Opacity="0.6" />
 
-            <!--  theme cards (built in code-behind)  -->
             <StackPanel
                 x:Name="PART_ThemeList"
                 Width="{CompiledBinding #PART_ThemeGroup.Bounds.Width}"

@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia.Threading;
 using PhotoViewer.Common.Localization;
 using PhotoViewer.Common.Photoing;
@@ -36,7 +18,6 @@ public partial class ExportFramesWindow : ModalWindow
     private string _destDirPath;
     private bool _isDone = false;
 
-
     public ExportFramesWindow(string srcFilePath, string destDirPath)
     {
         if (string.IsNullOrEmpty(srcFilePath)) throw new ArgumentNullException(nameof(srcFilePath));
@@ -47,7 +28,6 @@ public partial class ExportFramesWindow : ModalWindow
         ShowInTaskbar = true;
         SizeToContent = Avalonia.Controls.SizeToContent.Height;
         Width = 600;
-
 
         Description = srcFilePath;
         NoteStyle = InfoBarSeverity.Info;
@@ -60,10 +40,6 @@ public partial class ExportFramesWindow : ModalWindow
         DefaultFocus = DialogFocus.Button1;
     }
 
-
-
-    #region Override Methods
-
     protected override void OnIgLanguageChanged()
     {
         base.OnIgLanguageChanged();
@@ -73,7 +49,6 @@ public partial class ExportFramesWindow : ModalWindow
         Button1Text = Core.Lang[LangId._Start];
         Button2Text = Core.Lang[LangId._Cancel];
     }
-
 
     protected override void OnDialogSubmitted(DialogEventArgs e)
     {
@@ -87,16 +62,12 @@ public partial class ExportFramesWindow : ModalWindow
         }
     }
 
-
     protected override void OnDialogCancelled(DialogEventArgs e)
     {
-        // do NOT dispose: the export is still unwinding and codec/file writes
-        // registered on this token would throw ObjectDisposedException
         _cancel?.Cancel();
 
         base.OnDialogCancelled(e);
     }
-
 
     protected override void OnDialogAborted()
     {
@@ -105,16 +76,6 @@ public partial class ExportFramesWindow : ModalWindow
         base.OnDialogAborted();
     }
 
-    #endregion // Override Methods
-
-
-
-    #region Private methods
-
-
-    /// <summary>
-    /// Exports frames from the specified source file to the destination directory asynchronously.
-    /// </summary>
     private async Task RunAsync(string srcFilePath, string destDirPath)
     {
         _isDone = false;
@@ -132,13 +93,10 @@ public partial class ExportFramesWindow : ModalWindow
 
         var exportedCount = 0;
 
-        // must be awaited: an unawaited failure here becomes an unobserved
-        // task exception and crashes the app from the finalizer thread
         try
         {
             await Task.Factory.StartNew(async () =>
             {
-                // start exporting frames
                 await foreach (var info in PhotoFrameExporter.SaveFramesAsync(srcFilePath, destDirPath, _cancel.Token))
                 {
                     exportedCount++;
@@ -151,7 +109,6 @@ public partial class ExportFramesWindow : ModalWindow
                         ProgressValue = percent;
                         Title = $"{Core.Lang[LangId._Title]} ({percent}%)";
 
-                        // done
                         if (info.FrameNumber == info.FrameCount)
                         {
                             _btn1.IsEnabled = true;
@@ -168,7 +125,6 @@ public partial class ExportFramesWindow : ModalWindow
                             _isDone = true;
                         }
 
-                        // in progress
                         else
                         {
                             var frameFilePath = Path.Combine(destDirPath, info.FileName);
@@ -189,17 +145,12 @@ public partial class ExportFramesWindow : ModalWindow
             return;
         }
 
-        // no codec could read the frames, and the user did not cancel
         if (exportedCount == 0 && !_cancel.IsCancellationRequested)
         {
             ShowError(Core.Lang[LangId._NotSupported]);
         }
     }
 
-
-    /// <summary>
-    /// Stops the progress and shows the export failure.
-    /// </summary>
     private void ShowError(string message)
     {
         IsProgressVisible = false;
@@ -209,7 +160,6 @@ public partial class ExportFramesWindow : ModalWindow
         Heading = message;
         Description = _srcFilePath;
 
-        // set error icon
         Thumbnail = null;
         ThumbnailIcon = StockIconId.Error;
         LoadThumbnailIconSource();
@@ -219,8 +169,5 @@ public partial class ExportFramesWindow : ModalWindow
         Button2Text = Core.Lang[LangId._Close];
         _btn2.Focus(Avalonia.Input.NavigationMethod.Tab);
     }
-
-    #endregion // Private Methods
-
 
 }

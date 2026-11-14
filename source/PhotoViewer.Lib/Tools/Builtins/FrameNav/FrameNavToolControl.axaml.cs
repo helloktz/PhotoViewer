@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -42,12 +24,6 @@ public partial class FrameNavToolControl : PhControl, IToolControl
     public object? Settings { get; } = null;
     public ViewerControl Viewer { get; set; } = null!;
 
-
-    #region Public Properties 
-
-    /// <summary>
-    /// Gets value indicating if the current photo has embedding video.
-    /// </summary>
     public bool IsLivePhoto
     {
         get => GetValue(IsLivePhotoProperty);
@@ -56,10 +32,6 @@ public partial class FrameNavToolControl : PhControl, IToolControl
     public static readonly StyledProperty<bool> IsLivePhotoProperty =
         AvaloniaProperty.Register<FrameNavToolControl, bool>(nameof(IsLivePhoto));
 
-
-    /// <summary>
-    /// Gets value indicating if the current photo has multiple frames.
-    /// </summary>
     public bool HasMultiFrames
     {
         get => GetValue(HasMultiFramesProperty);
@@ -68,10 +40,6 @@ public partial class FrameNavToolControl : PhControl, IToolControl
     public static readonly StyledProperty<bool> HasMultiFramesProperty =
         AvaloniaProperty.Register<FrameNavToolControl, bool>(nameof(HasMultiFrames));
 
-
-    /// <summary>
-    /// Gets value indicating if the current photo can animate.
-    /// </summary>
     public bool CanPlay
     {
         get => GetValue(CanPlayProperty);
@@ -80,10 +48,6 @@ public partial class FrameNavToolControl : PhControl, IToolControl
     public static readonly StyledProperty<bool> CanPlayProperty =
         AvaloniaProperty.Register<FrameNavToolControl, bool>(nameof(CanPlay));
 
-
-    /// <summary>
-    /// Gets value indicating if the current photo is animating.
-    /// </summary>
     public bool IsPlaying
     {
         get => GetValue(IsPlayingProperty);
@@ -92,10 +56,6 @@ public partial class FrameNavToolControl : PhControl, IToolControl
     public static readonly StyledProperty<bool> IsPlayingProperty =
         AvaloniaProperty.Register<FrameNavToolControl, bool>(nameof(IsPlaying));
 
-
-    /// <summary>
-    /// Gets frame text info.
-    /// </summary>
     public string FrameTextInfo
     {
         get => GetValue(FrameTextInfoProperty);
@@ -104,17 +64,10 @@ public partial class FrameNavToolControl : PhControl, IToolControl
     public static readonly StyledProperty<string> FrameTextInfoProperty =
         AvaloniaProperty.Register<FrameNavToolControl, string>(nameof(FrameTextInfo));
 
-    #endregion // Public Properties
-
-
     public FrameNavToolControl()
     {
         InitializeComponent();
     }
-
-
-
-    #region Control Events
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
@@ -132,7 +85,6 @@ public partial class FrameNavToolControl : PhControl, IToolControl
         PART_BtnExportFrame.Click += PART_BtnExportFrame_Click;
     }
 
-
     protected override void OnUnloaded(RoutedEventArgs e)
     {
         base.OnUnloaded(e);
@@ -147,20 +99,17 @@ public partial class FrameNavToolControl : PhControl, IToolControl
         PART_BtnExportFrame.Click -= PART_BtnExportFrame_Click;
     }
 
-
     protected override void OnIgLanguageChanged()
     {
         base.OnIgLanguageChanged();
         UpdateHotkeyTooltip();
     }
 
-
     protected override void OnIgThemeChanged(ThemePackChangedEventArgs e)
     {
         base.OnIgThemeChanged(e);
         UpdateTheme();
     }
-
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
@@ -172,7 +121,6 @@ public partial class FrameNavToolControl : PhControl, IToolControl
         }
     }
 
-
     private void Viewer_PhotoFrameChanged(ViewerControl sender, PhotoFrameChangedEventArgs e)
     {
         Dispatcher.UIThread.Post(() =>
@@ -181,52 +129,36 @@ public partial class FrameNavToolControl : PhControl, IToolControl
         });
     }
 
-
     private async void PART_BtnViewFirstFrame_Click(object? sender, RoutedEventArgs e)
     {
         await Core.API!.RunApiAsync(API.IG_ViewFirstFrame);
     }
-
 
     private async void PART_BtnViewPreviousFrame_Click(object? sender, RoutedEventArgs e)
     {
         await Core.API!.RunApiAsync(API.IG_ViewPreviousFrame);
     }
 
-
     private async void PART_BtnToggleAnimation_Click(object? sender, RoutedEventArgs e)
     {
         await Core.API!.RunApiAsync(API.IG_ToggleImageAnimation);
     }
-
 
     private async void PART_BtnViewNextFrame_Click(object? sender, RoutedEventArgs e)
     {
         await Core.API!.RunApiAsync(API.IG_ViewNextFrame);
     }
 
-
     private async void PART_BtnViewLastFrame_Click(object? sender, RoutedEventArgs e)
     {
         await Core.API!.RunApiAsync(API.IG_ViewLastFrame);
     }
-
 
     private async void PART_BtnExportFrame_Click(object? sender, RoutedEventArgs e)
     {
         await Core.API!.RunApiAsync(API.IG_ExportImageFrames);
     }
 
-
-    #endregion // Control Events
-
-
-
-    #region Control Methods
-
-    /// <summary>
-    /// Update tool control theme.
-    /// </summary>
     private void UpdateTheme()
     {
         PART_PlaybackControlBorder.Background = Core.Theme.AccentColor
@@ -235,10 +167,6 @@ public partial class FrameNavToolControl : PhControl, IToolControl
             .ToBrush();
     }
 
-
-    /// <summary>
-    /// Updates the frame-related information for the current photo.
-    /// </summary>
     private void UpdateFrameInfo(PhotoFrameChangedEventArgs? e = null)
     {
         var frameCount = e?.FrameCount ?? Viewer.Photo?.Metadata?.FrameCount ?? 0;
@@ -262,10 +190,6 @@ public partial class FrameNavToolControl : PhControl, IToolControl
         }
     }
 
-
-    /// <summary>
-    /// Updates the hotkey text for all buttons.
-    /// </summary>
     private void UpdateHotkeyTooltip()
     {
         ToolTip.SetTip(PART_BtnViewFirstFrame,
@@ -286,10 +210,6 @@ public partial class FrameNavToolControl : PhControl, IToolControl
             AppAPIProvider.GetMenuTooltipText(LangId.Menu_MnuExportFrames));
     }
 
-
-    /// <summary>
-    /// Updates the play button tooltip, which reads as motion playback for a live photo.
-    /// </summary>
     private void UpdatePlayButtonTooltip()
     {
         var textKey = IsLivePhoto ? LangId._PlayMotionVideo : LangId.Menu_MnuToggleImageAnimation;
@@ -298,8 +218,4 @@ public partial class FrameNavToolControl : PhControl, IToolControl
             AppAPIProvider.GetMenuTooltipText(textKey, LangId.Menu_MnuToggleImageAnimation));
     }
 
-    #endregion // Control Methods
-
-
 }
-

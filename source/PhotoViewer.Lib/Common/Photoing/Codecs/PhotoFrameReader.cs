@@ -1,21 +1,3 @@
-/*
-ImageGlass - A Fast, Seamless Photo Viewer
-Copyright (C) 2010 - 2027 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
 using PhotoViewer.Common.Extensions;
 using PhotoViewer.Common.Types;
 using SkiaSharp;
@@ -26,10 +8,6 @@ using System.Threading.Tasks;
 
 namespace PhotoViewer.Common.Photoing;
 
-
-/// <summary>
-/// Reads the frames of a photo file on demand with the codec the viewer uses, apart from the viewer; every frame is a new image the caller owns.
-/// </summary>
 public sealed class PhotoFrameReader : PhDisposable
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -37,22 +15,12 @@ public sealed class PhotoFrameReader : PhDisposable
     private readonly CodecSelectionContext _context;
     private readonly PhotoReadOptions _readOptions;
 
-    // an animated codec renders any frame through its animator; the others decode one frame per call
     private AnimatorImpl? _animator;
     private SKImage? _firstFrame;
 
-
-    /// <summary>
-    /// Gets the metadata the reader loaded for the file.
-    /// </summary>
     public PhotoMetadata Metadata { get; }
 
-
-    /// <summary>
-    /// Gets the number of frames or pages.
-    /// </summary>
     public int FrameCount => _animator?.Frames.Length ?? (int)Math.Max(1, Metadata.FrameCount);
-
 
     private PhotoFrameReader(PhotoMetadata meta, ICodec? codec, CodecSelectionContext context, PhotoReadOptions readOptions)
     {
@@ -62,16 +30,11 @@ public sealed class PhotoFrameReader : PhDisposable
         _readOptions = readOptions;
     }
 
-
-    /// <summary>
-    /// Opens a file for reading its frames with <paramref name="readOptions"/>; <c>null</c> when no codec reads it.
-    /// </summary>
     public static async Task<PhotoFrameReader?> OpenAsync(string filePath, PhotoReadOptions readOptions, CancellationToken token)
     {
         var meta = await LoadMetadataAsync(filePath, token).ConfigureAwait(false);
         if (meta is null) return null;
 
-        // a vector file is read as raster frames here; vector drawing is the caller's own path
         var context = new CodecSelectionContext
         {
             EnableVectorRenderer = false,
@@ -92,10 +55,6 @@ public sealed class PhotoFrameReader : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// Reads a frame, edits not applied, decoded to fit <paramref name="maxSize"/> square where the codec can scale (0 for full); the caller owns it.
-    /// </summary>
     public async Task<SKImage?> ReadFrameAsync(int frameIndex, uint maxSize, CancellationToken token)
     {
         await _gate.WaitAsync(token).ConfigureAwait(false);
@@ -104,7 +63,6 @@ public sealed class PhotoFrameReader : PhDisposable
         {
             if (IsDisposed) return null;
 
-            // an animator frame stays the animator's, and the next request may evict it
             if (_animator is not null)
             {
                 return SkiaCodec.CopyImage(_animator.GetRenderedFrameBitmap((uint)frameIndex));
@@ -125,10 +83,6 @@ public sealed class PhotoFrameReader : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// Decodes frame 0, which also tells whether the codec renders frames through an animator.
-    /// </summary>
     private async Task ReadFirstFrameAsync(CancellationToken token)
     {
         if (_codec is null) return;
@@ -138,7 +92,6 @@ public sealed class PhotoFrameReader : PhDisposable
         {
             result = await _codec.DecodeAsync(Metadata, _readOptions with { FrameIndex = 0 }, _context, token).ConfigureAwait(false);
 
-            // detach both, so disposing the result does not free what we keep
             _animator = result.Animator;
             _firstFrame = result.SingleFrame;
             result.Animator = null;
@@ -153,7 +106,6 @@ public sealed class PhotoFrameReader : PhDisposable
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            // the per-frame Magick decode below still gets its turn
             Debug.WriteLine($"❌❌❌ {nameof(PhotoFrameReader)}.{nameof(ReadFirstFrameAsync)}: {ex.Message}");
         }
         finally
@@ -162,10 +114,6 @@ public sealed class PhotoFrameReader : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// Decodes one frame with the codec, else with Magick, which sniffs the content itself.
-    /// </summary>
     private async Task<SKImage?> DecodeFrameAsync(int frameIndex, uint maxSize, CancellationToken token)
     {
         var options = _readOptions with { FrameIndex = frameIndex, Width = maxSize, Height = maxSize };
@@ -191,10 +139,6 @@ public sealed class PhotoFrameReader : PhDisposable
         return SkiaCodec.FromMagick(data.SingleFrame, MagickCodec.GetDecodedColorSpace(data, Metadata), Metadata.IsHdr);
     }
 
-
-    /// <summary>
-    /// Loads the metadata through the codec registry; <c>null</c> when no codec reads the file.
-    /// </summary>
     private static async Task<PhotoMetadata?> LoadMetadataAsync(string filePath, CancellationToken token)
     {
         try
@@ -212,15 +156,10 @@ public sealed class PhotoFrameReader : PhDisposable
         }
     }
 
-
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
     protected override void OnDisposing()
     {
         base.OnDisposing();
 
-        // the animator holds the metadata's color space, so it goes first
         _animator?.Dispose();
         _animator = null;
         _firstFrame?.Dispose();
