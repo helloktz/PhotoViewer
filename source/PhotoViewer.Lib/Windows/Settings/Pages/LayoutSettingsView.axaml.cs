@@ -159,7 +159,7 @@ public partial class LayoutSettingsView : SettingsPageView
         {
             var item = new ComboBoxItem { Tag = pos };
             var key = Lang.GetKey($"_Position_{pos}");
-            AddLangRefresher(() => item.Content = key is { } k ? Core.Lang[k] : pos.ToString());
+            AddLangRefresher(() => item.Content = Core.Lang[key]);
             combo.Items.Add(item);
         }
     }

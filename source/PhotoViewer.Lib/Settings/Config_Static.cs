@@ -755,17 +755,9 @@ public partial class Config
 
     public async Task LoadCurrentLanguageAsync()
     {
-        var langPath = Lang.ResolveFilePath(Language);
-        var isInvalid = !Lang.IsPackFileCompatible(langPath);
-
-        if (isInvalid) langPath = string.Empty;
-
-        var lang = new Lang(langPath);
-
-        await lang.LoadAsync();
-
-        Core.Lang = lang;
-        Core.Config.Language = lang.FileName;
+        var language = Language;
+        var lang = await Lang.LoadAsync(language);
+        if (Language == language) Core.Lang = lang;
     }
 
     public async Task<bool> LoadCurrentThemeAsync(bool darkMode,

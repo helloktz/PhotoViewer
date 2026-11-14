@@ -442,6 +442,7 @@ public partial class ToolbarControl : PhControl
 
         if (DataContext is ToolbarControlModel model) model.RefreshLanguage();
 
+        BuildExternalToolMenuItems();
         LocalizeMenuText(PART_MainMenu.Items);
 
         SyncNativeStates();
@@ -560,7 +561,7 @@ public partial class ToolbarControl : PhControl
 
             var mnu = new PhMenuItem
             {
-                Header = string.IsNullOrEmpty(tool.ToolName) ? tool.ToolId : tool.ToolName,
+                Header = tool.DisplayName,
                 HotkeyText = hotkeyText,
                 Tag = "external_tool",
                 CommandParameter = tool.ToolId,

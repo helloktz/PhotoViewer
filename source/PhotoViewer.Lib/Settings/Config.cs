@@ -497,8 +497,8 @@ public partial class Config : PhReactive
 
     public string Language
     {
-        get => Get(ConfigId.Language, "English");
-        set => Set(ConfigId.Language, value);
+        get => Lang.NormalizeLanguageCode(Get(ConfigId.Language, Lang.DefaultLanguageCode));
+        set => Set(ConfigId.Language, Lang.NormalizeLanguageCode(value));
     }
 
     [JsonConverter(typeof(JsonStringEnumSafeConverter<CheckerboardType>))]

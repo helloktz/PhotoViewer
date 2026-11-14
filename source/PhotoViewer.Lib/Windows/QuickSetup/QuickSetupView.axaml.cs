@@ -27,8 +27,7 @@ public partial class QuickSetupView : PhControl
     private readonly List<Border> _dots = [];
 
     private bool _isPopulatingLangs;
-    private string _selectedLangValue = "English";
-    private readonly Action _loadLangAction;
+    private string _selectedLangValue = Core.Config.Language;
 
     private Lang _previewLang = Core.Lang;
 
@@ -55,8 +54,6 @@ public partial class QuickSetupView : PhControl
     public QuickSetupView()
     {
         InitializeComponent();
-
-        _loadLangAction = () => _ = LoadSelectedLanguageAsync();
 
         _stepPanels = [PART_Step1, PART_Step2];
 
@@ -144,43 +141,22 @@ public partial class QuickSetupView : PhControl
     {
         if (_isPopulatingLangs || PART_LanguageList.SelectedItem is not Lang lang) return;
 
-        _selectedLangValue = ToConfigValue(lang);
-        BHelper.Debounce(120, _loadLangAction);
-    }
-
-    private async Task LoadSelectedLanguageAsync()
-    {
-        var path = Lang.ResolveFilePath(_selectedLangValue);
-        var lang = new Lang(path);
-        await lang.LoadAsync();
-
-        Dispatcher.UIThread.Post(() =>
-        {
-            _previewLang = lang;
-            LocalizeAll();
-            PreviewLanguageChanged?.Invoke(this, EventArgs.Empty);
-        });
+        _selectedLangValue = lang.Metadata.Code;
+        _previewLang = lang;
+        LocalizeAll();
+        PreviewLanguageChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private async Task LoadLanguagesAsync()
     {
         var packs = await Lang.LoadAllLanguagePacksAsync();
 
-        List<Lang> langs = [new(string.Empty), .. packs];
-
         _isPopulatingLangs = true;
-        PART_LanguageList.ItemsSource = langs;
-
-        var current = Core.Config.Language;
-        PART_LanguageList.SelectedItem = langs
-            .FirstOrDefault(l => ToConfigValue(l).Equals(current, StringComparison.OrdinalIgnoreCase))
-            ?? langs[0];
-
-        _selectedLangValue = current;
+        PART_LanguageList.ItemsSource = packs;
+        PART_LanguageList.SelectedItem = packs
+            .FirstOrDefault(lang => lang.Metadata.Code.Equals(_selectedLangValue, StringComparison.OrdinalIgnoreCase));
         _isPopulatingLangs = false;
     }
-
-    private static string ToConfigValue(Lang lang) => lang.IsBuiltIn ? "English" : lang.FileName;
 
     private void SelectProfile(bool professional)
     {

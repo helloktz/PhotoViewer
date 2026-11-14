@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using PhotoViewer.Common;
 using PhotoViewer.Common.Actions;
+using PhotoViewer.Common.Localization;
 using PhotoViewer.Common.AppThemes;
 using PhotoViewer.Common.Photoing;
 using PhotoViewer.Common.Types;
@@ -92,7 +93,7 @@ public partial class ToolbarItemModel : PhReactive, IJsonOnDeserialized
         }
     } = "";
 
-    public string DisplayText => Core.Lang[Text];
+    public string DisplayText => Lang.GetKey(Text) is { } key ? Core.Lang[key] : Text;
 
     public bool ShowText
     {

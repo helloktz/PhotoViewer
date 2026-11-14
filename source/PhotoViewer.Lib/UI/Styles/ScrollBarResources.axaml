@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="using:PhotoViewer.Common.Localization">
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
@@ -194,7 +194,7 @@
                                     Height="{DynamicResource PhScrollBarSize}"
                                     MinWidth="{DynamicResource PhScrollBarSize}"
                                     HorizontalAlignment="Center"
-                                    AutomationProperties.Name="Line up"
+                                    AutomationProperties.Name="{DynamicResource {x:Static loc:LangId._ScrollLineUp}}"
                                     Focusable="False"
                                     Theme="{StaticResource PhScrollBarLineButton}">
                                     <PathIcon
@@ -217,7 +217,7 @@
                                     <Track.DecreaseButton>
                                         <RepeatButton
                                             Name="PART_PageUpButton"
-                                            AutomationProperties.Name="Page up"
+                                            AutomationProperties.Name="{DynamicResource {x:Static loc:LangId._ScrollPageUp}}"
                                             Classes="largeIncrease"
                                             Focusable="False"
                                             Theme="{StaticResource PhScrollBarPageButton}" />
@@ -225,7 +225,7 @@
                                     <Track.IncreaseButton>
                                         <RepeatButton
                                             Name="PART_PageDownButton"
-                                            AutomationProperties.Name="Page down"
+                                            AutomationProperties.Name="{DynamicResource {x:Static loc:LangId._ScrollPageDown}}"
                                             Classes="largeIncrease"
                                             Focusable="False"
                                             Theme="{StaticResource PhScrollBarPageButton}" />
@@ -233,7 +233,7 @@
                                     <Thumb
                                         Width="{DynamicResource PhScrollBarThumbSize}"
                                         MinHeight="{DynamicResource PhScrollBarSize}"
-                                        AutomationProperties.Name="Position"
+                                        AutomationProperties.Name="{DynamicResource {x:Static loc:LangId._ScrollPosition}}"
                                         CornerRadius="4"
                                         RenderTransform="{DynamicResource PhVerticalSmallScrollThumbScaleTransform}"
                                         RenderTransformOrigin="100%,50%"
@@ -246,7 +246,7 @@
                                     Height="{DynamicResource PhScrollBarSize}"
                                     MinWidth="{DynamicResource PhScrollBarSize}"
                                     HorizontalAlignment="Center"
-                                    AutomationProperties.Name="Line down"
+                                    AutomationProperties.Name="{DynamicResource {x:Static loc:LangId._ScrollLineDown}}"
                                     Focusable="False"
                                     Theme="{StaticResource PhScrollBarLineButton}">
                                     <PathIcon
@@ -294,7 +294,7 @@
                                     Width="{DynamicResource PhScrollBarSize}"
                                     MinHeight="{DynamicResource PhScrollBarSize}"
                                     VerticalAlignment="Center"
-                                    AutomationProperties.Name="Column left"
+                                    AutomationProperties.Name="{DynamicResource {x:Static loc:LangId._ScrollColumnLeft}}"
                                     Focusable="False"
                                     Theme="{StaticResource PhScrollBarLineButton}">
                                     <PathIcon
@@ -316,7 +316,7 @@
                                     <Track.DecreaseButton>
                                         <RepeatButton
                                             Name="PART_PageUpButton"
-                                            AutomationProperties.Name="Page left"
+                                            AutomationProperties.Name="{DynamicResource {x:Static loc:LangId._ScrollPageLeft}}"
                                             Classes="largeIncrease"
                                             Focusable="False"
                                             Theme="{StaticResource PhScrollBarPageButton}" />
@@ -324,7 +324,7 @@
                                     <Track.IncreaseButton>
                                         <RepeatButton
                                             Name="PART_PageDownButton"
-                                            AutomationProperties.Name="Page right"
+                                            AutomationProperties.Name="{DynamicResource {x:Static loc:LangId._ScrollPageRight}}"
                                             Classes="largeIncrease"
                                             Focusable="False"
                                             Theme="{StaticResource PhScrollBarPageButton}" />
@@ -332,7 +332,7 @@
                                     <Thumb
                                         Height="{DynamicResource PhScrollBarThumbSize}"
                                         MinWidth="{DynamicResource PhScrollBarSize}"
-                                        AutomationProperties.Name="Position"
+                                        AutomationProperties.Name="{DynamicResource {x:Static loc:LangId._ScrollPosition}}"
                                         CornerRadius="4"
                                         RenderTransform="{DynamicResource PhHorizontalSmallScrollThumbScaleTransform}"
                                         RenderTransformOrigin="50%,100%"
@@ -345,7 +345,7 @@
                                     Width="{DynamicResource PhScrollBarSize}"
                                     MinHeight="{DynamicResource PhScrollBarSize}"
                                     VerticalAlignment="Center"
-                                    AutomationProperties.Name="Column right"
+                                    AutomationProperties.Name="{DynamicResource {x:Static loc:LangId._ScrollColumnRight}}"
                                     Focusable="False"
                                     Theme="{StaticResource PhScrollBarLineButton}">
                                     <PathIcon

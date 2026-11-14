@@ -181,7 +181,7 @@ public abstract class SettingsPageView : PhControl
             var value = Enum.Parse<TEnum>(name);
             var item = new ComboBoxItem { Tag = value };
 
-            BindComboItemText(item, Lang.GetKey($"{typeof(TEnum).Name}_{name}"), name);
+            BindComboItemText(item, Lang.GetKey($"{typeof(TEnum).Name}_{name}"));
             combo.Items.Add(item);
             if (EqualityComparer<TEnum>.Default.Equals(value, current)) selectedIndex = i;
         }
@@ -195,8 +195,8 @@ public abstract class SettingsPageView : PhControl
         RegisterSearchKey(combo, label, id, section);
     }
 
-    protected void BindComboItemText(ComboBoxItem item, LangId? key, string fallback)
-        => AddLangRefresher(() => item.Content = key is { } k ? Core.Lang[k] : fallback);
+    protected void BindComboItemText(ComboBoxItem item, LangId? key)
+        => AddLangRefresher(() => item.Content = Core.Lang[key]);
 
     protected void BindLink(PhButton btn, LangId label, Action onClick)
     {

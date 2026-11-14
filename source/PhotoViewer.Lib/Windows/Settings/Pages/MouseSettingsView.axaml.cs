@@ -217,6 +217,6 @@ public partial class MouseSettingsView : SettingsPageView
     }
 
     private static string EnumLabel<TEnum>(string enumName, TEnum value) where TEnum : struct, Enum
-        => Lang.GetKey($"{enumName}_{value}") is { } key ? Core.Lang[key] : value.ToString();
+        => Core.Lang[$"{enumName}_{value}"];
 
 }

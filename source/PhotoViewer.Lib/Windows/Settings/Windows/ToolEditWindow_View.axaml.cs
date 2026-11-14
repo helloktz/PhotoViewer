@@ -10,6 +10,7 @@ namespace PhotoViewer.Common.Windows;
 public partial class ToolEditWindowView : PhControl
 {
     private ISet<string> _takenIds = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    private bool _isPredefined;
 
     public ToolEditWindowView()
     {
@@ -20,6 +21,8 @@ public partial class ToolEditWindowView : PhControl
     protected override void OnIgLanguageChanged()
     {
         base.OnIgLanguageChanged();
+
+        PART_Name.PlaceholderText = Core.Lang[_isPredefined ? LangId.Settings_Tools_ExifGlassName : LangId.Settings_Tools_ExampleName];
 
         var template = Core.Lang[LangId.Settings_Tools_IntegratedWith];
         var idx = template.IndexOf("{0}", System.StringComparison.Ordinal);
@@ -32,6 +35,7 @@ public partial class ToolEditWindowView : PhControl
     public void LoadData(ExternalTool? tool, ISet<string> takenIds, bool isIdLocked = false)
     {
         _takenIds = takenIds;
+        _isPredefined = isIdLocked;
 
         PART_Id.Text = tool?.ToolId ?? string.Empty;
         PART_Id.IsEnabled = !isIdLocked;

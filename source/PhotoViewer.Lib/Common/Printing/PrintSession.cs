@@ -410,7 +410,7 @@ public sealed class PrintSession : PhDisposable, IPrintImageSource
     private string GetPhotoName()
     {
         var path = _state.Photo.FilePath;
-        return string.IsNullOrEmpty(path) ? "Photo Viewer" : Path.GetFileName(path);
+        return string.IsNullOrEmpty(path) ? BHelper.AppDisplayName : Path.GetFileName(path);
     }
 
     protected override void OnDisposing()

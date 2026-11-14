@@ -73,7 +73,6 @@ public partial class ImageResizerWindow : ModalWindow
 
         _numWidth.Value = (decimal)_srcSize.Width;
         _numHeight.Value = (decimal)_srcSize.Height;
-        _lblCurrentSizeValue.Text = $"{_srcSize.Width:N0}×{_srcSize.Height:N0} px";
     }
 
     protected override void OnIgLanguageChanged()
@@ -90,6 +89,8 @@ public partial class ImageResizerWindow : ModalWindow
         _chkKeepRatio.Content = Core.Lang[LangId.Tool_Resizer_ChkKeepRatio];
         _lblResample.Text = Core.Lang[LangId.Tool_Resizer_LblResample];
         _lblCurrentSize.Text = Core.Lang[LangId.Tool_Resizer_LblCurrentSize];
+        _lblCurrentSizeValue.Text = Core.Lang[LangId._PixelDimensions, _srcSize.Width, _srcSize.Height];
+        _lblSizeUnit.Text = _radPixels.IsChecked == true ? Core.Lang[LangId._Pixels] : "%";
         _lblNewSize.Text = Core.Lang[LangId.Tool_Resizer_LblNewSize];
     }
 
@@ -183,7 +184,6 @@ public partial class ImageResizerWindow : ModalWindow
 
         _lblSizeUnit = new TextBlock
         {
-            Text = "px",
             VerticalAlignment = VerticalAlignment.Center,
             MinWidth = 50,
         };
@@ -304,7 +304,7 @@ public partial class ImageResizerWindow : ModalWindow
         if (_suppressEvents) return;
 
         var usePixels = _radPixels.IsChecked == true;
-        _lblSizeUnit.Text = usePixels ? "px" : "%";
+        _lblSizeUnit.Text = usePixels ? Core.Lang[LangId._Pixels] : "%";
         _radPixels.IsTabStop = usePixels;
         _radPercentage.IsTabStop = !usePixels;
 
@@ -399,7 +399,7 @@ public partial class ImageResizerWindow : ModalWindow
             _outputSize = new(pxW, pxH);
         }
 
-        _lblNewSizeValue.Text = $"{_outputSize.Width:N0}×{_outputSize.Height:N0} px";
+        _lblNewSizeValue.Text = Core.Lang[LangId._PixelDimensions, _outputSize.Width, _outputSize.Height];
 
         var isWidthValid = _outputSize.Width <= MAX_SIZE;
         var isHeightValid = _outputSize.Height <= MAX_SIZE;

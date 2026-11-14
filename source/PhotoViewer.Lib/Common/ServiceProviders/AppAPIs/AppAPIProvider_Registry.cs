@@ -274,7 +274,7 @@ public partial class AppAPIProvider
 
         if (error is not null && showError)
         {
-            var errorTitle = Core.Lang[ac.LangKey];
+            var errorTitle = Lang.GetKey(ac.LangKey) is { } key ? Core.Lang[key] : ac.LangKey;
 
             _ = await ModalWindow.ShowErrorAsync(App.MainWindow, new ModalWindowOptions
             {

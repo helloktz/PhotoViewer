@@ -74,4 +74,7 @@
     </Compile>
   </ItemGroup>
 
+  <Target Name="CheckLanguagePacks" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec Command="pwsh -NoProfile -NonInteractive -File &quot;$(MSBuildProjectDirectory)\..\..\scripts\validate-language-packs.ps1&quot;" />
+  </Target>
 </Project>

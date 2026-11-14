@@ -36,7 +36,6 @@
                                             Text="{CompiledBinding Metadata.LocalName}"
                                             TextTrimming="CharacterEllipsis" />
                                         <TextBlock
-                                            IsVisible="{CompiledBinding !IsBuiltIn}"
                                             Opacity="0.6"
                                             Text="{CompiledBinding Metadata.EnglishName}"
                                             TextTrimming="CharacterEllipsis" />
@@ -44,7 +43,6 @@
 
                                     <TextBlock
                                         FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
-                                        IsVisible="{CompiledBinding !IsBuiltIn}"
                                         Opacity="0.6"
                                         Text="{CompiledBinding DisplayFilePath}"
                                         TextTrimming="PathSegmentEllipsis"

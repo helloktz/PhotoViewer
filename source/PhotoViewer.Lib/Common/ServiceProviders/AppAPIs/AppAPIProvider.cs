@@ -2358,7 +2358,7 @@ public partial class AppAPIProvider
 
     private static async Task ShowToolLaunchFailedAsync(ExternalTool tool, string? error)
     {
-        var toolName = string.IsNullOrWhiteSpace(tool.ToolName) ? tool.ToolId : tool.ToolName;
+        var toolName = tool.DisplayName;
 
         var result = await ModalWindow.ShowAsync(App.MainWindow, new ModalWindowOptions
         {

@@ -49,6 +49,8 @@ public partial class App : Application
         }
 
         AvaloniaXamlLoader.Load(this);
+        LocalizeApplication();
+        Core.LanguageChanged += (_, _) => LocalizeApplication();
     }
 
     public override async void OnFrameworkInitializationCompleted()
@@ -99,7 +101,7 @@ public partial class App : Application
             {
                 var isContinue = await ModalWindow.ShowUnhandledErrorAsync(
                     Config.LoadingException, null,
-                    "IGE: There was an error while loading user settings");
+                    Core.Lang[LangId.Settings_LoadError]);
                 if (!isContinue) return;
             }
 
@@ -164,14 +166,29 @@ public partial class App : Application
         {
             if (item.CommandParameter is not string tag || !Enum.TryParse<LangId>(tag, out var langId)) continue;
 
-            var text = Core.Lang[langId];
-            if (!string.IsNullOrWhiteSpace(text)) item.Header = text;
+            item.Header = Core.Lang[langId];
 
             if (langId == LangId.Menu_MnuSettings)
             {
                 item.Gesture = new KeyGesture(Key.OemComma, KeyModifiers.Meta);
             }
 
+        }
+    }
+
+    private void LocalizeApplication()
+    {
+        Name = BHelper.AppDisplayName;
+        LangId[] scrollbarLabels =
+        [
+            LangId._ScrollLineUp, LangId._ScrollLineDown, LangId._ScrollColumnLeft, LangId._ScrollColumnRight,
+            LangId._ScrollPageUp, LangId._ScrollPageDown, LangId._ScrollPageLeft, LangId._ScrollPageRight,
+            LangId._ScrollPosition,
+        ];
+
+        foreach (var key in scrollbarLabels)
+        {
+            Resources[key] = Core.Lang[key];
         }
     }
 
@@ -267,6 +284,7 @@ public partial class App : Application
             }
         }
 
+        Core.Config.LoadCurrentLanguageAsync().GetAwaiter().GetResult();
         return false;
     }
 
@@ -291,6 +309,7 @@ public partial class App : Application
 
             if (Core.ShellProvider is not null)
             {
+                await Core.Config.LoadCurrentLanguageAsync();
                 await Core.ShellProvider.SetDefaultPhotoViewerAsync(extensions, enable);
             }
 
@@ -419,8 +438,6 @@ public partial class App : Application
             }
 
             _ = Task.Run(MagickCodec.Initialize);
-
-            _ = Core.Config.LoadCurrentLanguageAsync();
         }
         finally
         {

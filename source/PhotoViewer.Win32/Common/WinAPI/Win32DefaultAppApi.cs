@@ -1,4 +1,5 @@
 ﻿using PhotoViewer.Common;
+using PhotoViewer.Common.Localization;
 using PhotoViewer.Common.Types;
 using Microsoft.Win32;
 using System;
@@ -253,7 +254,7 @@ public static class Win32DefaultAppApi
 
     private static string GetProgId(string extNoDot) => $"{BHelper.AppName}.AssocFile.{extNoDot}";
 
-    private static string GetFriendlyTypeName(string extNoDot) => $"{BHelper.AppDisplayName} {extNoDot} File";
+    private static string GetFriendlyTypeName(string extNoDot) => Core.Lang[LangId.Settings_FileTypeName, BHelper.AppDisplayName, extNoDot];
 
     private static void RegisterProgId(RegistryKey? classesKey, string progId, string extNoDot)
     {

@@ -20,7 +20,7 @@
 
         <StackPanel Spacing="5">
             <ui:PhTextBlock LangKey="_Name" />
-            <ui:PhTextBox x:Name="PART_Name" PlaceholderText="My Tool" />
+            <ui:PhTextBox x:Name="PART_Name" />
         </StackPanel>
 
         <StackPanel Orientation="Horizontal">

@@ -1,3 +1,5 @@
+using PhotoViewer.Common;
+using PhotoViewer.Common.Localization;
 using PhotoViewer.Common.Printing;
 using PhotoViewer.Common.ServiceProviders;
 using SkiaSharp;
@@ -46,7 +48,7 @@ internal static unsafe class Win32GdiPrintJob
         })
         {
             IsBackground = true,
-            Name = "Photo Viewer print job",
+            Name = Core.Lang[LangId.Print_JobName],
         };
 
         thread.SetApartmentState(ApartmentState.STA);

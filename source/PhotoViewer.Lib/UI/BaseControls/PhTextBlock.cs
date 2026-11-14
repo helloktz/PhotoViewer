@@ -60,8 +60,8 @@ public class PhTextBlock : TextBlock
 
     private void LocalizeText()
     {
-        var localizedText = Core.Lang[LangKey, LangParams];
-        if (string.IsNullOrWhiteSpace(localizedText)) return;
+        if (LangKey is not { } key) return;
+        var localizedText = Core.Lang[key, LangParams];
 
         Text = localizedText;
     }

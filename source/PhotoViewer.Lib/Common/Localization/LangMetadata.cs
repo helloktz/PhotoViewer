@@ -2,8 +2,8 @@
 
 public record LangMetadata
 {
-    public string Code { get; set; } = "en-US";
-    public string EnglishName { get; set; } = "English";
-    public string LocalName { get; set; } = "English";
-    public float MinVersion { get; set; } = 10;
+    public string Code { get; set; } = string.Empty;
+    public string EnglishName { get; set; } = string.Empty;
+    public string LocalName { get; set; } = string.Empty;
+    public float MinVersion { get; set; }
 }

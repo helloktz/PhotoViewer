@@ -10,6 +10,8 @@ function Assert-PublishedAppVersion([string]$ExePath, [string]$ExpectedVersion) 
 }
 
 function Copy-PackagePayload([string]$PublishDir, [string]$AssetsDir, [string]$PayloadDir) {
+    & (Join-Path $PSScriptRoot 'validate-language-packs.ps1')
+
     Get-ChildItem -LiteralPath $PublishDir -File |
         Where-Object { $_.Extension -in '.exe', '.dll' } |
         Copy-Item -Destination $PayloadDir

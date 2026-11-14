@@ -723,6 +723,8 @@ public static class Core
 
     public static void OnLanguageChanged()
     {
+        if (Avalonia.Application.Current is null) return;
+
         Dispatcher.UIThread.Post(() =>
         {
             LanguageChanged?.Invoke(null, new());

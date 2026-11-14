@@ -29,7 +29,6 @@ public static class PredefinedExternalTools
         yield return new ExternalTool
         {
             ToolId = EXIFGLASS_ID,
-            ToolName = "ExifGlass - EXIF Metadata viewer",
             Executable = exifGlassExe,
             Arguments = exifGlassArgs,
             IsIntegrated = true,

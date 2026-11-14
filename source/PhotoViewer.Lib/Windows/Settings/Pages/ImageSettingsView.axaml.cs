@@ -134,7 +134,7 @@ public partial class ImageSettingsView : SettingsPageView
             var name = names[i];
             var item = new ComboBoxItem { Tag = name };
 
-            BindComboItemText(item, Lang.GetKey($"{nameof(ColorProfileOption)}_{name}"), name);
+            BindComboItemText(item, Lang.GetKey($"{nameof(ColorProfileOption)}_{name}"));
             PART_ColorProfile.Items.Add(item);
 
             var match = isCustomPath

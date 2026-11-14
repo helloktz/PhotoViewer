@@ -23,7 +23,7 @@ public sealed class JsonLangItemsConverter : JsonConverter<IDictionary<LangId, s
             reader.Read();
 
             if (reader.TokenType == JsonTokenType.String
-                && Enum.TryParse<LangId>(name, ignoreCase: true, out var id))
+                && Lang.GetKey(name) is { } id)
             {
                 result[id] = reader.GetString() ?? string.Empty;
             }

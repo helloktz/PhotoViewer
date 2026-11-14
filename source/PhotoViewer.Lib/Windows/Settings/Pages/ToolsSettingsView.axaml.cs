@@ -149,7 +149,7 @@ public partial class ToolsSettingsView : SettingsPageView
 
     private Control NameCell(ExternalTool tool)
     {
-        var displayName = string.IsNullOrWhiteSpace(tool.ToolName) ? tool.ToolId : tool.ToolName;
+        var displayName = tool.DisplayName;
 
         var btn = new PhButton
         {

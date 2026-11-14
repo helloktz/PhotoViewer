@@ -8,7 +8,7 @@ namespace PhotoViewer.Common.Printing;
 
 public sealed record PdfWriteOptions
 {
-    public string Title { get; init; } = "Photo Viewer";
+    public string Title { get; init; } = BHelper.AppDisplayName;
 
     public float Dpi { get; init; } = 300;
 
@@ -29,8 +29,8 @@ public static class PdfPrintWriter
         var metadata = new SKDocumentPdfMetadata
         {
             Title = options.Title,
-            Creator = "Photo Viewer",
-            Producer = "Photo Viewer",
+            Creator = BHelper.AppDisplayName,
+            Producer = BHelper.AppDisplayName,
             Creation = now,
             Modified = now,
             RasterDpi = options.Dpi,

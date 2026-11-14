@@ -3,7 +3,6 @@ using Avalonia.Platform.Storage;
 using PhotoViewer.Common.Localization;
 using PhotoViewer.UI.Windowing;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,10 +11,10 @@ namespace PhotoViewer.Common.Windows;
 public partial class LanguageSettingsView : SettingsPageView
 {
 
-    private List<Lang> _langs = [];
+    private Lang[] _langs = [];
     private bool _isPopulating;
 
-    private static FilePickerFileType LangPackFileType => new("Photo Viewer language pack")
+    private static FilePickerFileType LangPackFileType => new(Core.Lang[LangId._LanguagePackFileType])
     {
         Patterns = ["*.iglang.json"],
     };
@@ -37,13 +36,17 @@ public partial class LanguageSettingsView : SettingsPageView
             if (_isPopulating) return;
             if (PART_LanguageList.SelectedItem is Lang lang)
             {
-                VM.SetValue(ConfigId.Language, ToConfigValue(lang));
+                VM.SetValue(ConfigId.Language, lang.Metadata.Code);
             }
         };
         RegisterSearchKey(PART_LanguageList, LangId.Settings_DisplayLanguage, ConfigId.Language, null);
 
         SetLocalizedText(PART_RefreshLanguages, LangId.Settings_Refresh);
-        PART_RefreshLanguages.Click += async (_, _) => await ReloadLanguagesAsync();
+        PART_RefreshLanguages.Click += async (_, _) =>
+        {
+            await ReloadLanguagesAsync();
+            await Core.Config.LoadCurrentLanguageAsync();
+        };
         RegisterSearchKey(PART_RefreshLanguages, LangId.Settings_Refresh, null, null);
 
         SetLocalizedText(PART_ExportLanguage, LangId.Settings_ExportLanguagePack);
@@ -55,9 +58,7 @@ public partial class LanguageSettingsView : SettingsPageView
 
     private async Task ReloadLanguagesAsync()
     {
-        var packs = await Lang.LoadAllLanguagePacksAsync();
-
-        _langs = [new Lang(string.Empty), .. packs];
+        _langs = await Lang.LoadAllLanguagePacksAsync();
         PopulateCombo();
     }
 
@@ -67,10 +68,9 @@ public partial class LanguageSettingsView : SettingsPageView
 
         PART_LanguageList.ItemsSource = _langs;
 
-        var current = VM.GetValue(ConfigId.Language, "English");
+        var current = Lang.NormalizeLanguageCode(VM.GetValue(ConfigId.Language, Lang.DefaultLanguageCode));
         PART_LanguageList.SelectedItem = _langs
-            .FirstOrDefault(l => ToConfigValue(l).Equals(current, StringComparison.OrdinalIgnoreCase))
-            ?? _langs[0];
+            .FirstOrDefault(lang => lang.Metadata.Code.Equals(current, StringComparison.OrdinalIgnoreCase));
 
         _isPopulating = false;
     }
@@ -84,17 +84,14 @@ public partial class LanguageSettingsView : SettingsPageView
 
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            SuggestedFileName = selected.IsBuiltIn ? "English.iglang.json" : selected.FileName,
+            SuggestedFileName = selected.FileName,
             FileTypeChoices = [LangPackFileType],
         });
 
         var path = file?.TryGetLocalPath();
         if (string.IsNullOrEmpty(path)) return;
 
-        var toExport = selected.IsBuiltIn ? new Lang(string.Empty) { Items = Lang.DefaultLangMap } : selected;
-        await toExport.SaveAsFileAsync(path);
+        await selected.SaveAsFileAsync(path);
     }
-
-    private static string ToConfigValue(Lang lang) => lang.IsBuiltIn ? "English" : lang.FileName;
 
 }
